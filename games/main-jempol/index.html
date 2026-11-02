@@ -1,0 +1,1090 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Main Jempol · PlayTama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Gaegu:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#33463d; --desk-line:rgba(255,255,255,.06);
+  --paper:#fbf8ef; --grid:#cfe0ee; --grid-b:#a9c6de; --margin:#ef8a8a;
+  --ink:#24201c; --ink-soft:#5b544c; --pencil:#8a8378;
+  --red:#e2402f; --blue:#2f5fd0; --yellow:#ffd23f; --green:#2fb36b; --gold:#f4b821; --gold-d:#b9800e;
+  --skin:#f3c7a2; --skin-d:#d99b72; --nail:#f9d5c4; --line:#3a2a20;
+  --display:"Dela Gothic One",system-ui,sans-serif;
+  --hand:"Gaegu","Comic Sans MS",cursive;
+  --mono:"Space Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--desk);color:var(--ink);
+  user-select:none;-webkit-user-select:none;touch-action:none;-webkit-touch-callout:none;overscroll-behavior:none;
+  font-family:var(--hand)}
+body{background:
+  linear-gradient(var(--desk-line) 1px,transparent 1px) 0 0/32px 32px,
+  linear-gradient(90deg,var(--desk-line) 1px,transparent 1px) 0 0/32px 32px,
+  radial-gradient(ellipse at 50% 40%,#3d554a,var(--desk) 75%)}
+
+/* ---------- the notebook page = stage ---------- */
+#stage{position:relative;height:100%;width:min(100vw,540px);margin:0 auto;overflow:hidden;
+  background:
+    linear-gradient(90deg,transparent 46px,var(--margin) 46px,var(--margin) 48px,transparent 48px),
+    linear-gradient(var(--grid-b) 1px,transparent 1px) 0 0/100% 120px,
+    linear-gradient(90deg,var(--grid-b) 1px,transparent 1px) 0 0/120px 100%,
+    linear-gradient(var(--grid) 1px,transparent 1px) 0 0/100% 24px,
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/24px 100%,
+    var(--paper);
+  box-shadow:0 0 0 1px rgba(0,0,0,.2),0 20px 60px rgba(0,0,0,.45);
+  --tw:min(28vw,152px)}
+#stage::before{content:"";position:absolute;left:14px;top:0;bottom:0;width:18px;pointer-events:none;
+  background:radial-gradient(circle at 9px 50%,var(--desk) 7px,transparent 7.5px) 0 0/18px 120px}
+.sticker{font-family:var(--display);color:#fff;paint-order:stroke fill;text-shadow:0 4px 0 var(--ink)}
+
+/* top bar: round on the left, tokens + sound on the right */
+#topbar{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;align-items:center;z-index:30;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink)}
+#topbar .chip{background:#fff;border:2px solid var(--ink);border-radius:999px;padding:3px 10px;box-shadow:2px 2px 0 var(--ink);display:inline-flex;align-items:center;gap:6px}
+#topbar .right{display:flex;gap:8px;align-items:center}
+#roundChip.hide{visibility:hidden}
+#exitBtn{font:inherit;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:3px 8px;box-shadow:2px 2px 0 var(--ink)}
+.mode-off #exitBtn{display:none}
+#modal{position:absolute;inset:0;z-index:80;background:rgba(36,32,28,.35);display:grid;place-items:center;transition:opacity .2s}
+#modal.hide{opacity:0;pointer-events:none}
+#modal .note{width:min(320px,80%);background:#fff59a;border:2px solid var(--ink);box-shadow:5px 6px 0 var(--ink);padding:18px 18px 16px;transform:rotate(-2deg);text-align:center}
+#modal h3{font-family:var(--display);font-size:26px}
+#modal p{font-size:21px;font-weight:700;line-height:1.05;margin:8px 0 14px}
+#modal .row{display:flex;gap:10px;justify-content:center}
+.mystats .pies{display:flex;justify-content:space-around;margin:10px 0 4px}
+.mystats .pies figure{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--mono);font-size:11px;font-weight:700}
+.mystats .pies .stats{transform:rotate(-1.5deg)}
+.mystats .pies .stats:last-child{transform:rotate(2deg)}
+#soundBtn{font:inherit;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:3px 8px;box-shadow:2px 2px 0 var(--ink)}
+
+/* coins */
+.coin{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#ffe58a,var(--gold) 55%,var(--gold-d));border:2px solid var(--ink);
+  display:inline-grid;place-items:center;font-family:var(--display);font-size:13px;color:var(--gold-d);box-shadow:0 2px 0 var(--ink);flex:none}
+.coin::after{content:"T"}
+.coin.sm{width:16px;height:16px;font-size:8px;box-shadow:0 1px 0 var(--ink);border-width:1.5px}
+#pool{position:absolute;left:50%;top:54.5%;transform:translate(-50%,-50%);width:170px;height:70px;z-index:5;pointer-events:none}
+#pool .coin{position:absolute}
+.flycoin{position:absolute;z-index:50;pointer-events:none;margin:-15px 0 0 -15px}
+
+/* seats */
+.seat{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:12;transition:opacity .3s}
+.seat.out{opacity:.4}
+.avatar{width:56px;height:56px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;
+  font-family:var(--display);font-size:24px;color:#fff;box-shadow:0 0 0 4px #fff,0 0 0 6px var(--ink),3px 5px 0 6px rgba(0,0,0,.18);position:relative}
+.seat.guessing .avatar{animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px) rotate(-3deg)}}
+.seat .name{margin-top:8px;font-size:19px;font-weight:700;line-height:1;background:#fff;padding:0 6px;border:2px solid var(--ink);border-radius:4px;transform:rotate(-2deg)}
+.pips{display:flex;gap:5px;margin-top:5px}
+.pip{width:20px;height:26px;display:block;overflow:visible}
+
+/* stats: label (0 / 👍 / 👍👍) > pie with % inside */
+.stats{margin-top:6px;width:96px;height:96px;flex:none;background:#fff8b8;border:1.5px solid #b8a83a;transform:rotate(1.5deg);box-shadow:1px 2px 0 rgba(0,0,0,.12);display:grid;place-items:center;position:relative}
+.stats::before{content:"";position:absolute;left:50%;top:-6px;width:34px;height:12px;background:rgba(255,230,140,.8);transform:translateX(-50%) rotate(-4deg)}
+.stats svg.piechart{width:80px;height:80px;display:block;overflow:visible}
+.stats svg text{font-family:var(--display);font-size:17px;fill:#fff;stroke:var(--ink);stroke-width:4px;paint-order:stroke;text-anchor:middle;dominant-baseline:central}
+.legend{display:flex;gap:6px;font-family:var(--mono);font-size:12px;font-weight:700;align-items:center}
+.legend span{display:flex;align-items:center;gap:2px}
+.legend i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink);display:inline-block}
+.legend img{width:15px;height:15px;margin:0 -2px}
+.stats.hide{display:none}
+
+
+/* BRANCH: every opponent shows a pair of thumbs pointing at the table */
+.ohands{position:absolute;display:flex;gap:2px;transform-origin:50% 50%;z-index:11;pointer-events:none}
+.thumbwrap.othumb{position:relative;bottom:auto;left:auto;right:auto;width:var(--ow);height:calc(var(--ow)*1.8);transform:rotate(16deg);transform-origin:50% 100%}
+.thumbwrap.othumb.mir{transform:scaleX(-1) rotate(16deg)}
+.thumbwrap.othumb .target{display:none}
+#stage{--ow:min(9.5vw,48px)}
+.seat .pips{display:none}
+/* a lifted opponent thumb pops toward the camera so it reads at a glance */
+.thumbwrap.othumb.up .tbody{transform:translate(0,-16%) scale(1.28)}
+.thumbwrap.othumb.up .tshadow{transform:translate(18%,10%);filter:blur(6px);opacity:.25}
+.stats.free{position:absolute;margin:0;transform:translate(-50%,-50%) rotate(2deg);z-index:12}
+/* speech bubble with Noto thumbs */
+.bubble{position:absolute;top:-10px;left:calc(100% + 6px);background:#fff;border:3px solid var(--ink);border-radius:18px;padding:4px 8px;display:flex;gap:2px;
+  box-shadow:3px 3px 0 var(--ink);transform-origin:0 70%;transform:scale(0);transition:transform .16s cubic-bezier(.3,1.7,.6,1);z-index:20;white-space:nowrap}
+.bubble::before{content:"";position:absolute;left:-12px;top:22px;border:8px solid transparent;border-right:12px solid var(--ink);border-left:0}
+.bubble.on{transform:scale(1)}
+.bubble.flipX{left:auto;right:calc(100% + 6px);transform-origin:100% 70%}
+.bubble.flipX::before{left:auto;right:-12px;border-right:0;border-left:12px solid var(--ink)}
+.bubble img{width:40px;height:40px}
+
+/* clock (a real clock: the second hand climbs from 10 o'clock to 12) */
+#clockWrap{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:124px;height:124px;z-index:8;transition:opacity .7s}
+#clockWrap.gone{opacity:0}
+#clockWrap.off{display:none!important}
+#handG{transform-box:view-box;transform-origin:62px 62px;transition:transform .16s cubic-bezier(.3,2.4,.55,1)}
+#handG.nosnap{transition:none}
+
+/* guess card – sits next to whoever is guessing */
+#card{position:absolute;width:130px;height:136px;transform:translate(-50%,-50%) rotate(-2deg);z-index:13;
+  transition:left .45s cubic-bezier(.4,1.4,.5,1),top .45s cubic-bezier(.4,1.4,.5,1),transform .2s,opacity .2s}
+#card .face{position:absolute;inset:0;background:#fff;border:3px solid var(--ink);border-radius:10px;box-shadow:4px 5px 0 var(--ink);
+  background-image:linear-gradient(transparent 16px,var(--margin) 16px,var(--margin) 18px,transparent 18px),repeating-linear-gradient(transparent 0 27px,#c9daf0 27px 28px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center}
+#card.bot{transform:translate(-50%,-50%) rotate(3deg) scale(.82)}
+#card .num{font-family:var(--display);font-size:96px;line-height:1;color:var(--blue);margin-top:6px}
+#card.bot .num{color:var(--pencil);font-size:76px}
+#card.bot .sub{font-size:20px}
+#card .sub{font-size:21px;font-weight:700;color:var(--ink-soft);line-height:.95;margin-top:-2px;text-align:center}
+#card .sub b{color:var(--red)}
+#card.bump .face{transform:scale(1.06)}
+#card.sealed .face{box-shadow:4px 5px 0 var(--ink),inset 0 0 0 3px var(--red)}
+#card .arrows{position:absolute;right:-26px;top:50%;transform:translateY(-50%);font-family:var(--display);font-size:18px;line-height:1.3;color:var(--ink);text-align:center}
+#card::after{content:"";position:absolute;left:50%;top:-14px;width:16px;height:16px;border-radius:50%;background:var(--red);border:2px solid var(--ink);transform:translateX(-50%);box-shadow:0 2px 0 var(--ink)}
+
+#burst{position:absolute;left:50%;top:50%;width:230px;height:230px;transform:translate(-50%,-50%) scale(0);transition:transform .25s cubic-bezier(.3,1.6,.6,1);pointer-events:none;z-index:15}
+#burst.on{transform:translate(-50%,-50%) scale(1)}
+#burst .gnum{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:84px;color:var(--ink);padding-top:8px}
+#count{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--display);font-size:110px;line-height:1;color:var(--red);
+  -webkit-text-stroke:7px #fff;paint-order:stroke fill;opacity:0;transition:transform .35s cubic-bezier(.3,1.6,.6,1),opacity .2s,color .2s;pointer-events:none;z-index:16}
+#count.on{opacity:1;transform:translate(-14%,-38%) rotate(-10deg)}
+#count.match{transform:translate(-50%,-50%) rotate(0deg) scale(1.15);color:var(--green)}
+#count.pop{animation:pop .22s}
+@keyframes pop{40%{scale:1.25}}
+
+/* my thumbs (top view, from the bottom corners) */
+.thumbwrap{position:absolute;bottom:0;width:var(--tw);height:calc(var(--tw)*1.8);transform-origin:50% 100%;z-index:14;pointer-events:none}
+#thumbL{left:calc(var(--tw)*-.37);transform:translateY(20%) rotate(32deg)}
+#thumbR{right:calc(var(--tw)*-.37);transform:translateY(20%) scaleX(-1) rotate(32deg)}
+.thumbwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.tshadow{filter:blur(3px);opacity:.3;transform:translate(3%,2%);transition:transform .12s,filter .12s,opacity .12s}
+.tbody{transform-origin:50% 100%;transition:transform .11s cubic-bezier(.3,1.5,.6,1)}
+.tpress{opacity:0;transition:opacity .08s}
+/* pressed = squished onto the glass: a little wider, a little shorter */
+.thumbwrap.down .tbody{transform:scale(1.07,.97)}
+.thumbwrap.down .tpress{opacity:1}
+/* lifted = natural shape, slightly closer to camera, shadow drifts away */
+.thumbwrap.up .tbody{transform:translate(1%,-2%) scale(1.03)}
+.thumbwrap.up .tshadow{transform:translate(15%,13%);filter:blur(10px);opacity:.17}
+.thumbwrap.retired .tbody{filter:grayscale(.6) brightness(.95);transform:scale(1.07,.97)}
+.target{opacity:0;transition:opacity .2s}
+.thumbwrap.up .target{opacity:1}
+.target circle{animation:spin 8s linear infinite;transform-origin:100px 82px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#myBubble{position:absolute;top:auto;bottom:29%;left:8%;transform-origin:30% 100%;z-index:20}
+#myBubble::before{left:22px;top:auto;bottom:-14px;border:8px solid transparent;border-top:12px solid var(--ink);border-bottom:0}
+
+/* overlays */
+#coach{position:absolute;left:58px;right:16px;z-index:40;text-align:center;font-size:clamp(22px,5.4vw,28px);font-weight:700;line-height:1.05;color:var(--ink);pointer-events:none;transition:opacity .25s}
+#coach mark{background:linear-gradient(transparent 55%,#ffe36e 55%,#ffe36e 90%,transparent 90%);color:inherit;padding:0 2px}
+#coach .step{display:block;font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--red);margin-bottom:6px}
+#coachArrow{position:absolute;z-index:40;pointer-events:none;overflow:visible}
+#holdHint{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);z-index:16;font-size:22px;font-weight:700;background:#fff;border:2px dashed var(--ink);padding:4px 12px;border-radius:10px;white-space:nowrap;transition:opacity .2s}
+#banner{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%) rotate(-3deg) scale(0);z-index:45;background:var(--yellow);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:8px 18px;
+  font-family:var(--display);font-size:24px;white-space:nowrap;transition:transform .2s cubic-bezier(.3,1.6,.6,1)}
+#banner.on{transform:translate(-50%,-50%) rotate(-3deg) scale(1)}
+#banner small{display:block;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px}
+#stamp{position:absolute;left:50%;top:47%;z-index:46;font-family:var(--display);font-size:52px;color:var(--red);border:6px double var(--red);padding:0 14px;border-radius:12px;
+  transform:translate(-50%,-50%) rotate(-10deg) scale(2.2);opacity:0;pointer-events:none;mix-blend-mode:multiply}
+#stamp.on{animation:stamp 1.1s forwards}
+@keyframes stamp{0%{opacity:0;transform:translate(-50%,-50%) rotate(-10deg) scale(2.2)}12%{opacity:.95;transform:translate(-50%,-50%) rotate(-10deg) scale(1)}75%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) rotate(-10deg) scale(1)}}
+#flash{position:absolute;inset:0;z-index:44;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 50%,rgba(47,179,107,.15),rgba(47,179,107,.6))}
+#flash.go{animation:flash .9s}
+#flash.bad{background:radial-gradient(circle at 50% 50%,rgba(226,64,47,0),rgba(226,64,47,.25))}
+@keyframes flash{15%{opacity:1}100%{opacity:0}}
+.flyer{position:absolute;width:44px;height:44px;z-index:47;pointer-events:none;margin:-22px 0 0 -22px}
+.plus{position:absolute;z-index:48;font-family:var(--display);font-size:28px;color:var(--green);-webkit-text-stroke:5px #fff;paint-order:stroke fill;pointer-events:none;animation:rise 1.2s forwards}
+@keyframes rise{to{transform:translateY(-60px);opacity:0}}
+
+/* title + result */
+.screen{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;padding:56px 18px 0 58px;transition:opacity .25s}
+.screen.hide{opacity:0;pointer-events:none}
+.logo{position:relative;text-align:center;line-height:.86;margin-top:2vh}
+.logo .a{font-size:clamp(36px,10vw,56px);transform:rotate(-4deg);display:inline-block;-webkit-text-stroke:12px var(--ink)}
+.logo .b{display:block;font-size:clamp(54px,15vw,84px);transform:rotate(2deg);-webkit-text-stroke:14px var(--ink);letter-spacing:-1px}
+.logo .b .j{color:var(--yellow)}
+.logo .tape{position:absolute;width:74px;height:22px;background:rgba(255,230,140,.75);top:-6px;right:6%;transform:rotate(18deg)}
+.tag{font-family:var(--mono);font-size:12px;font-weight:700;margin-top:14px;color:var(--ink-soft);text-align:center}
+.menu{display:flex;flex-direction:column;gap:12px;margin-top:3vh;align-items:center;width:100%}
+.btn{font-family:var(--display);font-size:22px;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:14px;padding:10px 26px;min-width:230px;cursor:pointer;
+  box-shadow:4px 5px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translate(3px,4px);box-shadow:1px 1px 0 var(--ink)}
+.btn.primary{background:var(--yellow)}
+.btn.small{font-size:16px;min-width:0;padding:8px 16px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.link{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);background:none;border:0;cursor:pointer;text-decoration:underline wavy var(--red) 1.5px;text-underline-offset:5px}
+.seg{display:flex;gap:8px}
+.seg button{font-family:var(--display);font-size:16px;width:60px;height:52px;background:#fff59a;border:2px solid var(--ink);cursor:pointer;box-shadow:2px 3px 0 rgba(0,0,0,.25);transform:rotate(-2deg)}
+.seg button:nth-child(2){background:#ffc8d8;transform:rotate(1.5deg)}
+.seg button:nth-child(3){background:#bfe8ff;transform:rotate(-1deg)}
+.seg button.on{outline:3px solid var(--ink);outline-offset:3px}
+.seg-l{font-size:18px;font-weight:700;margin-top:4px}
+.broke{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red);text-align:center;max-width:300px}
+.broke a{color:var(--ink)}
+.credit{margin-top:18px;font-family:var(--mono);font-size:9px;color:var(--pencil);text-align:center}
+.report{width:100%;max-width:400px;background:#fff;border:3px solid var(--ink);box-shadow:6px 7px 0 var(--ink);padding:16px 18px;margin-top:2vh;transform:rotate(-1deg)}
+.report h2{font-family:var(--display);font-size:26px;display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.report h2 span{font-family:var(--mono);font-size:11px}
+.report table{width:100%;border-collapse:collapse;margin-top:8px;font-size:20px;font-weight:700}
+.report td{padding:5px 2px;border-bottom:1px dashed #b9b2a6;vertical-align:middle}
+.report td.r{text-align:right;font-family:var(--mono);font-size:14px;white-space:nowrap}
+.report .grade{font-family:var(--display);color:var(--red);font-size:20px;text-align:center;width:48px}
+.report .note{margin-top:12px;font-size:21px;color:var(--red);transform:rotate(-1.5deg);line-height:1.05}
+.report .me td{background:#fff3a8}
+.mode-off #seats,.mode-off #card,.mode-off #burst,.mode-off #count,.mode-off #clockWrap,.mode-off #pool,.mode-off #roundChip{display:none!important}
+/* side legend on wide screens */
+#legend{position:fixed;left:24px;top:50%;transform:translateY(-50%);width:calc(50vw - 300px);max-width:300px;color:#e9efe6;font-family:var(--hand);font-size:22px;line-height:1.15;display:none}
+#legend b{font-family:var(--mono);font-size:12px;letter-spacing:1px;display:block;margin:14px 0 4px;opacity:.7}
+#legend kbd{font-family:var(--mono);font-size:13px;border:1.5px solid #e9efe6;border-radius:5px;padding:0 5px}
+@media (min-width:1000px){#legend{display:block}}
+@media (max-width:560px){
+  .seat .bubble{top:-20px;left:62%;padding:2px 5px;border-radius:14px}
+  .seat .bubble.flipX{left:auto;right:62%}
+  .seat .bubble::before{display:none}
+  .seat .bubble img{width:28px;height:28px}
+  .stats{width:80px;height:80px}
+  .stats svg.piechart{width:66px;height:66px}
+  #card.bot{transform:translate(-50%,-50%) rotate(3deg) scale(.68)}
+  .seat.s12{margin-top:22px}
+}
+</style>
+<!-- PlayTama shared save (tokens + stats). Missing when the file is opened on its own; the game then saves locally. -->
+<script src="../../assets/js/tama.js"></script>
+</head>
+<body>
+<aside id="legend">
+  <b>CONTROLS</b>
+  Hold <kbd>LEFT</kbd> + <kbd>RIGHT</kbd> click = thumbs down.<br>Let go = thumb up.
+  <b>YOUR GUESS</b>
+  Keep your thumbs held and move the mouse ↕
+  <b>KEYBOARD</b>
+  <kbd>F</kbd> + <kbd>J</kbd> (or both <kbd>Shift</kbd>) · <kbd>↑</kbd><kbd>↓</kbd>
+  <b>PHONE</b>
+  One finger each side. Slide ↕.
+</aside>
+
+<div id="stage" class="mode-off">
+  <div id="topbar">
+    <span class="chip" id="roundChip">ROUND 1</span>
+    <span class="right"><span class="chip" id="tokChip"><span class="coin sm"></span><span id="tokN">20</span></span><button id="soundBtn" aria-label="Sound">♪ ON</button><button id="exitBtn" aria-label="Leave table">✕</button></span>
+  </div>
+
+  <div id="seats"></div>
+
+  <div id="clockWrap">
+    <svg viewBox="0 0 124 124">
+      <circle cx="62" cy="62" r="58" fill="#e6c79c" stroke="var(--ink)" stroke-width="3"/>
+      <circle cx="62" cy="62" r="51" fill="#fff" stroke="var(--ink)" stroke-width="2"/>
+      <path id="lockBar" fill="none" stroke="var(--red)" stroke-width="6" stroke-linecap="round"/>
+      <g id="ticks"></g>
+      <g id="handG"><line x1="62" y1="70" x2="62" y2="15" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round"/></g>
+      <rect x="49" y="76" width="26" height="22" rx="3" fill="#fff" stroke="var(--ink)" stroke-width="2.5"/>
+      <text id="clockNum" x="62" y="88" text-anchor="middle" dominant-baseline="central" font-family="var(--mono)" font-weight="700" font-size="15" fill="var(--ink)">11</text>
+      <circle cx="62" cy="62" r="4.5" fill="var(--ink)"/>
+    </svg>
+  </div>
+
+  <div id="pool"></div>
+
+  <div id="card">
+    <div class="face">
+      <div class="num" id="cardNum">0</div>
+      <div class="sub" id="cardSub">slide ↕</div>
+    </div>
+    <div class="arrows" id="cardArrows">▲<br>▼</div>
+  </div>
+  <div id="burst">
+    <svg viewBox="0 0 230 230"><polygon id="burstPoly" fill="var(--yellow)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/></svg>
+    <div class="gnum" id="burstNum">3</div>
+  </div>
+  <div id="count">0</div>
+
+  <div class="thumbwrap" id="thumbL"></div>
+  <div class="thumbwrap" id="thumbR"></div>
+  <div class="bubble" id="myBubble"></div>
+  <div id="holdHint">hold both thumbs to start</div>
+
+  <div id="coach"></div>
+  <svg id="coachArrow" width="0" height="0"></svg>
+  <div id="banner"></div>
+  <div id="stamp">JEMPOL!</div>
+  <div id="flash"></div>
+
+  <section class="screen" id="titleScreen">
+    <div class="logo">
+      <span class="sticker a">MAIN</span>
+      <span class="sticker b"><span class="j">J</span>EMPOL</span>
+      <span class="tape"></span>
+    </div>
+    <div class="tag">the thumb game from recess · now online</div>
+    <div class="menu">
+      <div class="seg-l">how many at the table?</div>
+      <div class="seg" id="seg">
+        <button data-n="2">2</button><button data-n="3">3</button><button data-n="4" class="on">4</button>
+      </div>
+      <button class="btn primary" id="playBtn">PLAY vs BOTS</button>
+      <div class="broke" id="brokeNote"></div>
+      <button class="btn small" disabled>RANKED · soon</button>
+      <button class="link" id="howBtn">/how to play/</button>
+      <button class="link" id="statsBtn">/my stats/</button>
+      <a class="link" id="homeLink" href="../../" style="display:none">/PlayTama home/</a>
+      <div class="credit">thumbs-up animation: Google Noto Emoji (CC BY 4.0)</div>
+    </div>
+  </section>
+
+  <section class="screen hide" id="statsScreen">
+    <div class="report mystats" id="myStats"></div>
+    <div class="menu"><button class="link" id="statsBack">/back to menu/</button></div>
+  </section>
+
+  <div id="modal" class="hide"><div class="note">
+    <h3>Leave?</h3>
+    <p id="modalText"></p>
+    <div class="row"><button class="btn small" id="stayBtn">STAY</button><button class="btn small primary" id="leaveBtn">LEAVE</button></div>
+  </div></div>
+
+  <section class="screen hide" id="resultScreen">
+    <div class="report">
+      <h2>RAPOR <span id="repDate"></span></h2>
+      <table id="repTable"></table>
+      <div class="note" id="repNote"></div>
+    </div>
+    <div class="menu">
+      <button class="btn primary" id="againBtn">PLAY AGAIN</button>
+      <button class="link" id="menuBtn">/back to menu/</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const stage = $("stage");
+const THUMB_GIF = "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.webp";
+const THUMB_STATIC = "data:image/png;base64,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";
+const emojiImg = () => `<img src="${THUMB_GIF}" alt="👍" onerror="this.onerror=null;this.src='${THUMB_STATIC}'">`;
+const emojiStatic = n => `<img src="${THUMB_STATIC}" alt="👍">`.repeat(n);
+
+// ---------- timing rules ----------
+// first rotation: clock starts at 11 (first tick → 10). Once everyone has guessed once: starts at 6 (first tick → 5).
+const ROUND_SLOW = 11, ROUND_FAST = 6, FADE_AT = 5, LOCK_AT = 2, GRACE = 0.4;
+// ---------- rng (seedable for screenshots) ----------
+let seed = (+new URLSearchParams(location.search).get("seed")) || (Date.now() >>> 0);
+const rng = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const pick = dist => { let r = rng(), a = 0; for (let i = 0; i < dist.length; i++) { a += dist[i]; if (r < a) return i; } return dist.length - 1; };
+
+// (timing rules are defined near the top)
+// vs bots the table waits for you forever. In PvP set this to e.g. 3000 so one AFK player can't stall the table.
+const AUTO_START_MS = null;
+
+// ---------- audio + haptics ----------
+let AC = null, soundOn = true;
+const ac = () => (AC ||= new (window.AudioContext || window.webkitAudioContext)());
+function tone(freq, dur = .08, type = "sine", vol = .18, when = 0, slideTo) {
+  if (!soundOn) return;
+  try {
+    const c = ac(), t = c.currentTime + when, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
+  } catch {}
+}
+const SFX = {
+  tick: () => tone(1250 * (1 + (Math.random() - .5) * .02), .05, "square", .05),
+  lift: () => tone(520, .09, "triangle", .14, 0, 900),
+  drop: () => tone(700, .07, "triangle", .1, 0, 420),
+  blip: () => tone(980, .03, "square", .04),
+  coin: () => tone(1800 + Math.random() * 400, .06, "square", .035),
+  bell: () => { tone(1320, .9, "triangle", .14); tone(1980, .7, "sine", .06, .01); tone(1320, .9, "triangle", .12, .22); },
+  note: i => tone([523, 587, 659, 698, 784, 880, 988, 1047, 1175][Math.min(i, 8)], .14, "triangle", .16),
+  win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, "triangle", .15, i * .08)),
+  miss: () => tone(220, .35, "sawtooth", .07, 0, 140),
+};
+const buzz = p => { try { soundOn && navigator.vibrate?.(p); } catch {} };
+$("soundBtn").onclick = e => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "♪ ON" : "♪ OFF"; };
+
+// ---------- art ----------
+const THUMB_PATH = "M18 360 C 26 300, 42 252, 46 206 L 47 92 C 47 42, 72 16, 100 16 C 128 16, 153 42, 153 92 L 155 214 C 158 262, 176 304, 192 360 Z";
+const THUMB_SVG = `
+<svg viewBox="0 0 200 360" preserveAspectRatio="none">
+  <g class="target"><circle cx="100" cy="82" r="66" fill="none" stroke="var(--ink)" stroke-width="5" stroke-dasharray="14 10" opacity=".55"/></g>
+  <path class="tshadow" d="${THUMB_PATH}" fill="#2a1d14"/>
+  <g class="tbody">
+    <path d="${THUMB_PATH}" fill="var(--skin)" stroke="var(--line)" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M150 110 C 152 160, 152 200, 156 230 C 160 270, 174 310, 186 350" fill="none" stroke="var(--skin-d)" stroke-width="10" opacity=".45" stroke-linecap="round"/>
+    <path d="M67 74 C 67 49, 82 36, 100 36 C 118 36, 133 49, 133 74 L 131 124 C 131 138, 118 144, 100 144 C 82 144, 69 138, 69 124 Z" fill="var(--nail)" stroke="var(--line)" stroke-width="4"/>
+    <path d="M78 58 C 84 48, 96 45, 106 46" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".8"/>
+    <path d="M62 214 q38 13 76 0 M68 232 q32 9 64 0" stroke="var(--skin-d)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <ellipse class="tpress" cx="100" cy="70" rx="34" ry="30" fill="#fff" opacity=".22"/>
+    <g class="medal" style="display:none"><circle cx="100" cy="90" r="30" fill="var(--yellow)" stroke="var(--line)" stroke-width="4"/>
+      <path d="M100 70 l6 13 14 1-11 9 4 14-13-8-13 8 4-14-11-9 14-1z" fill="#fff" stroke="var(--line)" stroke-width="3" stroke-linejoin="round"/></g>
+  </g>
+</svg>`;
+$("thumbL").innerHTML = THUMB_SVG; $("thumbR").innerHTML = THUMB_SVG;
+// small side-view thumb (opponent's remaining thumbs); nail on the side, gold star when retired
+const PIP = retired => `<svg class="pip" viewBox="0 0 20 26">
+  <path d="M4 25 V9 C4 4 7 1.5 10 1.5 C13.5 1.5 16 4 16 8.5 V25 Z" fill="${retired ? "#e2d9cc" : "var(--skin)"}" stroke="var(--ink)" stroke-width="1.8" stroke-linejoin="round"/>
+  <path d="M12 3.5 C14.5 4.5 15 7 14.6 11 L12.2 11.4 C11.6 8 11.4 5.5 12 3.5 Z" fill="${retired ? "#f2ece2" : "var(--nail)"}" stroke="var(--ink)" stroke-width="1.2"/>
+  <path d="M5 16 h5" stroke="${retired ? "#bcb2a4" : "var(--skin-d)"}" stroke-width="1.4" stroke-linecap="round"/>
+  ${retired ? `<path d="M10 4.5 l2.1 4.3 4.7.6-3.4 3.2.9 4.6-4.3-2.3-4.3 2.3.9-4.6-3.4-3.2 4.7-.6z" fill="var(--yellow)" stroke="var(--ink)" stroke-width="1.3" stroke-linejoin="round"/>` : ""}
+</svg>`;
+// clock ticks: 60 minute marks, 5-min marks bold; 10 o'clock → 12 o'clock zone highlighted
+// 12 dots like a simple wall clock
+$("ticks").innerHTML = Array.from({ length: 12 }, (_, i) => {
+  const a = i / 12 * Math.PI * 2;
+  return `<circle cx="${62 + Math.sin(a) * 43}" cy="${62 - Math.cos(a) * 43}" r="${i % 3 ? 3 : 4}" fill="var(--ink)"/>`;
+}).join("");
+// red bar on the rim = the last 2 seconds (thumbs locked)
+{ const p = s => { const a = s * 6 * Math.PI / 180; return `${62 + Math.sin(a) * 51} ${62 - Math.cos(a) * 51}`; };
+  $("lockBar").setAttribute("d", `M${p(60 - LOCK_AT)} A51 51 0 0 1 ${p(59.999)}`); }
+$("burstPoly").setAttribute("points", Array.from({ length: 32 }, (_, i) => {
+  const a = i / 32 * Math.PI * 2, r = i % 2 ? 72 + (i % 4 ? 6 : -4) : 108 - (i % 6) * 3;
+  return `${115 + Math.cos(a) * r},${115 + Math.sin(a) * r}`;
+}).join(" "));
+
+// ---------- players ----------
+// Bot "logic" = the probabilities they actually use. That's what the stats panel shows for bots.
+const BOTS = [
+  { name: "Ayu",   color: "#e2402f", dist: { 2: [.22, .6, .18], 1: [.35, .65] }, bluff: .55, fav: 2, stay: .15 },
+  { name: "Budi",  color: "#2f5fd0", dist: { 2: [.5, .2, .3], 1: [.6, .4] }, bluff: .3, fav: 1, stay: .3 },
+  { name: "Cinta", color: "#2fa36b", dist: { 2: [.15, .35, .5], 1: [.3, .7] }, bluff: .7, fav: 3, stay: .2 },
+];
+const SEATS = { 1: ["12"], 2: ["10", "2"], 3: ["10", "12", "2"] };
+const SEAT_POS = { "12": [50, 5], "10": [20, 14.5], "2": [80, 14.5] };
+// where the guess card sits for each seat (toward the middle of the table)
+const CARD_POS = { me: [50, 72], "12": [50, 33], "10": [21, 46], "2": [79, 46] };
+// BRANCH: where each opponent's thumbs sit (centre of the pair), pointing at the middle of the table
+const HAND_POS = { "12": [50, 23], "10": [32.5, 31.5], "2": [67.5, 31.5] };
+// post-its move out of the seat column into free space (right of 12; under 10 and 2, beside the clock)
+const STATS_POS = { "12": [69, 10.5], "10": [19, 45], "2": [81, 45] };
+const TABLE_CENTRE = [50, 52];
+
+const G = {
+  mode: "title", n: 4, players: [], guesser: 0, roundNo: 0, phase: "idle",
+  t0: 0, call: 0, sealed: false, locked: false, finalised: false, place: 0,
+  tokens: 20, script: null, forced: null, stake: 2, pool: 0, botCall: 0, botCallInfo: null,
+};
+// on PlayTama, coins are the shared Tama Tokens and stats live in the current player's save
+const TAMA = window.Tama || null;
+try { if (TAMA) G.tokens = TAMA.tokens(); else { const t = +localStorage.getItem("mj_tokens"); if (t) G.tokens = t; } } catch {}
+// your own recorded data (persists between matches; bluffs never count)
+const freshMy = () => ({ lift: { 1: [0, 0], 2: [0, 0, 0] }, calls: {}, guessed: 0, hits: 0, matches: 0, places: [0, 0, 0, 0] });
+let MY = freshMy();
+try { const m = TAMA ? TAMA.load("main-jempol") : JSON.parse(localStorage.getItem("mj_stats")); if (m && m.lift) MY = Object.assign(freshMy(), m); } catch {}
+const saveMy = () => { try { if (TAMA) TAMA.save("main-jempol", MY); else localStorage.setItem("mj_stats", JSON.stringify(MY)); } catch {} };
+
+function makePlayer(i, bot) {
+  return { i, isHuman: !bot, name: bot ? bot.name : "You", bot, points: 0, retired: [false, false],
+    up: [false, false], pubUp: 0, finished: 0, el: null, seat: bot ? null : "me",
+    stats: { lift: bot ? null : (G.mode === "match" ? MY.lift : { 1: [0, 0], 2: [0, 0, 0] }) } };   // humans: real recorded data
+}
+const active = p => !p.finished;
+const activeThumbs = p => p.retired.filter(r => !r).length;
+const human = () => G.players[0];
+const totalActiveThumbs = () => G.players.filter(active).reduce((a, p) => a + activeThumbs(p), 0);
+// what the stats panel shows: bots → their logic; humans → their recorded history
+function liftDist(p) {
+  const k = Math.max(1, activeThumbs(p));
+  if (!p.isHuman) return { d: p.bot.dist[k], src: "logic" };
+  const s = p.stats.lift[k], t = s.reduce((a, b) => a + b, 0);
+  return { d: t ? s.map(v => v / t) : null, src: t ? `${t} rounds` : "no data", n: t };
+}
+
+function buildSeats() {
+  const seats = $("seats"); seats.innerHTML = "";
+  const opp = G.players.slice(1), pos = SEATS[opp.length];
+  opp.forEach((p, k) => {
+    p.seat = pos[k];
+    const [x, y] = SEAT_POS[p.seat];
+    const el = document.createElement("div");
+    el.className = "seat s" + p.seat; el.style.left = x + "%"; el.style.top = y + "%";
+    el.innerHTML = `<div class="avatar" style="background:${p.bot.color}">${p.name[0]}
+        <div class="bubble ${p.seat === "2" ? "flipX" : ""}"></div></div>
+      <div class="name">${p.name}</div>
+      <div class="pips"></div>
+      <div class="stats hide"></div>`;
+    seats.appendChild(el); p.el = el;
+    const hp = HAND_POS[p.seat], hands = document.createElement("div");
+    hands.className = "ohands"; hands.style.left = hp[0] + "%"; hands.style.top = hp[1] + "%";
+    hands.innerHTML = `<div class="thumbwrap othumb down">${THUMB_SVG}</div><div class="thumbwrap othumb mir down">${THUMB_SVG}</div>`;
+    seats.appendChild(hands); p.hands = [...hands.children];
+    const st0 = el.querySelector(".stats"), sp = STATS_POS[p.seat];
+    st0.classList.add("free"); st0.style.left = sp[0] + "%"; st0.style.top = sp[1] + "%"; seats.appendChild(st0); p.statsEl = st0;
+    requestAnimationFrame(() => {   // point the pair at the table centre
+      const st = stage.getBoundingClientRect();
+      const dx = (TABLE_CENTRE[0] - hp[0]) * st.width / 100, dy = (TABLE_CENTRE[1] - hp[1]) * st.height / 100;
+      const deg = Math.atan2(dx, -dy) * 180 / Math.PI;
+      hands.style.transform = `translate(-50%,-50%) rotate(${deg}deg)`;
+    });
+  });
+  renderSeats();
+}
+const SLICE = ["#a39a8c", "var(--blue)", "var(--red)"];   // 0 thumbs / 1 thumb / 2 thumbs
+function statsHTML(p) {
+  const { d } = liftDist(p);
+  if (!d) return "";
+  const R0 = 36, C = 38; let a0 = 0, paths = "", labels = "";
+  const pt = (a, r) => `${C + Math.sin(a) * r} ${C - Math.cos(a) * r}`;
+  d.forEach((v, k) => {
+    if (v <= 0) return;
+    const a1 = a0 + v * Math.PI * 2;
+    paths += v >= .999 ? `<circle cx="${C}" cy="${C}" r="${R0}" fill="${SLICE[k]}"/>`
+      : `<path d="M${C} ${C} L${pt(a0, R0)} A${R0} ${R0} 0 ${v > .5 ? 1 : 0} 1 ${pt(a1, R0)} Z" fill="${SLICE[k]}"/>`;
+    if (v >= .07) { const m = (a0 + a1) / 2, r = v >= .999 ? 0 : R0 * .58; labels += `<text x="${C + Math.sin(m) * r}" y="${C - Math.cos(m) * r}">${k}</text>`; }
+    a0 = a1;
+  });
+  return `<svg class="piechart" viewBox="0 0 76 76">${paths}<circle cx="${C}" cy="${C}" r="${R0}" fill="none" stroke="var(--ink)" stroke-width="2.5"/>${labels}</svg>`;
+}
+function renderSeats() {
+  for (const p of G.players.slice(1)) {
+    const el = p.el; if (!el) continue;
+    el.classList.toggle("out", !!p.finished);
+    el.classList.toggle("guessing", G.players[G.guesser] === p && !["idle", "tut"].includes(G.phase));
+    const pips = p.retired.map(r => PIP(r)).join("");
+    if (el.querySelector(".pips").dataset.k !== pips) { el.querySelector(".pips").innerHTML = pips; el.querySelector(".pips").dataset.k = pips; }
+    // BRANCH: no speech bubble – the thumbs themselves show the bluff.
+    // timer: only public lifts are visible (they stay up after the lock); reveal: everything is shown.
+    let vis = [false, false];
+    if (G.phase === "reveal") vis = [...p.up];
+    else if (G.phase === "timer") { let n = p.pubUp; vis = p.retired.map(r => !r && n-- > 0); }
+    p.hands?.forEach((h, k) => {
+      const ret = p.retired[k];
+      h.classList.toggle("up", vis[k] && !ret); h.classList.toggle("down", !vis[k] && !ret); h.classList.toggle("retired", ret);
+      h.querySelector(".medal").style.display = ret ? "" : "none";
+    });
+    const st = p.statsEl || el.querySelector(".stats");
+    const show = G.players[G.guesser]?.isHuman && !p.finished && ["match", "tutorial"].includes(G.mode) && G.phase !== "tut";
+    st.classList.toggle("hide", !show);
+    if (show) { const h = statsHTML(p); if (st.dataset.k !== h) { st.innerHTML = h; st.dataset.k = h; } }
+  }
+}
+
+// ---------- input ----------
+const input = { L: false, R: false, dev: null };
+const KL = new Set(["ShiftLeft", "KeyF", "ControlLeft"]), KR = new Set(["ShiftRight", "KeyJ", "ControlRight"]);
+let dragAcc = 0;
+const touches = new Map(); let lastAvgY = null;
+const uiTarget = e => e.target.closest?.("button");
+
+function onHeld() { ac(); handleThumbs(); }
+addEventListener("mousedown", e => {
+  if (uiTarget(e)) return; input.dev = "mouse";
+  if (e.button === 0) input.L = true; if (e.button === 2) input.R = true; e.preventDefault(); onHeld();
+});
+addEventListener("mouseup", e => { if (e.button === 0) input.L = false; if (e.button === 2) input.R = false; onHeld(); });
+addEventListener("mousemove", e => { if ((input.L || input.R) && heldAll()) slide(-e.movementY, 26); });
+addEventListener("contextmenu", e => e.preventDefault());
+addEventListener("keydown", e => {
+  if (e.repeat) return;
+  if (KL.has(e.code)) { input.L = true; input.dev = "keys"; e.preventDefault(); onHeld(); }
+  else if (KR.has(e.code)) { input.R = true; input.dev = "keys"; e.preventDefault(); onHeld(); }
+  else if (e.code === "ArrowUp") stepCall(1);
+  else if (e.code === "ArrowDown") stepCall(-1);
+});
+addEventListener("keyup", e => { if (KL.has(e.code)) input.L = false; if (KR.has(e.code)) input.R = false; onHeld(); });
+addEventListener("blur", () => { input.L = input.R = false; touches.clear(); onHeld(); });
+function syncTouches() { const s = [...touches.values()]; input.L = s.includes("L"); input.R = s.includes("R"); }
+addEventListener("touchstart", e => {
+  if (uiTarget(e)) return; e.preventDefault(); input.dev = "touch";
+  const h = human(), inGame = h && ["match", "tutorial"].includes(G.mode);
+  for (const t of e.changedTouches) {
+    let side = t.clientX < innerWidth / 2 ? "L" : "R";
+    // a retired thumb's side is dead: route the finger to the live thumb
+    if (inGame && h.retired[side === "L" ? 0 : 1] && !h.retired[side === "L" ? 1 : 0]) side = side === "L" ? "R" : "L";
+    else if ([...touches.values()].includes(side)) side = side === "L" ? "R" : "L";
+    touches.set(t.identifier, side);
+  }
+  syncTouches(); lastAvgY = null; onHeld();
+}, { passive: false });
+addEventListener("touchmove", e => {
+  e.preventDefault(); if (e.touches.length < 1) return;
+  const ys = [...e.touches].map(t => t.clientY), y = ys.reduce((a, b) => a + b) / ys.length;
+  if (lastAvgY !== null && heldAll()) slide(lastAvgY - y, 30);
+  lastAvgY = y;
+}, { passive: false });
+const tEnd = e => { for (const t of e.changedTouches) touches.delete(t.identifier); syncTouches(); lastAvgY = null; onHeld(); };
+addEventListener("touchend", tEnd, { passive: false }); addEventListener("touchcancel", tEnd, { passive: false });
+
+function slide(d, step) { dragAcc += d; while (Math.abs(dragAcc) >= step) { stepCall(Math.sign(dragAcc)); dragAcc -= Math.sign(dragAcc) * step; } }
+// "all your live thumbs are held" – with one thumb retired, one finger is enough
+function heldAll() { const h = human(); if (!h) return input.L && input.R; return [input.L, input.R].every((held, k) => held || h.retired[k]); }
+function canSetCall() {
+  const h = human();
+  if (!h || G.players[G.guesser] !== h || G.sealed || G.finalised) return false;
+  if (!["wait", "intro", "timer", "tut"].includes(G.phase)) return false;
+  return heldAll();
+}
+function stepCall(d) {
+  if (!canSetCall()) return;
+  const nv = Math.max(0, Math.min(totalActiveThumbs(), G.call + d));
+  if (nv === G.call) return;
+  G.call = nv; SFX.blip(); buzz(6);
+  const c = $("card"); c.classList.add("bump"); setTimeout(() => c.classList.remove("bump"), 90);
+  G.script?.onCall?.(); render();
+}
+
+// hold = down. Before the lock, lifts are public & reversible. After the lock, lifts are one-way and secret.
+function handleThumbs() {
+  const h = human(); if (!h) { render(); return; }
+  if (G.finalised) { render(); return; }
+  const held = [input.L, input.R];
+  for (let k = 0; k < 2; k++) {
+    if (h.retired[k]) { h.up[k] = false; continue; }
+    const want = !held[k];
+    if (G.phase === "timer" && G.locked) { if (want && !h.up[k]) { h.up[k] = true; SFX.lift(); buzz(12); } }
+    else if (want !== h.up[k]) { h.up[k] = want; want ? (SFX.lift(), buzz(12)) : SFX.drop(); }
+  }
+  if (G.phase === "timer" && !G.locked) h.pubUp = h.up.filter(Boolean).length;
+  if (G.phase === "timer" && G.locked && h.up.some(Boolean) && G.players[G.guesser] === h) G.sealed = true;
+  if (G.phase === "wait" && heldAll() && ["match", "tutorial"].includes(G.mode)) startIntro();
+  G.script?.onInput?.();
+  render();
+}
+
+// ---------- coins ----------
+function posOf(p) {
+  const s = stage.getBoundingClientRect();
+  if (p.isHuman) return { x: s.left + s.width / 2, y: s.top + s.height * .97 };
+  return centerOf(p.el.querySelector(".avatar"));
+}
+function renderPool() {
+  const pool = $("pool"); pool.querySelectorAll(".coin").forEach(c => c.remove());
+  // treasure mound: rows of 5,4,3,2,1… from the bottom, slightly jittered
+  let i = 0, row = 0;
+  while (i < G.pool) {
+    const inRow = Math.max(1, 5 - row);
+    for (let c = 0; c < inRow && i < G.pool; c++, i++) {
+      const el = document.createElement("span"); el.className = "coin";
+      const x = 85 - (inRow - 1) * 11 + c * 22 - 15 + ((i * 13) % 5 - 2), y = 40 - row * 11 + ((i * 7) % 4 - 2);
+      el.style.left = x + "px"; el.style.top = y + "px"; el.style.transform = `rotate(${(i * 37) % 40 - 20}deg)`;
+      pool.appendChild(el);
+    }
+    row++;
+  }
+}
+function flyCoin(a, b, delay) {
+  return new Promise(res => setTimeout(() => {
+    const s = stage.getBoundingClientRect(), c = document.createElement("span");
+    c.className = "coin flycoin"; c.style.left = (a.x - s.left) + "px"; c.style.top = (a.y - s.top) + "px"; stage.appendChild(c);
+    const dx = b.x - a.x, dy = b.y - a.y;
+    c.animate([{ transform: "translate(0,0) rotate(0)" }, { transform: `translate(${dx}px,${dy}px) rotate(540deg)` }],
+      { duration: 520, easing: "cubic-bezier(.5,0,.3,1)" }).finished.then(() => { c.remove(); SFX.coin(); res(); });
+  }, delay));
+}
+async function ante() {
+  G.pool = 0; renderPool();
+  const target = centerOf($("pool")), jobs = [];
+  G.players.forEach((p, i) => {
+    if (p.isHuman) { G.tokens -= G.stake; saveTokens(); }
+    for (let k = 0; k < G.stake; k++) jobs.push(flyCoin(posOf(p), target, (i * G.stake + k) * 110).then(() => { G.pool++; renderPool(); }));
+  });
+  render(); await Promise.all(jobs);
+}
+async function payout(p, n) {
+  if (!n) return;
+  const from = centerOf($("pool")), jobs = [];
+  for (let k = 0; k < n; k++) {
+    G.pool = Math.max(0, G.pool - 1); renderPool();
+    jobs.push(flyCoin(from, posOf(p), k * 120).then(() => { if (p.isHuman) { G.tokens++; saveTokens(); render(); } }));
+    await wait(120);
+  }
+  await Promise.all(jobs);
+}
+
+// ---------- round flow ----------
+let botPlans = [];
+const PAYOUT = { 2: [4, 0], 3: [4, 2, 0], 4: [4, 2, 2, 0] };
+function newMatch(n, opts = {}) {
+  G.mode = opts.tutorial ? "tutorial" : "match"; G.n = n;
+  G.players = [makePlayer(0)];
+  const bots = opts.bots || BOTS.slice(0, n - 1);
+  bots.forEach((b, k) => G.players.push(makePlayer(k + 1, b)));
+  G.guesser = 0; G.roundNo = 0; G.place = 0; G.pool = 0; G.mid = (G.mid || 0) + 1;
+  $("titleScreen").classList.add("hide"); $("resultScreen").classList.add("hide");
+  buildSeats(); newRound();
+  if (G.mode === "match") requestAnimationFrame(() => ante());
+}
+function newRound() {
+  G.roundNo++; G.phase = "wait"; G.locked = G.finalised = G.sealed = G.stamped = false; G.call = 0;
+  for (const p of G.players) { p.up = [false, false]; p.pubUp = 0; }
+  $("count").className = ""; $("burst").classList.remove("on"); $("card").style.opacity = 1;
+  $("clockWrap").classList.remove("gone"); G.len = roundLen(); setClock(G.len, true);
+  botPlans = G.players.map(p => p.isHuman || p.finished ? null : planBot(p));
+  const g = G.players[G.guesser];
+  if (!g.isHuman) { G.botCall = botGuess(g); G.botCallInfo = botCallLogic(g); }
+  if (AUTO_START_MS) setTimeout(() => { if (G.phase === "wait") startIntro(); }, AUTO_START_MS);
+  handleThumbs(); render();
+}
+function planBot(p) {
+  const f = G.forced?.[p.name], k = activeThumbs(p), b = p.bot;
+  const lifts = Math.min(k, f?.lifts ?? pick(b.dist[k]));
+  const ev = [];
+  const bl = f ? f.bluff : (rng() < b.bluff ? { at: 8.6 - rng() * 3.2, n: k > 1 && rng() < .3 ? 2 : 1, dur: .5 + rng() * 1.3, stay: rng() < b.stay } : null);
+  if (bl) {
+    const n = Math.min(bl.n, k);
+    ev.push({ at: bl.at, up: n, pub: true });
+    if (!bl.stay) ev.push({ at: Math.max(LOCK_AT + .15, bl.at - bl.dur), up: 0, pub: true });
+  }
+  ev.push({ at: f?.secretAt ?? (LOCK_AT - .2 - rng() * (LOCK_AT - .3)), up: lifts, final: true });
+  return { lifts, ev: ev.sort((a, b) => b.at - a.at), done: 0 };
+}
+// bot guessing logic: own lifts + expected lifts of everyone else (+ a little noise, sometimes its favourite number)
+function botGuessFrom(g, own) {
+  let est = own;
+  for (const p of G.players) if (p !== g && active(p)) {
+    const k = activeThumbs(p); if (!k) continue;
+    const d = p.isHuman ? (liftDist(p).d || Array(k + 1).fill(1 / (k + 1))) : p.bot.dist[k];
+    est += d.reduce((a, v, i) => a + v * i, 0);
+  }
+  let c = Math.round(est + (rng() - .5) * 1.0);
+  if (rng() < .2) c = g.bot.fav;
+  return Math.max(0, Math.min(totalActiveThumbs(), c));
+}
+function botGuess(g) {
+  const f = G.forced?.[g.name]; if (f?.call != null) return f.call;
+  return botGuessFrom(g, botPlans[g.i].lifts);
+}
+function botCallLogic(g) {          // what its logic tends to call, shown on its card
+  const k = activeThumbs(g), hist = {}, N = 400, save = seed;
+  for (let i = 0; i < N; i++) { const c = botGuessFrom(g, pick(g.bot.dist[k])); hist[c] = (hist[c] || 0) + 1; }
+  seed = save;
+  const [c, n] = Object.entries(hist).sort((a, b) => b[1] - a[1])[0];
+  return { c, pct: Math.round(n / N * 100) };
+}
+function startIntro() {
+  G.phase = "intro";
+  const g = G.players[G.guesser];
+  showBanner(g.isHuman ? "YOU GUESS" : `${g.name.toUpperCase()} GUESSES`, `ROUND ${G.roundNo}`);
+  const mid = G.mid;
+  setTimeout(() => { if (mid !== G.mid) return; hideBanner(); G.phase = "timer"; G.t0 = performance.now(); G.lastTick = G.len + 1;
+    const h = human(); h.up = [!input.L && !h.retired[0], !input.R && !h.retired[1]]; h.pubUp = h.up.filter(Boolean).length; render(); },
+    G.mode === "tutorial" ? 900 : 1100);
+  render();
+}
+function showBanner(t, s) { const b = $("banner"); b.innerHTML = `<small>${s}</small>${t}`; b.classList.add("on"); }
+function hideBanner() { $("banner").classList.remove("on"); }
+
+const roundLen = () => G.mode === "match" && G.roundNo > G.players.length ? ROUND_FAST : ROUND_SLOW;
+function timeLeft(now = performance.now()) { return G.len - (now - G.t0) / 1000; }
+// real-clock face: 10 s left = 10 o'clock (second 50), 0 = 12 o'clock. The hand snaps once per second.
+let lastSec = null;
+function setClock(t, instant) {
+  const sec = Math.max(0, Math.ceil(t - 1e-6));
+  if (sec === lastSec && !instant) return; lastSec = sec;
+  const pos = 60 - sec, deg = pos * 6, a = deg * Math.PI / 180;
+  const hg = $("handG"); hg.classList.toggle("nosnap", !!instant); hg.style.transform = `rotate(${deg}deg)`;
+  $("clockNum").textContent = sec;
+}
+
+function tick(now) {
+  if (G.phase === "timer") {
+    const tl = timeLeft(now);
+    setClock(tl);
+    const shown = Math.ceil(tl);
+    if (shown < G.lastTick && shown >= FADE_AT) { SFX.tick(); buzz(8); }
+    G.lastTick = shown;
+    $("clockWrap").classList.toggle("gone", tl <= FADE_AT - .25);
+    G.players.forEach((p, i) => {
+      const plan = botPlans[i]; if (!plan) return;
+      while (plan.done < plan.ev.length && tl <= plan.ev[plan.done].at) {
+        const e = plan.ev[plan.done++];
+        const cur = p.up.filter(Boolean).length;
+        let n = e.final ? Math.max(e.up, G.locked ? cur : 0) : e.up;
+        if (G.locked && n < cur) n = cur;
+        p.up = [n >= 1, n >= 2];
+        if (!G.locked && e.pub) { p.pubUp = n; if (n > cur) SFX.lift(); }
+      }
+    });
+    if (!G.locked && tl <= LOCK_AT) G.locked = true;      // silent
+    if (tl <= 0 && !G.stamped) {                          // stamp exactly at 0 …
+      G.stamped = true; SFX.bell(); buzz([20, 30, 20]);
+      $("stamp").classList.remove("on"); void $("stamp").offsetWidth; $("stamp").classList.add("on");
+    }
+    if (tl <= -GRACE) finalise();                         // … but late lifts within the grace still count
+    G.script?.onTick?.(tl);
+    render();
+  }
+  requestAnimationFrame(tick);
+}
+
+async function finalise() {
+  G.finalised = true; G.phase = "reveal"; const mid = G.mid, gone = () => mid !== G.mid;
+  const g = G.players[G.guesser];
+  const call = g.isHuman ? G.call : G.botCall;
+  for (const p of G.players) if (active(p) && p.isHuman) { const k = activeThumbs(p); p.stats.lift[k][p.up.filter(Boolean).length]++; }
+  const tableThumbs = totalActiveThumbs();
+  render();
+  await wait(350); if (gone()) return;
+  $("card").style.opacity = 0; $("burstNum").textContent = call; $("burst").classList.add("on"); SFX.drop();
+  if (G.players.some(p => !p.isHuman && p.up.filter(Boolean).length > p.pubUp)) { SFX.lift(); buzz(15); }
+  await wait(550); if (gone()) return;
+  const srcs = [];
+  for (const p of G.players) if (active(p)) p.up.forEach((u, k) => { if (u) srcs.push(sourcePoint(p, k)); });
+  const count = $("count"); let n = 0;
+  count.textContent = 0; count.classList.remove("on");
+  const c = centerOf($("burst"));
+  for (const s of srcs) {
+    fly(s, c).then(() => { n++; count.textContent = n; count.classList.add("on"); count.classList.remove("pop"); void count.offsetWidth; count.classList.add("pop"); SFX.note(n); buzz(10); });
+    await wait(210);
+  }
+  await wait(srcs.length ? 520 : 300); if (gone()) return;
+  count.classList.add("on");
+  const hit = n === call;
+  let finisher = null;
+  if (hit) {
+    count.classList.add("match"); $("burstNum").style.opacity = 0;
+    $("flash").className = ""; void $("flash").offsetWidth; $("flash").className = "go";
+    SFX.win(); buzz([30, 40, 60]);
+    g.points++; const k = g.retired.indexOf(false); g.retired[k] = true; g.up[k] = false;
+    plusAt(g, "+1 ★");
+    if (g.points >= 2) { g.finished = ++G.place; finisher = g; }
+  } else {
+    $("flash").className = ""; void $("flash").offsetWidth; $("flash").className = "go bad"; SFX.miss();
+  }
+  if (G.mode === "match") {
+    if (g.isHuman) { MY.guessed++; if (hit) MY.hits++; const c = (MY.calls[tableThumbs] ||= {}); c[call] = (c[call] || 0) + 1; }
+    saveMy();
+  }
+  G.script?.onResult?.(hit, n, call);
+  render();
+  await wait(1500); if (gone()) return;
+  if (finisher && G.mode === "match") await payout(finisher, PAYOUT[G.players.length][finisher.finished - 1]);
+  await wait(300); if (gone()) return;
+  $("burstNum").style.opacity = 1;
+  if (G.script?.hold) return;
+  nextOrEnd();
+}
+function nextOrEnd() {
+  const left = G.players.filter(active);
+  if (human().finished || left.length <= 1) return endMatch();
+  let gi = G.guesser; do { gi = (gi + 1) % G.players.length; } while (!active(G.players[gi]));
+  G.guesser = gi; newRound();
+}
+function sourcePoint(p, k) {
+  if (p.isHuman) { const r = $(k ? "thumbR" : "thumbL").querySelector(".tbody").getBoundingClientRect(); return { x: r.left + r.width * (k ? .62 : .38), y: r.top + r.height * .2 }; }
+  if (p.hands) { const r = p.hands[k].querySelector(".tbody").getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
+  return centerOf(p.el.querySelector(".avatar"), (k ? 14 : -14));
+}
+function centerOf(el, dx = 0) { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2 + dx, y: r.top + r.height / 2 }; }
+function fly(a, b) {
+  const s = stage.getBoundingClientRect();
+  const img = document.createElement("img"); img.className = "flyer"; img.src = THUMB_GIF; img.onerror = () => { img.onerror = null; img.src = THUMB_STATIC; };
+  img.style.left = (a.x - s.left) + "px"; img.style.top = (a.y - s.top) + "px"; stage.appendChild(img);
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const anim = img.animate([
+    { transform: "translate(0,0) scale(.6) rotate(0deg)" },
+    { transform: `translate(${dx * .5}px,${dy * .5 - 70}px) scale(1.5) rotate(${dx > 0 ? 25 : -25}deg)`, offset: .5 },
+    { transform: `translate(${dx}px,${dy}px) scale(.9) rotate(0deg)`, opacity: 1, offset: .9 },
+    { transform: `translate(${dx}px,${dy}px) scale(.3)`, opacity: 0 }], { duration: 560, easing: "cubic-bezier(.4,0,.3,1)" });
+  return anim.finished.then(() => img.remove());
+}
+function plusAt(p, txt) {
+  const s = stage.getBoundingClientRect(), pt = p.isHuman ? { x: s.left + s.width / 2, y: s.top + s.height * .82 } : centerOf(p.el.querySelector(".avatar"));
+  const el = document.createElement("div"); el.className = "plus"; el.textContent = txt;
+  el.style.left = (pt.x - s.left - 30) + "px"; el.style.top = (pt.y - s.top - 50) + "px"; stage.appendChild(el); setTimeout(() => el.remove(), 1300);
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+// ---------- end of match ----------
+async function endMatch() {
+  G.phase = "ending";
+  const rest = G.players.filter(active);
+  const restBots = rest.filter(p => !p.isHuman).sort(() => rng() - .5);
+  const restHuman = rest.filter(p => p.isHuman);
+  const pay = PAYOUT[G.players.length];
+  for (const p of [...restBots, ...restHuman]) { p.finished = ++G.place; render(); await payout(p, pay[p.finished - 1]); }
+  await wait(500);
+  G.phase = "idle"; G.mode = "result";
+  const grades = ["A+", "B", "C", "D"];
+  $("repTable").innerHTML = [...G.players].sort((a, b) => a.finished - b.finished).map(p =>
+    `<tr class="${p.isHuman ? "me" : ""}"><td class="grade">${grades[p.finished - 1]}</td><td>${p.name}</td>
+     <td><span style="display:inline-flex;gap:3px;vertical-align:middle">${p.retired.map(r => PIP(r)).join("")}</span></td><td class="r">+${pay[p.finished - 1]} <span class="coin sm"></span></td></tr>`).join("");
+  const me = human(), ml = me.stats.lift[2], mt = ml.reduce((a, b) => a + b, 0) || 1, fav = ml.indexOf(Math.max(...ml));
+  $("repNote").innerHTML = (me.finished === 1 ? "Excellent reading! " : me.finished === pay.length ? "Pay attention in class. " : "Not bad. ") +
+    `<br>Habit (two thumbs): lifts ${fav} ${Math.round(ml[fav] / mt * 100)}% of the time.`;
+  $("repDate").textContent = new Date().toLocaleDateString("en-GB");
+  MY.matches++; MY.places[me.finished - 1]++; saveMy();
+  if (TAMA) TAMA.addScore("main-jempol", { plays: 1, wins: me.finished === 1 ? 1 : 0 });
+  $("resultScreen").classList.remove("hide");
+  render();
+}
+function saveTokens() { try { if (TAMA) TAMA.setTokens(G.tokens); else localStorage.setItem("mj_tokens", G.tokens); } catch {} }
+
+// ---------- render ----------
+function render() {
+  const h = human(), inGame = G.mode === "match" || G.mode === "tutorial";
+  stage.classList.toggle("mode-off", !inGame);
+  for (const [k, id] of [[0, "thumbL"], [1, "thumbR"]]) {
+    const w = $(id), held = k ? input.R : input.L;
+    const retired = inGame && h?.retired[k];
+    let up;
+    if (!inGame || !h) up = !held; else if (G.phase === "reveal" || G.phase === "timer") up = h.up[k]; else up = !held;
+    w.classList.toggle("up", !!up && !retired); w.classList.toggle("down", !up && !retired);
+    w.classList.toggle("retired", !!retired); w.querySelector(".medal").style.display = retired ? "" : "none";
+  }
+  const mb = $("myBubble"), pub = h && inGame && (G.phase === "timer" || G.phase === "tut") ? h.pubUp : 0;
+  mb.classList.toggle("on", pub > 0);
+  if (pub > 0 && mb.dataset.n != pub) { mb.innerHTML = emojiImg().repeat(pub); mb.dataset.n = pub; }
+  $("holdHint").style.opacity = inGame && G.phase === "wait" && !heldAll() ? 1 : 0;
+  $("holdHint").textContent = h && h.retired.some(Boolean) ? "hold your thumb to start" : "hold both thumbs to start";
+  $("roundChip").textContent = G.mode === "tutorial" ? "PRACTICE" : `ROUND ${G.roundNo}`;
+  $("tokN").textContent = G.tokens;
+  if (inGame && h) {
+    const g = G.players[G.guesser], mine = g === h;
+    const [x, y] = CARD_POS[mine ? "me" : g.seat];
+    const card = $("card");
+    card.style.left = x + "%"; card.style.top = y + "%";
+    card.classList.toggle("bot", !mine);
+    $("cardNum").textContent = mine ? G.call : (G.botCallInfo ? G.botCallInfo.c : "?");
+    $("cardSub").innerHTML = mine ? (G.sealed ? "sealed!" : heldAll() ? "slide ↕" : "")
+      : G.botCallInfo ? `chance: <b>${G.botCallInfo.pct}%</b>` : "";
+    $("cardArrows").style.display = mine && !G.sealed ? "" : "none";
+    card.classList.toggle("sealed", mine && G.sealed);
+    $("clockWrap").classList.toggle("off", G.mode === "tutorial" && G.phase === "tut");
+    $("pool").style.display = G.mode === "match" ? "" : "none";
+  }
+  renderSeats();
+}
+
+// ---------- title ----------
+document.querySelectorAll("#seg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("on", x === b)); G.n = +b.dataset.n;
+});
+$("playBtn").onclick = () => { ac(); if (canAfford()) newMatch(G.n); };
+$("againBtn").onclick = () => { if (canAfford()) newMatch(G.n); else toTitle(); };
+// the table stake needs coins; on PlayTama, more Tama Tokens come from visiting games on the home page
+function canAfford() {
+  if (TAMA) G.tokens = TAMA.tokens();
+  if (G.tokens >= G.stake) { $("brokeNote").innerHTML = ""; return true; }
+  if (!TAMA) { G.tokens = 20; saveTokens(); render(); return true; }   // standalone file: just refill
+  setTimeout(() => { $("brokeNote").innerHTML = `You need ${G.stake} coins to sit at the table.<br><a href="../../">Collect Tama Tokens on PlayTama</a>`; });
+  return false;
+}
+if (TAMA) $("homeLink").style.display = "";
+$("menuBtn").onclick = toTitle;
+$("howBtn").onclick = () => { ac(); startTutorial(); };
+function toTitle() {
+  G.mid = (G.mid || 0) + 1; hideBanner(); $("count").className = ""; $("burst").classList.remove("on"); $("modal").classList.add("hide");
+  if (TAMA) G.tokens = TAMA.tokens();
+  G.mode = "title"; G.phase = "idle"; G.players = []; G.script = null; G.forced = null; coach(""); $("seats").innerHTML = "";
+  $("titleScreen").classList.remove("hide"); $("resultScreen").classList.add("hide"); $("statsScreen").classList.add("hide"); render();
+}
+
+// ---------- leave the table ----------
+// vs bots: leave for free (stake comes back). Online PvP: leaving = forfeit, you take last place and lose the stake.
+const VS_BOTS = true;
+$("exitBtn").onclick = () => {
+  $("modalText").innerHTML = G.mode === "tutorial" ? "Skip the tutorial?"
+    : VS_BOTS ? "It's only bots — your coins come back.<br><small>(Online, leaving = last place.)</small>"
+    : "Leaving now counts as a loss. You finish last and lose your coins.";
+  $("modal").classList.remove("hide");
+};
+$("stayBtn").onclick = () => $("modal").classList.add("hide");
+$("leaveBtn").onclick = () => {
+  if (G.mode === "match" && !human()?.finished) { if (VS_BOTS) { G.tokens += G.stake; saveTokens(); } }
+  toTitle();
+};
+
+// ---------- my stats ----------
+function pieFor(d) { return statsHTML({ isHuman: false, bot: { dist: { 1: d, 2: d } }, retired: [false, d.length === 2] }); }
+$("statsBtn").onclick = () => {
+  const tot = a => a.reduce((x, y) => x + y, 0);
+  const pie = (k) => { const a = MY.lift[k], t = tot(a);
+    return `<figure><div class="stats">${t ? pieFor(a.map(v => v / t)) : '<span style="font-size:18px">no data</span>'}</div>${k} thumb${k > 1 ? "s" : ""} · ${t} rounds</figure>`; };
+  let fav = "–", favN = 0;
+  for (const tbl of Object.values(MY.calls)) for (const [c, n] of Object.entries(tbl)) if (n > favN) { fav = c; favN = n; }
+  $("myStats").innerHTML = `<h2>MY HABITS <span>${new Date().toLocaleDateString("en-GB")}</span></h2>
+    <div class="pies">${pie(2)}${pie(1)}</div>
+    <table>
+      <tr><td>Matches</td><td class="r">${MY.matches}</td></tr>
+      <tr><td>1st places</td><td class="r">${MY.places[0]}</td></tr>
+      <tr><td>Guesses right</td><td class="r">${MY.hits} / ${MY.guessed}${MY.guessed ? ` · ${Math.round(MY.hits / MY.guessed * 100)}%` : ""}</td></tr>
+      <tr><td>Favourite call</td><td class="r">${fav}</td></tr>
+      <tr><td>Coins</td><td class="r">${G.tokens} <span class="coin sm"></span></td></tr>
+    </table>
+    <div class="note">This is what opponents will see about you.</div>`;
+  $("titleScreen").classList.add("hide"); $("statsScreen").classList.remove("hide");
+};
+$("statsBack").onclick = toTitle;
+
+// ---------- tutorial ----------
+function coach(html, top = "28.5%", arrow = null) {
+  const c = $("coach"); c.innerHTML = html; c.style.top = top; c.style.opacity = html ? 1 : 0;
+  const a = $("coachArrow");
+  if (!arrow) { a.setAttribute("width", 0); return; }
+  const [x1, y1, x2, y2] = arrow, s = stage.getBoundingClientRect();
+  const X1 = x1 * s.width, Y1 = y1 * s.height, X2 = x2 * s.width, Y2 = y2 * s.height;
+  a.setAttribute("width", s.width); a.setAttribute("height", s.height); a.style.left = 0; a.style.top = 0;
+  const mx = (X1 + X2) / 2 + (Y2 - Y1) * .2, my = (Y1 + Y2) / 2 - (X2 - X1) * .2;
+  const ang = Math.atan2(Y2 - my, X2 - mx), L = 14;
+  a.innerHTML = `<path d="M${X1} ${Y1} Q${mx} ${my} ${X2} ${Y2}" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 7"/>
+    <path d="M${X2 - L * Math.cos(ang - .5)} ${Y2 - L * Math.sin(ang - .5)} L${X2} ${Y2} L${X2 - L * Math.cos(ang + .5)} ${Y2 - L * Math.sin(ang + .5)}" fill="none" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+const step = (n, t) => `<span class="step">HOW TO PLAY · ${n}/5</span>${t}`;
+function startTutorial() {
+  G.forced = { Ayu: { lifts: 1, bluff: { at: 8.2, n: 1, dur: 1.4, stay: false }, secretAt: 1.2 } };
+  newMatch(2, { tutorial: true, bots: [BOTS[0]] });
+  G.phase = "tut"; let s = 0, okSince = null, calls = 0;
+  const S = [
+    { t: () => step(1, "Hold <mark>both thumbs</mark> down.<br>Mouse: left + right click.<br>Phone: one finger each side."), arrow: [.4, .37, .27, .74],
+      ok: () => input.L && input.R, hold: 500 },
+    { t: () => step(2, "Now <mark>lift one</mark>.<br>Everyone sees it — that's a bluff."), arrow: [.4, .34, .2, .62],
+      ok: () => input.L !== input.R, hold: 700, tutPub: true },
+    { t: () => step(2, "Put it back down.<br>Until the last 2 seconds you can <mark>change your mind</mark>."),
+      ok: () => input.L && input.R, hold: 400 },
+    { t: () => step(3, "This is <mark>your number</mark>.<br>Keep both held and slide ↕"), arrow: [.5, .37, .5, .6],
+      ok: () => calls >= 2 && input.L && input.R, hold: 600 },
+  ];
+  G.script = { onCall: () => calls++ };
+  const tut = () => {
+    if (G.mode !== "tutorial" || G.phase !== "tut") return;
+    const h = human(); h.up = [!input.L, !input.R];
+    h.pubUp = S[s]?.tutPub ? h.up.filter(Boolean).length : 0;
+    const st = S[s];
+    coach(st.t(), "28.5%", st.arrow);
+    if (st.ok()) { okSince ??= performance.now(); if (performance.now() - okSince > st.hold) { s++; okSince = null; if (s >= S.length) return practice(); } }
+    else okSince = null;
+    render(); $("holdHint").style.opacity = 0;
+    requestAnimationFrame(tut);
+  };
+  requestAnimationFrame(tut);
+  function practice() {
+    G.players[0].pubUp = 0; G.roundNo = 0; G.call = 0;
+    G.script = {
+      hold: true,
+      onTick: tl => {
+        if (tl > 6.9) coach("Guess the <mark>total</mark>. Ayu mostly lifts 1…", "33.5%");
+        else if (tl > 5.2) coach("Ayu flashed a thumb! <mark>Bluff?</mark>", "33.5%");
+        else if (tl > 0) coach("Clock's gone. <mark>Count in your head</mark>…", "33.5%");
+        else coach("");
+      },
+      onResult: (hit, n, call) => {
+        if (hit) {
+          coach(step(5, `<mark>You read it!</mark> ${n} up, you said ${call}.<br>Your thumb retires with a star.<br>Two stars = you win.`), "67%");
+          setTimeout(() => { coach(""); endTutorial(); }, 2600);
+        } else {
+          coach(step(4, `Total was ${n}, you said ${call}.<br>Anything up in the last 2 seconds counts.<br><mark>Try again</mark>.`), "67%");
+          setTimeout(() => { const h = human(); h.points = 0; h.retired = [false, false]; G.roundNo = 0; newRound(); }, 2600);
+        }
+      },
+    };
+    coach(step(4, "Practice duel vs Ayu.<br><mark>Hold both</mark> to start."), "28.5%");
+    newRound();
+  }
+}
+function endTutorial() { toTitle(); }
+
+// ---------- automation hooks (screenshots) ----------
+window.J = {
+  match: n => newMatch(n), tutorial: startTutorial, title: toTitle,
+  force: f => { G.forced = f; }, state: () => ({ mode: G.mode, phase: G.phase, call: G.call, locked: G.locked, guesser: G.guesser, pool: G.pool, tokens: G.tokens,
+    players: G.players.map(p => ({ n: p.name, up: p.up, pub: p.pubUp, pts: p.points })) }),
+  setCall: n => { G.call = n; render(); }, tl: () => timeLeft(),
+  fast: () => { G.roundNo = G.players.length; newRound(); },
+  retireMine: k => { human().retired[k] = true; human().points = 1; render(); },
+};
+
+render();
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

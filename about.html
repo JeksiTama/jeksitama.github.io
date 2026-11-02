@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About PlayTama</title>
+<meta name="description" content="What PlayTama is, and how Tama Tokens and the Tama Pass work.">
+<meta name="theme-color" content="#73d049">
+<link rel="icon" href="assets/img/egg.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="./" aria-label="PlayTama home"><span data-brand-egg></span><span class="brand-name">Play<span>Tama</span></span></a>
+  <nav>
+    <a href="about.html" aria-current="page">About</a>
+    <button class="tok-btn" id="tokBtn" type="button" aria-haspopup="dialog">Tama Tokens</button>
+  </nav>
+</header>
+
+<main class="page">
+  <h1>About PlayTama</h1>
+  <p class="lead">PlayTama makes small games you play together as a family. Each one hides a bit of maths or logic inside something that's simply fun, and the rules are the same for everyone, so kids have a real shot at beating their parents.</p>
+  <div class="cards">
+    <div class="card"><span data-emo="1f9e0,🧠"></span><b>Learn by playing</b><p>The learning is the move that wins.</p></div>
+    <div class="card"><span data-emo="1f389,🎉"></span><b>Play together</b><p>Made for the sofa, the dinner table and long car rides.</p></div>
+    <div class="card"><span data-emo="1f3c6,🏆"></span><b>Kids can win</b><p>Quick thinking beats a big vocabulary.</p></div>
+  </div>
+
+  <h2 id="tokens"><span data-emo="1fa99,🪙"></span>Tama Tokens</h2>
+  <p>Tama Tokens are PlayTama's coins, shared by every game on this site.</p>
+  <ul class="steps">
+    <li>You start with <b>20</b>.</li>
+    <li>Open a game from the <a href="./">games page</a> to get <b>+1</b>. Each game gives one a day.</li>
+    <li>In Main Jempol, every match costs 2 tokens to join, and the winners take the pot.</li>
+  </ul>
+
+  <h2 id="pass"><span data-emo="1f512,🔒"></span>Tama Pass</h2>
+  <p>Your tokens and scores are saved in this browser. The Tama Pass is a short code that holds them, a bit like a cheat code from old consoles.</p>
+  <ul class="steps">
+    <li>Tap your token count at the top of any page to see your code.</li>
+    <li>Write it down to keep your progress safe.</li>
+    <li>On a new phone or computer, enter the code in the same place to pick up where you left off.</li>
+  </ul>
+  <p><button class="btn" type="button" data-open-pass>Open my Tama Pass</button></p>
+</main>
+
+<footer class="foot" id="foot"></footer>
+
+<script src="assets/js/tama.js"></script>
+<script src="assets/js/games.js"></script>
+<script src="assets/js/icons.js"></script>
+<script src="assets/js/site.js"></script>
+<script>document.querySelectorAll("[data-emo]").forEach(s => { const [c, ch] = s.dataset.emo.split(","); s.outerHTML = PT.emo(c, ch); });</script>
+</body>
+</html>
