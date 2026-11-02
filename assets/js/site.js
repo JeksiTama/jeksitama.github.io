@@ -5,53 +5,144 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   // ---------- animated emoji (Google Noto, CC BY 4.0) ----------
-  // Falls back to the plain emoji character if the image can't load.
-  const emo = (code, char, cls = "emo") =>
-    `<img class="${cls}" src="https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.webp" alt="${char}" draggable="false" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:this.className+' txt',textContent:this.alt}))">`;
-  const COIN = cls => emo("1fa99", "🪙", "emo coin" + (cls ? " " + cls : ""));
+  // Each emoji is a Lottie animation that sits still, plays once now and then (each on its own random
+  // timer, so they never all move together), and plays when its tile or button is hovered.
+  // mode "auto" = now and then + hover, "hover" = only on hover. Shows the plain character until it loads.
+  const LOTTIE_JS = "https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie_svg.min.js";
+  const emo = (code, char, cls = "emo", mode = "auto") =>
+    `<span class="${cls}" data-lottie="${code}" data-mode="${mode}" role="img" aria-label="${char}"><span class="ch" aria-hidden="true">${char}</span></span>`;
+  const COIN = (cls, mode = "hover") => emo("1fa99", "🪙", "emo coin" + (cls ? " " + cls : ""), mode);
+
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  let lottieLib;
+  const getLottie = () => lottieLib ||= new Promise((ok, fail) => {
+    const s = document.createElement("script"); s.src = LOTTIE_JS; s.onload = () => ok(window.lottie); s.onerror = fail;
+    document.head.appendChild(s);
+  });
+  function hydrate(el) {
+    if (el.dataset.ready) return;
+    el.dataset.ready = "1";
+    getLottie().then(lottie => {
+      const anim = lottie.loadAnimation({ container: el, renderer: "svg", loop: false, autoplay: false,
+        path: `https://fonts.gstatic.com/s/e/notoemoji/latest/${el.dataset.lottie}/lottie.json` });
+      anim.addEventListener("DOMLoaded", () => { el.classList.add("live"); anim.goToAndStop(0, true); });
+      const play = () => { if (anim.isPaused) anim.goToAndPlay(0, true); };
+      anim.addEventListener("complete", () => {
+        anim.goToAndStop(0, true);
+        if (el.dataset.mode === "auto" && !still) setTimeout(play, rand(9000, 20000));
+      });
+      if (el.dataset.mode === "auto" && !still) setTimeout(play, rand(800, 7000));
+      const host = el.closest("a, button, .card, .tile, .cta") || el;
+      host.addEventListener("mouseenter", play);
+    }).catch(() => {});
+  }
+  const hydrateAll = (root = document) => root.querySelectorAll("[data-lottie]").forEach(hydrate);
+  new MutationObserver(() => hydrateAll()).observe(document.documentElement, { childList: true, subtree: true });
 
   // ---------- the egg ----------
-  // An egg covered in maths symbols. Add the class "open" to crack it: the top lifts, eyes peek out, feet pop out.
+  // An egg covered in maths symbols. Add the class "open" and it cracks, stands up on its feet and peeks out.
+  // Everything is drawn from the settings in EGG (units are the SVG's own, the shell is 96 wide).
+  // How it moves (how high it rises, how far the top lifts, speed) is in site.css under "the egg".
   const PAL = { red: "#fe6767", green: "#73d049", blue: "#68c1ff", pink: "#fe94de", orange: "#fea046", purple: "#aa88ff", yellow: "#ffdb33" };
-  const SHAPES = {
-    plus:   `<rect x="-7" y="-2.3" width="14" height="4.6" rx="1.6"/><rect x="-2.3" y="-7" width="4.6" height="14" rx="1.6"/>`,
-    minus:  `<rect x="-7" y="-2.3" width="14" height="4.6" rx="1.6"/>`,
-    times:  `<g transform="rotate(45)"><rect x="-7" y="-2.3" width="14" height="4.6" rx="1.6"/><rect x="-2.3" y="-7" width="4.6" height="14" rx="1.6"/></g>`,
-    divide: `<rect x="-7" y="-2" width="14" height="4" rx="1.6"/><circle cy="-6" r="2.5"/><circle cy="6" r="2.5"/>`,
-    equals: `<rect x="-7" y="-5" width="14" height="4" rx="1.6"/><rect x="-7" y="1" width="14" height="4" rx="1.6"/>`,
+  const EGG = {
+    width: 96, height: 126,
+    bulge: 1.35,          // 1 = plain oval; higher puts the widest part lower, like a real egg
+    shell: "#fffaf0", ink: "#2b2b2b", outline: 4,
+    room: { top: 28, side: 12, bottom: 11 },   // empty space around the shell so the lid and feet have room to move
+    crack: { at: .44, depth: 7, color: "#9a9a9a", width: 2.2 },   // at = how far down the shell (0 top, 1 bottom)
+    eyes: { gap: 28, w: 4.5, h: 6, color: "#fff" },               // gap = distance between the two eyes
+    feet: { spread: 19, size: 9, color: PAL.green },               // spread = distance of each foot from the middle
+    symbols: { size: 14, gap: 24, rows: 6, edge: .8, tilt: 6 },   // gap = space between symbols; edge = how close to the rim (0–1)
   };
-  const sym = ([x, y, r, s, c]) => `<g transform="translate(${x} ${y}) rotate(${r})" fill="${PAL[c]}" stroke="#2b2b2b" stroke-width="1.3" stroke-linejoin="round">${SHAPES[s]}</g>`;
-  const LID_SYMS = [[60, 22, 0, "plus", "red"], [40, 38, -15, "times", "blue"], [80, 38, 12, "divide", "purple"], [26, 56, 0, "minus", "orange"], [94, 56, -8, "equals", "green"], [61, 50, 8, "minus", "pink"]];
-  const BASE_SYMS = [[34, 84, -10, "divide", "pink"], [60, 98, 0, "plus", "yellow"], [86, 84, 15, "times", "red"], [44, 120, 0, "minus", "blue"], [77, 120, -10, "plus", "purple"], [22, 104, 0, "equals", "green"], [98, 104, 20, "times", "orange"]];
-  const EGG = "M60 8C92 8 108 58 108 86C108 116 86 134 60 134C34 134 12 116 12 86C12 58 28 8 60 8Z";
-  const ZIG = "12,66 24,58 36,68 48,57 60,68 72,57 84,68 96,58 108,66";
+  // one colour per symbol, everywhere; ORDER is how they repeat along a row
+  const SYM_COLOR = { plus: PAL.red, divide: PAL.yellow, times: PAL.blue, minus: PAL.purple, equals: PAL.green };
+  const ORDER = ["plus", "minus", "times", "equals", "divide"];
+  const SHAPES = (s => {          // drawn at size s, centred on 0,0
+    const h = s / 2, t = s * .33, r = s * .11;
+    const bar = (y, th = t) => `<rect x="${-h}" y="${y - th / 2}" width="${s}" height="${th}" rx="${r}"/>`;
+    const cross = `${bar(0)}<rect x="${-t / 2}" y="${-h}" width="${t}" height="${s}" rx="${r}"/>`;
+    return {
+      plus: cross,
+      minus: bar(0),
+      times: `<g transform="rotate(45)">${cross}</g>`,
+      divide: `${bar(0, t * .85)}<circle cy="${-s * .43}" r="${s * .18}"/><circle cy="${s * .43}" r="${s * .18}"/>`,
+      equals: `${bar(-s * .21, t * .85)}${bar(s * .21, t * .85)}`,
+    };
+  })(EGG.symbols.size);
+
+  // the shell's outline: half-width at a given height (0 at the top)
+  const halfWidth = y => {
+    const u = Math.min(1, Math.max(0, y / EGG.height)) ** EGG.bulge;
+    return EGG.width * Math.sqrt(u * (1 - u));
+  };
+  const n2 = v => Math.round(v * 100) / 100;
+  const SHELL = (() => {
+    const N = 64, right = [], left = [];
+    for (let k = 0; k <= N; k++) {
+      const y = EGG.height * (1 - Math.cos(Math.PI * k / N)) / 2;   // more points near the ends, where it curves most
+      right.push(`${n2(halfWidth(y))},${n2(y)}`); left.unshift(`${n2(-halfWidth(y))},${n2(y)}`);
+    }
+    return `M${right.join(" L")} L${left.join(" L")}Z`;
+  })();
+  // the lowest point the shell covers at a given x (so the feet can hide above it)
+  const shellBottomAt = x => { let y = EGG.height; while (y > 0 && halfWidth(y) < Math.abs(x)) y -= .5; return y; };
+
+  // the crack: a zigzag whose two deepest dips sit right under the eyes
+  const CRACK = (() => {
+    const { at, depth } = EGG.crack, y = EGG.height * at, w = halfWidth(y), e = EGG.eyes.gap / 2;
+    const shape = [[-w, 0], [-.75 * w, -1], [-.54 * w, -.15], [-e, 1], [0, -.55], [e, 1], [.54 * w, -.15], [.75 * w, -1], [w, 0]];
+    return { y, points: shape.map(([x, d]) => [n2(x), n2(y + d * depth)]) };
+  })();
+
+  // symbols in evenly spaced rows, as many per row as fit inside the rim
+  const SYMS = (() => {
+    const { size, gap, rows, edge, tilt } = EGG.symbols, out = [];
+    const first = size, last = EGG.height - size * .9;
+    for (let i = 0; i < rows; i++) {
+      const y = first + (last - first) * i / (rows - 1);
+      const room = Math.max(halfWidth(y - size / 2), 0) * edge - size / 2;   // use the narrower top edge of the symbol
+      const n = Math.max(1, Math.floor(2 * room / gap) + 1);
+      for (let j = 0; j < n; j++) {
+        const k = out.length, wobble = Math.sin(k * 12.9898) * tilt;     // small, steady tilt per symbol
+        out.push([n2((j - (n - 1) / 2) * gap), n2(y), n2(wobble), ORDER[k % ORDER.length]]);
+      }
+    }
+    return out;
+  })();
+  const sym = ([x, y, r, s]) => `<g transform="translate(${x} ${y}) rotate(${r})" fill="${SYM_COLOR[s]}">${SHAPES[s]}</g>`;
+
   let eggN = 0;
   function egg(cls = "") {
-    const id = "egg" + ++eggN;
-    const foot = x => `<g class="foot"><ellipse cx="${x}" cy="134" rx="15" ry="9"/><circle cx="${x - 9}" cy="140" r="4.5"/><circle cx="${x}" cy="142" r="4.5"/><circle cx="${x + 9}" cy="140" r="4.5"/></g>`;
-    return `<svg class="egg ${cls}" viewBox="0 -26 120 176" aria-hidden="true">
+    const id = "egg" + ++eggN, { width: W, height: H, room, crack, eyes, feet } = EGG;
+    const far = W;   // clip shapes reach well past the shell
+    const zig = CRACK.points.map(p => p.join(",")).join(" ");
+    const zigBack = CRACK.points.slice().reverse().map(p => p.join(",")).join(" ");
+    const viewBox = [-W / 2 - room.side, -room.top, W + 2 * room.side, H + room.top + room.bottom].join(" ");
+    // feet sit just above the shell's lowest edge so they're hidden until the egg stands up
+    const fs = feet.size, toeR = fs * .33, toeY = shellBottomAt(feet.spread + fs * .55 + toeR) - toeR - EGG.outline;
+    const foot = x => `<ellipse cx="${x}" cy="${n2(toeY - fs * .45)}" rx="${fs}" ry="${n2(fs * .66)}"/>` +
+      `<circle cx="${n2(x - fs * .55)}" cy="${n2(toeY)}" r="${n2(toeR)}"/><circle cx="${n2(x + fs * .55)}" cy="${n2(toeY)}" r="${n2(toeR)}"/>`;
+    const eyeY = n2(CRACK.y + crack.depth - eyes.h - 1);
+    // the top hinges on the right end of the crack (as a % of the shell's box)
+    const hinge = `${n2((halfWidth(CRACK.y) + W / 2) / W * 100)}% ${n2(CRACK.y / H * 100)}%`;
+    const crackLine = `<polyline class="crack" points="${zig}" fill="none" stroke="${crack.color}" stroke-width="${crack.width}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const shell = `<path d="${SHELL}" fill="${EGG.shell}"/>${SYMS.map(sym).join("")}<path d="${SHELL}" fill="none" stroke="${EGG.ink}" stroke-width="${EGG.outline}"/>${crackLine}`;
+    return `<svg class="egg ${cls}" viewBox="${viewBox}" aria-hidden="true">
       <defs>
-        <clipPath id="${id}t"><polygon points="-5,-40 125,-40 125,66 ${ZIG.split(" ").reverse().join(" ")} -5,66"/></clipPath>
-        <clipPath id="${id}b"><polygon points="-5,66 ${ZIG} 125,66 125,160 -5,160"/></clipPath>
-        <clipPath id="${id}i"><path d="${EGG}"/></clipPath>
+        <clipPath id="${id}t"><polygon points="${-far},${-far} ${far},${-far} ${far},${CRACK.y} ${zigBack} ${-far},${CRACK.y}"/></clipPath>
+        <clipPath id="${id}b"><polygon points="${-far},${CRACK.y} ${zig} ${far},${CRACK.y} ${far},${H + far} ${-far},${H + far}"/></clipPath>
+        <clipPath id="${id}i"><path d="${SHELL}"/></clipPath>
       </defs>
-      <g class="feet" fill="${PAL.green}" stroke="#2b2b2b" stroke-width="3.5">${foot(40)}${foot(80)}</g>
-      <g class="inside" clip-path="url(#${id}i)">
-        <rect x="0" y="16" width="120" height="56" fill="#2b2b2b"/>
-        <g class="eyes"><ellipse cx="47" cy="48" rx="6" ry="7" fill="#fff"/><ellipse cx="73" cy="48" rx="6" ry="7" fill="#fff"/>
-          <circle cx="48.5" cy="49.5" r="3.2" fill="#2b2b2b"/><circle cx="74.5" cy="49.5" r="3.2" fill="#2b2b2b"/>
-          <circle cx="46.5" cy="46.5" r="1.4" fill="#fff"/><circle cx="72.5" cy="46.5" r="1.4" fill="#fff"/></g>
+      <g class="feet" fill="${feet.color}">${foot(-feet.spread)}${foot(feet.spread)}</g>
+      <g class="body">
+        <g class="inside" clip-path="url(#${id}i)">
+          <rect x="${-far}" y="0" width="${2 * far}" height="${n2(CRACK.y + crack.depth + 1)}" fill="${EGG.ink}"/>
+          <g class="eyes" fill="${eyes.color}"><ellipse cx="${-eyes.gap / 2}" cy="${eyeY}" rx="${eyes.w}" ry="${eyes.h}"/><ellipse cx="${eyes.gap / 2}" cy="${eyeY}" rx="${eyes.w}" ry="${eyes.h}"/></g>
+        </g>
+        <g class="base" clip-path="url(#${id}b)">${shell}</g>
+        <g class="lid" style="transform-origin:${hinge}"><g clip-path="url(#${id}t)">${shell}</g></g>
       </g>
-      <g class="base" clip-path="url(#${id}b)">
-        <path d="${EGG}" fill="#fffaf0"/>${BASE_SYMS.map(sym).join("")}
-        <path d="${EGG}" fill="none" stroke="#2b2b2b" stroke-width="4"/>
-        <polyline class="crack" points="${ZIG}" pathLength="1" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/>
-      </g>
-      <g class="lid"><g clip-path="url(#${id}t)">
-        <path d="${EGG}" fill="#fffaf0"/>${LID_SYMS.map(sym).join("")}
-        <path d="${EGG}" fill="none" stroke="#2b2b2b" stroke-width="4"/>
-        <polyline class="crack" points="${ZIG}" pathLength="1" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/>
-      </g></g>
     </svg>`;
   }
 

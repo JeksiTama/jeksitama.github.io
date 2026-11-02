@@ -54,22 +54,37 @@ button { font: inherit; color: inherit; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 
-.emo { width: 1.3em; height: 1.3em; vertical-align: -.28em; object-fit: contain; }
-.emo.txt { display: inline-block; width: auto; height: auto; vertical-align: baseline; }
+/* animated emoji: a Lottie player, showing the plain character until it loads */
+.emo { display: inline-block; position: relative; width: 1.3em; height: 1.3em; vertical-align: -.28em; line-height: 1; container-type: size; }
+.emo .ch { position: absolute; inset: 0; display: grid; place-items: center; font-size: 78cqh; }
+.emo.live .ch { display: none; }
+.emo svg { display: block; }
 
-/* ---------- the egg ---------- */
-.egg { overflow: visible; }
-.egg .lid { transform-box: fill-box; transform-origin: 96% 46%;   /* hinge on the right end of the crack */ transition: transform .4s cubic-bezier(.4, 0, .6, 1); }
-.egg .feet { transform: translateY(-17px); transition: transform .3s ease-in; }
-.egg .inside { opacity: 0; transition: opacity .1s .4s; }
-.egg .crack { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .25s .45s; }
+/* ---------- the egg ----------
+   Shape and colours are set in site.js (EGG). These are the moves.
+   Opening: everything starts at once. The crack appears, the egg stands up on its feet and the top lifts so it can peek.
+   Closing: it sits back down, and the crack disappears once it has landed. */
+.egg {
+  --rise: 12px;       /* how high the egg stands up */
+  --step: 6px;        /* how far the feet drop */
+  --lift: 10px;       /* how far the top lifts */
+  --tilt: 4deg;       /* how much the top tips back */
+  --open: .3s;        /* opening speed */
+  --close: .2s;       /* closing speed */
+  --spring: cubic-bezier(.3, 1.6, .5, 1);   /* overshoots a little, then settles */
+  overflow: visible;
+}
+.egg .crack, .egg .inside { opacity: 0; transition: opacity 0s var(--close); }
+.egg .body, .egg .feet, .egg .lid { transition: transform var(--close) ease-in; }
+.egg .lid { transform-box: fill-box; }   /* transform-origin (the hinge) is set by site.js */
 .egg .eyes { transform-box: fill-box; transform-origin: center; }
-.egg.open .crack, .brand:hover .egg .crack { stroke-dashoffset: 0; transition-delay: 0s; }
-.egg.open .inside, .brand:hover .egg .inside { opacity: 1; transition-delay: .25s; }
-.egg.open .lid, .brand:hover .egg .lid { transform: translate(-4px, -30px) rotate(14deg); transition: transform .5s .25s cubic-bezier(.3, 1.7, .5, 1); }
-.egg.open .feet, .brand:hover .egg .feet { transform: none; transition: transform .45s .3s cubic-bezier(.3, 1.8, .5, 1); }
-.egg.open .eyes { animation: blink 3.2s 1.2s infinite; }
-@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+.egg.open :is(.crack, .inside), .brand:hover .egg :is(.crack, .inside) { opacity: 1; transition-delay: 0s; }
+.egg.open :is(.body, .feet, .lid), .brand:hover .egg :is(.body, .feet, .lid) { transition: transform var(--open) var(--spring); }
+.egg.open .body, .brand:hover .egg .body { transform: translateY(calc(-1 * var(--rise))); }
+.egg.open .feet, .brand:hover .egg .feet { transform: translateY(var(--step)); }
+.egg.open .lid, .brand:hover .egg .lid { transform: translateY(calc(-1 * var(--lift))) rotate(var(--tilt)); }
+.egg.open .eyes { animation: blink 2.6s 1.1s infinite; }
+@keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
 
 /* ---------- header ---------- */
 .top {
@@ -77,7 +92,7 @@ button { font: inherit; color: inherit; }
   max-width: 1120px; margin: 0 auto; padding: 14px 16px 0;
 }
 .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-.brand-egg { width: 44px; height: 64px; }
+.brand-egg { width: 44px; height: 60px; }
 .brand-name { font: 30px/1 var(--display); letter-spacing: .5px; }
 .brand-name span { color: var(--green); }
 .top nav { display: flex; align-items: center; gap: 14px; }
@@ -93,7 +108,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- hero ---------- */
 .hero { text-align: center; padding: 10px 16px 28px; }
-.hero-egg { width: 120px; height: 176px; cursor: pointer; display: block; margin: 0 auto -6px; }
+.hero-egg { width: clamp(100px, 14vw, 150px); height: auto; aspect-ratio: 120 / 165; cursor: pointer; display: block; margin: 0 auto -6px; }
 .hero h1 { font: clamp(30px, 6vw, 52px)/1.05 var(--display); margin: 0 0 8px; }
 .hero p { margin: 0; color: var(--ink-soft); font-size: clamp(16px, 2.4vw, 20px); font-weight: 700; }
 
@@ -110,12 +125,12 @@ button { font: inherit; color: inherit; }
 a.tile:hover { transform: translateY(-4px) rotate(-.4deg); box-shadow: 0 9px 0 var(--line); }
 a.tile:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--line); }
 .art {
-  aspect-ratio: 16 / 9; background: var(--c, var(--green)); border-bottom: 3px solid var(--line);
+  aspect-ratio: 16 / 9; border-bottom: 3px solid var(--line);
+  background-color: color-mix(in srgb, var(--c, var(--green)) 84%, #000);   /* a shade darker so the emoji stands out */
   display: grid; place-items: center; overflow: hidden;
   background-image: radial-gradient(rgba(255, 255, 255, .28) 2px, transparent 2.2px); background-size: 18px 18px;
 }
-.art .emo { width: 46%; height: auto; aspect-ratio: 1; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .18)); transition: transform .25s; }
-.art .emo.txt { font-size: 86px; line-height: 1; }
+.art .emo { width: 46%; height: auto; aspect-ratio: 1; font-size: 80px; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .18)); transition: transform .25s; }
 a.tile:hover .art .emo { transform: scale(1.08) rotate(-4deg); }
 .art img:not(.emo) { width: 100%; height: 100%; object-fit: cover; }
 .tile .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
@@ -140,7 +155,7 @@ a.tile:hover .art .emo { transform: scale(1.08) rotate(-4deg); }
   background: var(--yellow); border: 2.5px solid var(--line); border-radius: 6px; font: 14px/1 var(--display); padding: 6px 10px;
 }
 .tile.next { border-style: dashed; box-shadow: none; background: transparent; }
-.tile.next .art { background: transparent; border-bottom-style: dashed; }
+.tile.next .art { --c: var(--purple); border-bottom-style: dashed; }
 
 /* ---------- call to action ---------- */
 .cta {
@@ -232,7 +247,7 @@ input {
 
 @media (max-width: 520px) {
   .brand-name { font-size: 24px; }
-  .brand-egg { width: 34px; height: 50px; }
+  .brand-egg { width: 34px; height: 47px; }
   .top nav { gap: 10px; }
   .socials { gap: 7px; }
   .social { width: 40px; height: 40px; }

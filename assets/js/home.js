@@ -3,18 +3,20 @@
   "use strict";
   const { emo, COIN, egg, toast, esc } = window.PT;
 
-  // ---------- hero egg: peeks out every few seconds, or when poked ----------
+  // ---------- hero egg: peeks out now and then (12–20 s apart), or when poked ----------
   const hero = document.getElementById("heroEgg");
   hero.innerHTML = egg("hero-egg");
   const eggEl = hero.firstElementChild;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let closeT;
-  function peek(ms = 3200) {
+  function peek(ms = 2600) {
     eggEl.classList.add("open"); clearTimeout(closeT);
     closeT = setTimeout(() => eggEl.classList.remove("open"), ms);
   }
   hero.addEventListener("click", () => eggEl.classList.contains("open") ? (clearTimeout(closeT), eggEl.classList.remove("open")) : peek());
-  if (!still) { setTimeout(() => peek(), 900); setInterval(() => peek(), 9000); }
+  hero.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") peek(); });   // taps already count as clicks
+  function idle(first) { setTimeout(() => { peek(); idle(); }, first ? 1800 : 12000 + Math.random() * 8000); }
+  if (!still) idle(true);
 
   // ---------- grid ----------
   const WHERE = { here: "Play here ▸", itch: "Play on itch.io ↗", steam: "On Steam ↗", download: "Download ↓" };
