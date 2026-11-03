@@ -47,13 +47,15 @@
   const PAL = { red: "#fe6767", green: "#73d049", blue: "#68c1ff", pink: "#fe94de", orange: "#fea046", purple: "#aa88ff", yellow: "#ffdb33" };
   const EGG = {
     width: 96, height: 126,
-    bulge: 1.35,          // 1 = plain oval; higher puts the widest part lower, like a real egg
+    bulge: .14,           // 0 = plain oval; higher puts the widest part lower, like a real egg
+    ends: .5,             // .5 = round ends; higher = pointier, lower = blunter
     shell: "#fffaf0", ink: "#2b2b2b", outline: 4,
+    insideLine: { color: "#fff", width: 2.4 },   // thin edge round the dark inside so it shows on a dark page (half is hidden)
     room: { top: 28, side: 12, bottom: 11 },   // empty space around the shell so the lid and feet have room to move
     crack: { at: .44, depth: 7, color: "#9a9a9a", width: 2.2 },   // at = how far down the shell (0 top, 1 bottom)
-    eyes: { gap: 28, w: 4.5, h: 6, color: "#fff" },               // gap = distance between the two eyes
-    feet: { spread: 19, size: 9, color: PAL.green },               // spread = distance of each foot from the middle
-    symbols: { size: 14, gap: 24, rows: 6, edge: .8, tilt: 6 },   // gap = space between symbols; edge = how close to the rim (0–1)
+    eyes: { gap: 26, w: 3.7, h: 4.1, color: "#fff", raise: 2.5 },  // gap = distance between the two eyes; raise = how far above the crack's dips
+    feet: { spread: 25, size: 9, color: PAL.green },               // spread = distance of each foot from the middle
+    symbols: { size: 18, count: 9, minGap: 26, edge: .78, tilt: 6 },   // minGap = closest two symbols may be (centre to centre); edge = how far out they go (1 = centred on the rim)
   };
   // one colour per symbol, everywhere; ORDER is how they repeat along a row
   const SYM_COLOR = { plus: PAL.red, divide: PAL.yellow, times: PAL.blue, minus: PAL.purple, equals: PAL.green };
@@ -71,11 +73,10 @@
     };
   })(EGG.symbols.size);
 
-  // the shell's outline: half-width at a given height (0 at the top)
-  const halfWidth = y => {
-    const u = Math.min(1, Math.max(0, y / EGG.height)) ** EGG.bulge;
-    return EGG.width * Math.sqrt(u * (1 - u));
-  };
+  // the shell's outline: half-width at a given height (0 at the top), widest point exactly width / 2
+  const eggCurve = t => (1 - t * t) ** EGG.ends * (1 + EGG.bulge * t);   // t runs -1 (top) to 1 (bottom)
+  const PEAK = (() => { let m = 0; for (let t = -1; t <= 1; t += .001) m = Math.max(m, eggCurve(t)); return m; })();
+  const halfWidth = y => eggCurve(Math.min(1, Math.max(-1, 2 * y / EGG.height - 1))) / PEAK * EGG.width / 2;
   const n2 = v => Math.round(v * 100) / 100;
   const SHELL = (() => {
     const N = 64, right = [], left = [];
@@ -95,20 +96,25 @@
     return { y, points: shape.map(([x, d]) => [n2(x), n2(y + d * depth)]) };
   })();
 
-  // symbols in evenly spaced rows, as many per row as fit inside the rim
+  // symbols scattered evenly: each one goes to the free spot farthest from all the others (so the first ones land
+  // on the rim and the rest fill in), never closer than minGap and never across the crack. Read top to bottom for colours.
   const SYMS = (() => {
-    const { size, gap, rows, edge, tilt } = EGG.symbols, out = [];
-    const first = size, last = EGG.height - size * .9;
-    for (let i = 0; i < rows; i++) {
-      const y = first + (last - first) * i / (rows - 1);
-      const room = Math.max(halfWidth(y - size / 2), 0) * edge - size / 2;   // use the narrower top edge of the symbol
-      const n = Math.max(1, Math.floor(2 * room / gap) + 1);
-      for (let j = 0; j < n; j++) {
-        const k = out.length, wobble = Math.sin(k * 12.9898) * tilt;     // small, steady tilt per symbol
-        out.push([n2((j - (n - 1) / 2) * gap), n2(y), n2(wobble), ORDER[k % ORDER.length]]);
-      }
+    const { size, count, minGap, edge, tilt } = EGG.symbols, h = size / 2, pad = 1.5, spots = [], picked = [];
+    for (let y = h; y <= EGG.height - h; y += 2) {
+      if (Math.abs(y - CRACK.y) < EGG.crack.depth + h + pad) continue;   // keep clear of the crack
+      const room = Math.min(halfWidth(y - h / 2), halfWidth(y + h / 2)) * edge;   // narrower side, so the ends of the egg don't swallow them
+      for (let x = -room; x <= room + .01; x += 2) spots.push([x, y]);
     }
-    return out;
+    const dist = p => Math.min(...picked.map(q => Math.hypot(p[0] - q[0], p[1] - q[1])));
+    picked.push(spots.reduce((a, b) => b[1] < a[1] ? b : a));          // start at the top
+    while (picked.length < count) {
+      let best = null, far = minGap;
+      for (const p of spots) { const d = dist(p); if (d >= far) { far = d; best = p; } }
+      if (!best) break;                                                   // no room left at minGap
+      picked.push(best);
+    }
+    picked.sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+    return picked.map(([x, y], k) => [n2(x), n2(y), n2(Math.sin(k * 12.9898) * tilt), ORDER[k % ORDER.length]]);   // small, steady tilt per symbol
   })();
   const sym = ([x, y, r, s]) => `<g transform="translate(${x} ${y}) rotate(${r})" fill="${SYM_COLOR[s]}">${SHAPES[s]}</g>`;
 
@@ -123,11 +129,11 @@
     const fs = feet.size, toeR = fs * .33, toeY = shellBottomAt(feet.spread + fs * .55 + toeR) - toeR - EGG.outline;
     const foot = x => `<ellipse cx="${x}" cy="${n2(toeY - fs * .45)}" rx="${fs}" ry="${n2(fs * .66)}"/>` +
       `<circle cx="${n2(x - fs * .55)}" cy="${n2(toeY)}" r="${n2(toeR)}"/><circle cx="${n2(x + fs * .55)}" cy="${n2(toeY)}" r="${n2(toeR)}"/>`;
-    const eyeY = n2(CRACK.y + crack.depth - eyes.h - 1);
+    const eyeY = n2(CRACK.y + crack.depth - eyes.h - 1 - eyes.raise);
     // the top hinges on the right end of the crack (as a % of the shell's box)
     const hinge = `${n2((halfWidth(CRACK.y) + W / 2) / W * 100)}% ${n2(CRACK.y / H * 100)}%`;
     const crackLine = `<polyline class="crack" points="${zig}" fill="none" stroke="${crack.color}" stroke-width="${crack.width}" stroke-linecap="round" stroke-linejoin="round"/>`;
-    const shell = `<path d="${SHELL}" fill="${EGG.shell}"/>${SYMS.map(sym).join("")}<path d="${SHELL}" fill="none" stroke="${EGG.ink}" stroke-width="${EGG.outline}"/>${crackLine}`;
+    const shell = `<path d="${SHELL}" fill="${EGG.shell}"/><g clip-path="url(#${id}i)">${SYMS.map(sym).join("")}</g><path d="${SHELL}" fill="none" stroke="${EGG.ink}" stroke-width="${EGG.outline}"/>${crackLine}`;
     return `<svg class="egg ${cls}" viewBox="${viewBox}" aria-hidden="true">
       <defs>
         <clipPath id="${id}t"><polygon points="${-far},${-far} ${far},${-far} ${far},${CRACK.y} ${zigBack} ${-far},${CRACK.y}"/></clipPath>
@@ -138,6 +144,7 @@
       <g class="body">
         <g class="inside" clip-path="url(#${id}i)">
           <rect x="${-far}" y="0" width="${2 * far}" height="${n2(CRACK.y + crack.depth + 1)}" fill="${EGG.ink}"/>
+          <path d="${SHELL}" fill="none" stroke="${EGG.insideLine.color}" stroke-width="${EGG.insideLine.width}"/>
           <g class="eyes" fill="${eyes.color}"><ellipse cx="${-eyes.gap / 2}" cy="${eyeY}" rx="${eyes.w}" ry="${eyes.h}"/><ellipse cx="${eyes.gap / 2}" cy="${eyeY}" rx="${eyes.w}" ry="${eyes.h}"/></g>
         </g>
         <g class="base" clip-path="url(#${id}b)">${shell}</g>

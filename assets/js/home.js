@@ -13,8 +13,9 @@
     eggEl.classList.add("open"); clearTimeout(closeT);
     closeT = setTimeout(() => eggEl.classList.remove("open"), ms);
   }
-  hero.addEventListener("click", () => eggEl.classList.contains("open") ? (clearTimeout(closeT), eggEl.classList.remove("open")) : peek());
-  hero.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") peek(); });   // taps already count as clicks
+  eggEl.addEventListener("click", () => eggEl.classList.contains("open") ? (clearTimeout(closeT), eggEl.classList.remove("open")) : peek());
+  eggEl.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") peek(); });   // taps already count as clicks
+  eggEl.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") { clearTimeout(closeT); eggEl.classList.remove("open"); } });
   function idle(first) { setTimeout(() => { peek(); idle(); }, first ? 1800 : 12000 + Math.random() * 8000); }
   if (!still) idle(true);
 

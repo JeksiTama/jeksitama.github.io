@@ -6,3 +6,4 @@ Static GitHub Pages site (no build). Home page = `index.html` + `assets/js/home.
 - `games/main-jempol/index.html` is a copy of `D:\Game Projects\main_jempol\prototype\jempol_hands.html`. Edit the prototype, then copy it over.
 - Never use "coming soon". Use neutral wording.
 - Audience is families with kids: no trackers, ads, accounts or personal data.
+- The owner commits changes themselves. Don't commit, and don't ask or offer to commit.

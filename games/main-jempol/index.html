@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Gaegu:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+/* PlayTama display font (on the site; the standalone file falls back to Dela Gothic) */
+@font-face{font-family:"Super Trend";src:url("../../assets/fonts/super-trend.ttf") format("truetype");font-display:swap}
 :root{
   --desk:#33463d; --desk-line:rgba(255,255,255,.06);
   --paper:#fbf8ef; --grid:#cfe0ee; --grid-b:#a9c6de; --margin:#ef8a8a;
@@ -28,7 +30,7 @@ body{background:
   radial-gradient(ellipse at 50% 40%,#3d554a,var(--desk) 75%)}
 
 /* ---------- the notebook page = stage ---------- */
-#stage{position:relative;height:100%;width:min(100vw,540px);margin:0 auto;overflow:hidden;
+#stage{position:relative;height:100%;width:min(100vw,540px);margin:0 auto;overflow:hidden;overflow:clip;
   background:
     linear-gradient(90deg,transparent 46px,var(--margin) 46px,var(--margin) 48px,transparent 48px),
     linear-gradient(var(--grid-b) 1px,transparent 1px) 0 0/100% 120px,
@@ -43,9 +45,13 @@ body{background:
 .sticker{font-family:var(--display);color:#fff;paint-order:stroke fill;text-shadow:0 4px 0 var(--ink)}
 
 /* top bar: round on the left, tokens + sound on the right */
-#topbar{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;align-items:center;z-index:30;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink)}
+#topbar{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;align-items:center;z-index:70;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink)}
 #topbar .chip{background:#fff;border:2px solid var(--ink);border-radius:999px;padding:3px 10px;box-shadow:2px 2px 0 var(--ink);display:inline-flex;align-items:center;gap:6px}
-#topbar .right{display:flex;gap:8px;align-items:center}
+#topbar .right,#topbar .left{display:flex;gap:6px;align-items:center;min-width:0}
+#turnChip{white-space:nowrap}
+#tokChip{font:inherit;color:inherit;cursor:default}
+.mode-off #tokChip{cursor:pointer}
+#turnChip i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);flex:none}
 #roundChip.hide{visibility:hidden}
 #exitBtn{font:inherit;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:3px 8px;box-shadow:2px 2px 0 var(--ink)}
 .mode-off #exitBtn{display:none}
@@ -66,18 +72,24 @@ body{background:
   display:inline-grid;place-items:center;font-family:var(--display);font-size:13px;color:var(--gold-d);box-shadow:0 2px 0 var(--ink);flex:none}
 .coin::after{content:"T"}
 .coin.sm{width:16px;height:16px;font-size:8px;box-shadow:0 1px 0 var(--ink);border-width:1.5px}
-#pool{position:absolute;left:50%;top:54.5%;transform:translate(-50%,-50%);width:170px;height:70px;z-index:5;pointer-events:none}
+/* the pile sits just outside the turn arrow's orbit, under the clock, faded while a round is on */
+#pool{position:absolute;left:50%;top:calc(47% + 186px);transition:opacity .3s;transform:translate(-50%,-50%);width:170px;height:70px;z-index:5;pointer-events:none}
 #pool .coin{position:absolute}
+#pool.dim{opacity:.35}
 .flycoin{position:absolute;z-index:50;pointer-events:none;margin:-15px 0 0 -15px}
 
 /* seats */
 .seat{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:12;transition:opacity .3s}
 .seat.out{opacity:.4}
 .avatar{width:56px;height:56px;border-radius:50%;border:3px solid var(--ink);display:grid;place-items:center;
-  font-family:var(--display);font-size:24px;color:#fff;box-shadow:0 0 0 4px #fff,0 0 0 6px var(--ink),3px 5px 0 6px rgba(0,0,0,.18);position:relative}
-.seat.guessing .avatar{animation:bob 1s ease-in-out infinite}
+  font-family:var(--display);font-size:24px;color:#fff;position:relative}
+/* their habit (how many thumbs they lift): a pie behind the face, always on screen */
+.av .ring{position:absolute;left:50%;top:50%;width:92px;height:92px;transform:translate(-50%,-50%);overflow:visible;pointer-events:none;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.18))}
+.av .ring text{font-family:var(--display);font-size:13px;fill:#fff;stroke:var(--ink);stroke-width:3.5px;paint-order:stroke;text-anchor:middle;dominant-baseline:central}
+.av{position:relative}
+.seat.guessing .av{animation:bob 1s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-4px) rotate(-3deg)}}
-.seat .name{margin-top:8px;font-size:19px;font-weight:700;line-height:1;background:#fff;padding:0 6px;border:2px solid var(--ink);border-radius:4px;transform:rotate(-2deg)}
+.seat .name{margin-top:22px;font-size:19px;font-weight:700;line-height:1;background:#fff;padding:0 6px;border:2px solid var(--ink);border-radius:4px;transform:rotate(-2deg)}
 .pips{display:flex;gap:5px;margin-top:5px}
 .pip{width:20px;height:26px;display:block;overflow:visible}
 
@@ -95,14 +107,15 @@ body{background:
 
 /* BRANCH: every opponent shows a pair of thumbs pointing at the table */
 .ohands{position:absolute;display:flex;gap:2px;transform-origin:50% 50%;z-index:11;pointer-events:none}
-.thumbwrap.othumb{position:relative;bottom:auto;left:auto;right:auto;width:var(--ow);height:calc(var(--ow)*1.8);transform:rotate(16deg);transform-origin:50% 100%}
-.thumbwrap.othumb.mir{transform:scaleX(-1) rotate(16deg)}
+.thumbwrap.othumb{position:relative;bottom:auto;left:auto;right:auto;width:var(--ow);height:calc(var(--ow)*1.8);transform:rotate(-3deg);transform-origin:50% 100%}
+/* the pair splays slightly outward, like two hands resting on the table edge */
+.thumbwrap.othumb.mir{transform:scaleX(-1) rotate(-3deg)}
 .thumbwrap.othumb .target{display:none}
 #stage{--ow:min(9.5vw,48px)}
 .seat .pips{display:none}
 /* a lifted opponent thumb pops toward the camera so it reads at a glance */
 .thumbwrap.othumb.up .tbody{transform:translate(0,-16%) scale(1.28)}
-.thumbwrap.othumb.up .tshadow{transform:translate(18%,10%);filter:blur(6px);opacity:.25}
+.thumbwrap.othumb.up .tshadow{transform:translate(-26%,16%);filter:blur(6px);opacity:.45}
 .stats.free{position:absolute;margin:0;transform:translate(-50%,-50%) rotate(2deg);z-index:12}
 /* speech bubble with Noto thumbs */
 .bubble{position:absolute;top:-10px;left:calc(100% + 6px);background:#fff;border:3px solid var(--ink);border-radius:18px;padding:4px 8px;display:flex;gap:2px;
@@ -114,22 +127,34 @@ body{background:
 .bubble img{width:40px;height:40px}
 
 /* clock (a real clock: the second hand climbs from 10 o'clock to 12) */
-#clockWrap{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:124px;height:124px;z-index:8;transition:opacity .7s}
+#clockWrap{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:124px;height:124px;z-index:8;transition:opacity .2s}
 #clockWrap.gone{opacity:0}
 #clockWrap.off{display:none!important}
 #handG{transform-box:view-box;transform-origin:62px 62px;transition:transform .16s cubic-bezier(.3,2.4,.55,1)}
 #handG.nosnap{transition:none}
+/* whose turn: a floating triangle that orbits the clock's pivot and points at the guesser */
+#turnArrow{position:absolute;left:50%;top:47%;width:0;height:0;z-index:9;pointer-events:none;transition:transform .6s cubic-bezier(.4,1.3,.5,1)}
+#turnArrow.off{display:none}
+#turnArrow svg{position:absolute;left:-14px;top:-138px;width:28px;height:24px;overflow:visible;animation:float 1.3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(5px)}}
 
-/* guess card – sits next to whoever is guessing */
-#card{position:absolute;width:130px;height:136px;transform:translate(-50%,-50%) rotate(-2deg);z-index:13;
-  transition:left .45s cubic-bezier(.4,1.4,.5,1),top .45s cubic-bezier(.4,1.4,.5,1),transform .2s,opacity .2s}
+/* guess card – takes the clock's place in the middle */
+#card{position:absolute;left:50%;top:47%;width:130px;height:136px;transform:translate(-50%,-50%) rotate(-2deg);z-index:13;transition:transform .2s,opacity .2s}
 #card .face{position:absolute;inset:0;background:#fff;border:3px solid var(--ink);border-radius:10px;box-shadow:4px 5px 0 var(--ink);
   background-image:linear-gradient(transparent 16px,var(--margin) 16px,var(--margin) 18px,transparent 18px),repeating-linear-gradient(transparent 0 27px,#c9daf0 27px 28px);
   display:flex;flex-direction:column;align-items:center;justify-content:center}
-#card.bot{transform:translate(-50%,-50%) rotate(3deg) scale(.82)}
+#card.bot{transform:translate(-50%,-50%) rotate(3deg) scale(.86)}
+#card.gone{opacity:0;pointer-events:none}
+/* red zone: lifts are final */
+#card.red .face{box-shadow:4px 5px 0 var(--ink),inset 0 0 0 3px var(--red)}
 #card .num{font-family:var(--display);font-size:96px;line-height:1;color:var(--blue);margin-top:6px}
-#card.bot .num{color:var(--pencil);font-size:76px}
-#card.bot .sub{font-size:20px}
+#card .top{display:none;font-size:21px;font-weight:700;color:var(--ink-soft);line-height:1}
+/* opponent's card: "likes" / number / how often, with a little air between them */
+/* margins measured on the glyphs: about 9px of ink gap on both sides of the number */
+#card.bot .face{padding-top:16px}
+#card.bot .top{display:block}
+#card.bot .num{color:var(--pencil);font-size:60px;line-height:.78;margin:0}
+#card.bot .sub{font-size:22px;line-height:.8;margin:10px 0 0}
 #card .sub{font-size:21px;font-weight:700;color:var(--ink-soft);line-height:.95;margin-top:-2px;text-align:center}
 #card .sub b{color:var(--red)}
 #card.bump .face{transform:scale(1.06)}
@@ -154,20 +179,20 @@ body{background:
 .thumbwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .tshadow{filter:blur(3px);opacity:.3;transform:translate(3%,2%);transition:transform .12s,filter .12s,opacity .12s}
 .tbody{transform-origin:50% 100%;transition:transform .11s cubic-bezier(.3,1.5,.6,1)}
-.tpress{opacity:0;transition:opacity .08s}
 /* pressed = squished onto the glass: a little wider, a little shorter */
 .thumbwrap.down .tbody{transform:scale(1.07,.97)}
-.thumbwrap.down .tpress{opacity:1}
 /* lifted = natural shape, slightly closer to camera, shadow drifts away */
-.thumbwrap.up .tbody{transform:translate(1%,-2%) scale(1.03)}
-.thumbwrap.up .tshadow{transform:translate(15%,13%);filter:blur(10px);opacity:.17}
-.thumbwrap.retired .tbody{filter:grayscale(.6) brightness(.95);transform:scale(1.07,.97)}
+.thumbwrap.up .tbody{transform:translate(0,-5%) scale(1.08)}
+.thumbwrap.up .tshadow{transform:translate(20%,15%) scale(1.04);filter:blur(9px);opacity:.42}
+/* a scored thumb leaves the table */
+.thumbwrap svg{transition:opacity .45s,transform .45s}
+.thumbwrap.retired svg{opacity:0;transform:translateY(40%)}
 .target{opacity:0;transition:opacity .2s}
 .thumbwrap.up .target{opacity:1}
 .target circle{animation:spin 8s linear infinite;transform-origin:100px 82px}
 @keyframes spin{to{transform:rotate(360deg)}}
-#myBubble{position:absolute;top:auto;bottom:29%;left:8%;transform-origin:30% 100%;z-index:20}
-#myBubble::before{left:22px;top:auto;bottom:-14px;border:8px solid transparent;border-top:12px solid var(--ink);border-bottom:0}
+#myBubble{position:absolute;top:auto;bottom:19%;left:50%;translate:-50% 0;transform-origin:50% 100%;z-index:20}
+#myBubble::before{left:50%;margin-left:-8px;top:auto;bottom:-14px;border:8px solid transparent;border-top:12px solid var(--ink);border-bottom:0}
 
 /* overlays */
 #coach{position:absolute;left:58px;right:16px;z-index:40;text-align:center;font-size:clamp(22px,5.4vw,28px);font-weight:700;line-height:1.05;color:var(--ink);pointer-events:none;transition:opacity .25s}
@@ -194,10 +219,11 @@ body{background:
 /* title + result */
 .screen{position:absolute;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;padding:56px 18px 0 58px;transition:opacity .25s}
 .screen.hide{opacity:0;pointer-events:none}
-.logo{position:relative;text-align:center;line-height:.86;margin-top:2vh}
+.logo{position:relative;text-align:center;user-select:none;-webkit-user-select:none;line-height:.86;margin-top:2vh}
 .logo .a{font-size:clamp(36px,10vw,56px);transform:rotate(-4deg);display:inline-block;-webkit-text-stroke:12px var(--ink)}
 .logo .b{display:block;font-size:clamp(54px,15vw,84px);transform:rotate(2deg);-webkit-text-stroke:14px var(--ink);letter-spacing:-1px}
 .logo .b .j{color:var(--yellow)}
+.logo .sticker{font-family:"Super Trend",var(--display)}
 .logo .tape{position:absolute;width:74px;height:22px;background:rgba(255,230,140,.75);top:-6px;right:6%;transform:rotate(18deg)}
 .tag{font-family:var(--mono);font-size:12px;font-weight:700;margin-top:14px;color:var(--ink-soft);text-align:center}
 .menu{display:flex;flex-direction:column;gap:12px;margin-top:3vh;align-items:center;width:100%}
@@ -205,6 +231,7 @@ body{background:
   box-shadow:4px 5px 0 var(--ink);transition:transform .08s,box-shadow .08s}
 .btn:active{transform:translate(3px,4px);box-shadow:1px 1px 0 var(--ink)}
 .btn.primary{background:var(--yellow)}
+#howBtn{margin-top:16px}
 .btn.small{font-size:16px;min-width:0;padding:8px 16px}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
 .link{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink);background:none;border:0;cursor:pointer;text-decoration:underline wavy var(--red) 1.5px;text-underline-offset:5px}
@@ -214,6 +241,19 @@ body{background:
 .seg button:nth-child(3){background:#bfe8ff;transform:rotate(-1deg)}
 .seg button.on{outline:3px solid var(--ink);outline-offset:3px}
 .seg-l{font-size:18px;font-weight:700;margin-top:4px}
+.seg.wide{justify-content:center;margin-top:10px}
+.seg.wide button{width:auto;height:auto;padding:8px 12px;font-size:14px;line-height:1.15}
+.opt-l{margin-top:12px;text-align:center}
+#ctlNote{font-size:19px}
+/* play with friends */
+.friends .fl{font-size:20px;font-weight:700;text-align:center;margin:10px 0 4px;line-height:1.05}
+.friends .menu{margin-top:10px}
+.joinrow{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:14px}
+#codeIn{font-family:var(--display);font-size:22px;width:130px;text-align:center;text-transform:uppercase;letter-spacing:4px;color:var(--ink);
+  background:#fff;border:3px solid var(--ink);border-radius:10px;padding:6px 4px;user-select:text;-webkit-user-select:text}
+.bigcode{font-family:var(--display);font-size:52px;letter-spacing:8px;text-align:center;color:var(--blue);line-height:1}
+#roster td.r{font-size:13px}
+.friends .broke{margin:10px auto 0}
 .broke{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red);text-align:center;max-width:300px}
 .broke a{color:var(--ink)}
 .credit{margin-top:18px;font-family:var(--mono);font-size:9px;color:var(--pencil);text-align:center}
@@ -226,7 +266,11 @@ body{background:
 .report .grade{font-family:var(--display);color:var(--red);font-size:20px;text-align:center;width:48px}
 .report .note{margin-top:12px;font-size:21px;color:var(--red);transform:rotate(-1.5deg);line-height:1.05}
 .report .me td{background:#fff3a8}
-.mode-off #seats,.mode-off #card,.mode-off #burst,.mode-off #count,.mode-off #clockWrap,.mode-off #pool,.mode-off #roundChip{display:none!important}
+.passcard .pnote{font-family:var(--mono);font-size:12px;line-height:1.35;margin:12px 0 6px}
+.passcard .prow{display:flex;gap:8px;align-items:center;margin-top:8px}
+.passcard code{flex:1;font-family:var(--mono);font-size:15px;font-weight:700;letter-spacing:1px;background:#fff3a8;border:2px dashed var(--ink);padding:8px;text-align:center}
+.passcard input{flex:1;min-width:0;font-family:var(--mono);font-size:15px;border:2px solid var(--ink);border-radius:8px;padding:8px}
+.mode-off #seats,.mode-off #card,.mode-off #burst,.mode-off #count,.mode-off #clockWrap,.mode-off #pool,.mode-off #roundChip,.mode-off #turnChip,.mode-off #turnArrow{display:none!important}
 /* side legend on wide screens */
 #legend{position:fixed;left:24px;top:50%;transform:translateY(-50%);width:calc(50vw - 300px);max-width:300px;color:#e9efe6;font-family:var(--hand);font-size:22px;line-height:1.15;display:none}
 #legend b{font-family:var(--mono);font-size:12px;letter-spacing:1px;display:block;margin:14px 0 4px;opacity:.7}
@@ -239,29 +283,19 @@ body{background:
   .seat .bubble img{width:28px;height:28px}
   .stats{width:80px;height:80px}
   .stats svg.piechart{width:66px;height:66px}
-  #card.bot{transform:translate(-50%,-50%) rotate(3deg) scale(.68)}
-  .seat.s12{margin-top:22px}
+  #card.bot{transform:translate(-50%,-50%) rotate(3deg) scale(.78)}
 }
 </style>
 <!-- PlayTama shared save (tokens + stats). Missing when the file is opened on its own; the game then saves locally. -->
 <script src="../../assets/js/tama.js"></script>
 </head>
 <body>
-<aside id="legend">
-  <b>CONTROLS</b>
-  Hold <kbd>LEFT</kbd> + <kbd>RIGHT</kbd> click = thumbs down.<br>Let go = thumb up.
-  <b>YOUR GUESS</b>
-  Keep your thumbs held and move the mouse ↕
-  <b>KEYBOARD</b>
-  <kbd>F</kbd> + <kbd>J</kbd> (or both <kbd>Shift</kbd>) · <kbd>↑</kbd><kbd>↓</kbd>
-  <b>PHONE</b>
-  One finger each side. Slide ↕.
-</aside>
+<aside id="legend"></aside>
 
 <div id="stage" class="mode-off">
   <div id="topbar">
-    <span class="chip" id="roundChip">ROUND 1</span>
-    <span class="right"><span class="chip" id="tokChip"><span class="coin sm"></span><span id="tokN">20</span></span><button id="soundBtn" aria-label="Sound">♪ ON</button><button id="exitBtn" aria-label="Leave table">✕</button></span>
+    <span class="left"><span class="chip" id="roundChip">ROUND 1</span><span class="chip" id="turnChip"><i id="turnDot"></i><span id="turnName"></span></span></span>
+    <span class="right"><button class="chip" id="tokChip" aria-label="Tama Tokens"><span class="coin sm"></span><span id="tokN">20</span></button><button id="soundBtn" aria-label="Sound">♪ ON</button><button id="exitBtn" aria-label="Leave table">✕</button></span>
   </div>
 
   <div id="seats"></div>
@@ -279,10 +313,12 @@ body{background:
     </svg>
   </div>
 
+  <div id="turnArrow"><svg viewBox="0 0 28 24"><polygon id="turnTri" points="14,1 27,23 1,23" fill="var(--yellow)" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/></svg></div>
   <div id="pool"></div>
 
   <div id="card">
     <div class="face">
+      <div class="top">likes</div>
       <div class="num" id="cardNum">0</div>
       <div class="sub" id="cardSub">slide ↕</div>
     </div>
@@ -317,19 +353,59 @@ body{background:
       <div class="seg" id="seg">
         <button data-n="2">2</button><button data-n="3">3</button><button data-n="4" class="on">4</button>
       </div>
-      <button class="btn primary" id="playBtn">PLAY vs BOTS</button>
+      <button class="btn primary" id="playBtn">PLAY</button>
       <div class="broke" id="brokeNote"></div>
-      <button class="btn small" disabled>RANKED · soon</button>
+      <button class="btn" id="friendsBtn">WITH FRIENDS</button>
       <button class="link" id="howBtn">/how to play/</button>
       <button class="link" id="statsBtn">/my stats/</button>
+      <button class="link" id="setBtn">/settings/</button>
       <a class="link" id="homeLink" href="../../" style="display:none">/PlayTama home/</a>
       <div class="credit">thumbs-up animation: Google Noto Emoji (CC BY 4.0)</div>
     </div>
   </section>
 
+  <section class="screen hide" id="passScreen">
+    <div class="report passcard" id="passCard"></div>
+    <div class="menu"><button class="link" id="passBack">/back to menu/</button></div>
+  </section>
   <section class="screen hide" id="statsScreen">
     <div class="report mystats" id="myStats"></div>
     <div class="menu"><button class="link" id="statsBack">/back to menu/</button></div>
+  </section>
+
+  <section class="screen hide" id="friendsScreen">
+    <div class="report friends">
+      <h2>PLAY WITH FRIENDS</h2>
+      <div id="fPick">
+        <p class="fl">Start a table and share its code,<br>or type the code a friend gave you.</p>
+        <div class="menu"><button class="btn primary" id="hostBtn">START A TABLE</button></div>
+        <div class="joinrow">
+          <input id="codeIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="Table code">
+          <button class="btn small" id="joinBtn">JOIN</button>
+        </div>
+      </div>
+      <div id="fRoom" hidden>
+        <div class="fl">table code</div>
+        <div class="bigcode" id="bigCode"></div>
+        <table id="roster"></table>
+        <p class="fl" id="fInfo"></p>
+        <div class="menu"><button class="btn primary" id="goBtn">START</button></div>
+      </div>
+      <div class="broke" id="fMsg"></div>
+    </div>
+    <div class="menu"><button class="link" id="friendsBack">/back to menu/</button></div>
+  </section>
+
+  <section class="screen hide" id="setScreen">
+    <div class="report">
+      <h2>SETTINGS</h2>
+      <div class="seg-l opt-l">mouse &amp; keyboard</div>
+      <div class="seg wide" id="ctlSeg">
+        <button data-inv="1">CLICK =<br>THUMB UP</button><button data-inv="0">HOLD =<br>THUMB DOWN</button>
+      </div>
+      <div class="note" id="ctlNote"></div>
+    </div>
+    <div class="menu"><button class="link" id="setBack">/back to menu/</button></div>
   </section>
 
   <div id="modal" class="hide"><div class="note">
@@ -355,6 +431,7 @@ body{background:
 (() => {
 "use strict";
 const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);   // friends' names go into HTML
 const stage = $("stage");
 const THUMB_GIF = "https://fonts.gstatic.com/s/e/notoemoji/latest/1f44d/512.webp";
 const THUMB_STATIC = "data:image/png;base64,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";
@@ -362,8 +439,10 @@ const emojiImg = () => `<img src="${THUMB_GIF}" alt="👍" onerror="this.onerror
 const emojiStatic = n => `<img src="${THUMB_STATIC}" alt="👍">`.repeat(n);
 
 // ---------- timing rules ----------
-// first rotation: clock starts at 11 (first tick → 10). Once everyone has guessed once: starts at 6 (first tick → 5).
-const ROUND_SLOW = 11, ROUND_FAST = 6, FADE_AT = 5, LOCK_AT = 2, GRACE = 0.4;
+// first rotation: clock starts at 10. Once everyone has guessed once: starts at 5.
+// Each round opens on the clock. For the last CARD_AT seconds a card takes its place in the middle: your guess,
+// or an opponent's "likes" hint. Short rounds still show the clock for at least MIN_CLOCK seconds. The ticks play throughout.
+const ROUND_SLOW = 10, ROUND_FAST = 5, LOCK_AT = 2, GRACE = 0.4, CARD_AT = 5, MIN_CLOCK = 2;
 // ---------- rng (seedable for screenshots) ----------
 let seed = (+new URLSearchParams(location.search).get("seed")) || (Date.now() >>> 0);
 const rng = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
@@ -371,51 +450,69 @@ const rng = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(s
 const pick = dist => { let r = rng(), a = 0; for (let i = 0; i < dist.length; i++) { a += dist[i]; if (r < a) return i; } return dist.length - 1; };
 
 // (timing rules are defined near the top)
-// vs bots the table waits for you forever. In PvP set this to e.g. 3000 so one AFK player can't stall the table.
-const AUTO_START_MS = null;
+// every round starts by itself after this pause (first round waits for the ante coins; practice leaves time to read)
+const AUTO_START_MS = { next: 1200, first: 2000, tutorial: 2500 };
 
 // ---------- audio + haptics ----------
-let AC = null, soundOn = true;
+let AC = null, soundOn = true, NOISE = null;
 const ac = () => (AC ||= new (window.AudioContext || window.webkitAudioContext)());
-function tone(freq, dur = .08, type = "sine", vol = .18, when = 0, slideTo) {
+// one partial: a quick attack, then an exponential fade (optionally gliding and through a low-pass)
+function voice({ f, to, type = "sine", dur = .1, vol = .15, when = 0, att = .004, lp }) {
   if (!soundOn) return;
   try {
     const c = ac(), t = c.currentTime + when, o = c.createOscillator(), g = c.createGain();
-    o.type = type; o.frequency.setValueAtTime(freq, t);
-    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
-    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur * .7);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + att); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    let out = o;
+    if (lp) { const fl = c.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = lp; out = o.connect(fl); }
+    out.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .02);
   } catch {}
 }
+// a short burst of band-passed noise: the "wood" in clicks and ticks
+function click({ f = 2500, q = 5, dur = .04, vol = .3, when = 0 }) {
+  if (!soundOn) return;
+  try {
+    const c = ac(), t = c.currentTime + when;
+    if (!NOISE) { NOISE = c.createBuffer(1, c.sampleRate * .2, c.sampleRate); const d = NOISE.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const n = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
+    n.buffer = NOISE; fl.type = "bandpass"; fl.frequency.value = f; fl.Q.value = q;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    n.connect(fl).connect(g).connect(c.destination); n.start(t); n.stop(t + dur + .02);
+  } catch {}
+}
+// marimba-like note: a round fundamental plus a short, bright 4th partial
+const mallet = (f, when = 0, vol = .16) => { voice({ f, dur: .35, vol, when, att: .002 }); voice({ f: f * 4, dur: .06, vol: vol * .3, when, att: .001 }); };
 const SFX = {
-  tick: () => tone(1250 * (1 + (Math.random() - .5) * .02), .05, "square", .05),
-  lift: () => tone(520, .09, "triangle", .14, 0, 900),
-  drop: () => tone(700, .07, "triangle", .1, 0, 420),
-  blip: () => tone(980, .03, "square", .04),
-  coin: () => tone(1800 + Math.random() * 400, .06, "square", .035),
-  bell: () => { tone(1320, .9, "triangle", .14); tone(1980, .7, "sine", .06, .01); tone(1320, .9, "triangle", .12, .22); },
-  note: i => tone([523, 587, 659, 698, 784, 880, 988, 1047, 1175][Math.min(i, 8)], .14, "triangle", .16),
-  win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, "triangle", .15, i * .08)),
-  miss: () => tone(220, .35, "sawtooth", .07, 0, 140),
+  tick: () => { click({ f: 2200 + Math.random() * 200, q: 6, dur: .035, vol: .35 }); voice({ f: 1100, dur: .03, vol: .04, att: .001 }); },   // woodblock
+  lift: () => { voice({ f: 380, to: 820, dur: .09, vol: .17, att: .003 }); voice({ f: 760, to: 1640, dur: .06, vol: .04, att: .003 }); },   // bubbly pop up
+  drop: () => voice({ f: 520, to: 240, dur: .08, vol: .13, att: .003 }),                                                              // soft "tup" down
+  blip: () => { click({ f: 3200, q: 8, dur: .02, vol: .14 }); voice({ f: 1500, dur: .025, vol: .04, att: .001 }); },                    // dial notch
+  coin: () => { const f = [1047, 1175, 1319][Math.floor(Math.random() * 3)]; click({ f: 5000, q: 2, dur: .012, vol: .1 });   // clink on the pile
+    voice({ f, dur: .16, vol: .07, att: .001 }); voice({ f: f * 2.76, dur: .05, vol: .015, att: .001 }); },
+  bell: () => [[1, .16, 1.3], [2, .07, 1], [2.76, .06, .7], [5.4, .03, .35]].forEach(([r, v, d]) => voice({ f: 784 * r, dur: d, vol: v, att: .002 })),
+  note: i => mallet([523, 587, 659, 698, 784, 880, 988, 1047, 1175][Math.min(i, 8)]),
+  win: () => { [523, 659, 784, 1047].forEach((f, i) => mallet(f, i * .09, .15)); voice({ f: 2093, dur: .5, vol: .04, when: .36, att: .01 }); },
+  miss: () => { voice({ f: 330, to: 262, type: "triangle", dur: .2, vol: .14, lp: 1400 }); voice({ f: 294, to: 196, type: "triangle", dur: .38, vol: .13, when: .2, lp: 1200 }); },   // "wah-wah"
 };
 const buzz = p => { try { soundOn && navigator.vibrate?.(p); } catch {} };
+// on the menu, the coins open your Tama Pass (standalone file: your stats)
+$("tokChip").onclick = () => { if (G.mode === "title") TAMA ? openPass() : $("statsBtn").click(); };
 $("soundBtn").onclick = e => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "♪ ON" : "♪ OFF"; };
 
 // ---------- art ----------
-const THUMB_PATH = "M18 360 C 26 300, 42 252, 46 206 L 47 92 C 47 42, 72 16, 100 16 C 128 16, 153 42, 153 92 L 155 214 C 158 262, 176 304, 192 360 Z";
+// a wide, rounded tip, a slight waist at the knuckle, then a gentle flare into the hand
+const THUMB_PATH = "M28 360 C 34 306, 44 262, 47 224 C 49 194, 43 162, 40 122 C 37 60, 64 14, 100 14 C 136 14, 163 60, 160 122 C 157 162, 151 194, 153 224 C 156 262, 166 306, 172 360 Z";
 const THUMB_SVG = `
 <svg viewBox="0 0 200 360" preserveAspectRatio="none">
   <g class="target"><circle cx="100" cy="82" r="66" fill="none" stroke="var(--ink)" stroke-width="5" stroke-dasharray="14 10" opacity=".55"/></g>
   <path class="tshadow" d="${THUMB_PATH}" fill="#2a1d14"/>
   <g class="tbody">
     <path d="${THUMB_PATH}" fill="var(--skin)" stroke="var(--line)" stroke-width="6" stroke-linejoin="round"/>
-    <path d="M150 110 C 152 160, 152 200, 156 230 C 160 270, 174 310, 186 350" fill="none" stroke="var(--skin-d)" stroke-width="10" opacity=".45" stroke-linecap="round"/>
-    <path d="M67 74 C 67 49, 82 36, 100 36 C 118 36, 133 49, 133 74 L 131 124 C 131 138, 118 144, 100 144 C 82 144, 69 138, 69 124 Z" fill="var(--nail)" stroke="var(--line)" stroke-width="4"/>
-    <path d="M78 58 C 84 48, 96 45, 106 46" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".8"/>
-    <path d="M62 214 q38 13 76 0 M68 232 q32 9 64 0" stroke="var(--skin-d)" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <ellipse class="tpress" cx="100" cy="70" rx="34" ry="30" fill="#fff" opacity=".22"/>
-    <g class="medal" style="display:none"><circle cx="100" cy="90" r="30" fill="var(--yellow)" stroke="var(--line)" stroke-width="4"/>
-      <path d="M100 70 l6 13 14 1-11 9 4 14-13-8-13 8 4-14-11-9 14-1z" fill="#fff" stroke="var(--line)" stroke-width="3" stroke-linejoin="round"/></g>
+    <path d="M153 128 C 150 166, 145 196, 147 226 C 150 264, 160 306, 166 350" fill="none" stroke="var(--skin-d)" stroke-width="10" opacity=".45" stroke-linecap="round"/>
+    <path d="M61 70 C 61 45, 78 31, 100 31 C 122 31, 139 45, 139 70 L 137 102 C 137 115, 121 121, 100 121 C 79 121, 63 115, 63 102 Z" fill="var(--nail)" stroke="var(--line)" stroke-width="4"/>
+    <path d="M75 54 C 81 43, 93 40, 104 41" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" opacity=".8"/>
+    <path d="M64 196 q36 12 72 0 M70 213 q30 8 60 0" stroke="var(--skin-d)" stroke-width="5" fill="none" stroke-linecap="round"/>
   </g>
 </svg>`;
 $("thumbL").innerHTML = THUMB_SVG; $("thumbR").innerHTML = THUMB_SVG;
@@ -447,20 +544,17 @@ const BOTS = [
   { name: "Budi",  color: "#2f5fd0", dist: { 2: [.5, .2, .3], 1: [.6, .4] }, bluff: .3, fav: 1, stay: .3 },
   { name: "Cinta", color: "#2fa36b", dist: { 2: [.15, .35, .5], 1: [.3, .7] }, bluff: .7, fav: 3, stay: .2 },
 ];
-const SEATS = { 1: ["12"], 2: ["10", "2"], 3: ["10", "12", "2"] };
-const SEAT_POS = { "12": [50, 5], "10": [20, 14.5], "2": [80, 14.5] };
-// where the guess card sits for each seat (toward the middle of the table)
-const CARD_POS = { me: [50, 72], "12": [50, 33], "10": [21, 46], "2": [79, 46] };
+// opponents sit at 9, 12 and 3 o'clock around the clock
+const SEATS = { 1: ["12"], 2: ["9", "3"], 3: ["9", "12", "3"] };
+const SEAT_POS = { "12": [50, 6], "9": [13, 28], "3": [87, 28] };
 // BRANCH: where each opponent's thumbs sit (centre of the pair), pointing at the middle of the table
-const HAND_POS = { "12": [50, 23], "10": [32.5, 31.5], "2": [67.5, 31.5] };
-// post-its move out of the seat column into free space (right of 12; under 10 and 2, beside the clock)
-const STATS_POS = { "12": [69, 10.5], "10": [19, 45], "2": [81, 45] };
-const TABLE_CENTRE = [50, 52];
+const HAND_POS = { "12": [50, 24], "9": [10, 46], "3": [90, 46] };
+const TABLE_CENTRE = [50, 47];   // the clock's pivot
 
 const G = {
   mode: "title", n: 4, players: [], guesser: 0, roundNo: 0, phase: "idle",
   t0: 0, call: 0, sealed: false, locked: false, finalised: false, place: 0,
-  tokens: 20, script: null, forced: null, stake: 2, pool: 0, botCall: 0, botCallInfo: null,
+  tokens: 20, script: null, forced: null, stake: 2, pool: 0, botCall: 0, callInfo: null,
 };
 // on PlayTama, coins are the shared Tama Tokens and stats live in the current player's save
 const TAMA = window.Tama || null;
@@ -471,10 +565,14 @@ let MY = freshMy();
 try { const m = TAMA ? TAMA.load("main-jempol") : JSON.parse(localStorage.getItem("mj_stats")); if (m && m.lift) MY = Object.assign(freshMy(), m); } catch {}
 const saveMy = () => { try { if (TAMA) TAMA.save("main-jempol", MY); else localStorage.setItem("mj_stats", JSON.stringify(MY)); } catch {} };
 
-function makePlayer(i, bot) {
-  return { i, isHuman: !bot, name: bot ? bot.name : "You", bot, points: 0, retired: [false, false],
-    up: [false, false], pubUp: 0, finished: 0, el: null, seat: bot ? null : "me",
-    stats: { lift: bot ? null : (G.mode === "match" ? MY.lift : { 1: [0, 0], 2: [0, 0, 0] }) } };   // humans: real recorded data
+// isHuman = the person at this screen. Online, r describes a seat: { name, color, remote, lift, calls, conn }.
+// remote = a friend's seat (their browser plays it); bot = played by the host's browser.
+function makePlayer(i, bot, r = null) {
+  const local = !bot && !r?.remote;
+  return { i, isHuman: local, remote: !!r?.remote, name: local ? "You" : r?.name || bot.name, bot, color: r?.color || bot?.color,
+    conn: r?.conn || null, calls: r?.calls || null, call: 0, points: 0, retired: [false, false],
+    up: [false, false], pubUp: 0, finished: 0, el: null, seat: local ? "me" : null,
+    stats: { lift: bot ? null : local ? (G.mode === "match" ? MY.lift : { 1: [0, 0], 2: [0, 0, 0] }) : r.lift } };   // people: real recorded data
 }
 const active = p => !p.finished;
 const activeThumbs = p => p.retired.filter(r => !r).length;
@@ -483,7 +581,7 @@ const totalActiveThumbs = () => G.players.filter(active).reduce((a, p) => a + ac
 // what the stats panel shows: bots → their logic; humans → their recorded history
 function liftDist(p) {
   const k = Math.max(1, activeThumbs(p));
-  if (!p.isHuman) return { d: p.bot.dist[k], src: "logic" };
+  if (p.bot) return { d: p.bot.dist[k], src: "logic" };
   const s = p.stats.lift[k], t = s.reduce((a, b) => a + b, 0);
   return { d: t ? s.map(v => v / t) : null, src: t ? `${t} rounds` : "no data", n: t };
 }
@@ -496,18 +594,15 @@ function buildSeats() {
     const [x, y] = SEAT_POS[p.seat];
     const el = document.createElement("div");
     el.className = "seat s" + p.seat; el.style.left = x + "%"; el.style.top = y + "%";
-    el.innerHTML = `<div class="avatar" style="background:${p.bot.color}">${p.name[0]}
-        <div class="bubble ${p.seat === "2" ? "flipX" : ""}"></div></div>
-      <div class="name">${p.name}</div>
-      <div class="pips"></div>
-      <div class="stats hide"></div>`;
+    el.innerHTML = `<div class="av"><svg class="ring" viewBox="0 0 92 92"></svg><div class="avatar" style="background:${p.color}">${esc(p.name[0])}
+        <div class="bubble ${p.seat === "3" ? "flipX" : ""}"></div></div></div>
+      <div class="name">${esc(p.name)}</div>
+      <div class="pips"></div>`;
     seats.appendChild(el); p.el = el;
     const hp = HAND_POS[p.seat], hands = document.createElement("div");
     hands.className = "ohands"; hands.style.left = hp[0] + "%"; hands.style.top = hp[1] + "%";
     hands.innerHTML = `<div class="thumbwrap othumb down">${THUMB_SVG}</div><div class="thumbwrap othumb mir down">${THUMB_SVG}</div>`;
     seats.appendChild(hands); p.hands = [...hands.children];
-    const st0 = el.querySelector(".stats"), sp = STATS_POS[p.seat];
-    st0.classList.add("free"); st0.style.left = sp[0] + "%"; st0.style.top = sp[1] + "%"; seats.appendChild(st0); p.statsEl = st0;
     requestAnimationFrame(() => {   // point the pair at the table centre
       const st = stage.getBoundingClientRect();
       const dx = (TABLE_CENTRE[0] - hp[0]) * st.width / 100, dy = (TABLE_CENTRE[1] - hp[1]) * st.height / 100;
@@ -533,6 +628,23 @@ function statsHTML(p) {
   });
   return `<svg class="piechart" viewBox="0 0 76 76">${paths}<circle cx="${C}" cy="${C}" r="${R0}" fill="none" stroke="var(--ink)" stroke-width="2.5"/>${labels}</svg>`;
 }
+// the same pie, drawn whole behind the avatar: no lines between slices, numbers in the band outside the face
+function ringHTML(p) {
+  const { d } = liftDist(p), C = 46, R = 44, L = 36.5;
+  const rim = `<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="var(--ink)" stroke-width="3"/>`;   // same as the avatar border
+  if (!d) return `<circle cx="${C}" cy="${C}" r="${R}" fill="#fff"/>${rim}`;
+  const pt = a => `${C + Math.sin(a) * R} ${C - Math.cos(a) * R}`;
+  let a0 = 0, paths = "", labels = "";
+  d.forEach((v, k) => {
+    if (v <= 0) return;
+    const a1 = a0 + v * Math.PI * 2;
+    paths += v >= .999 ? `<circle cx="${C}" cy="${C}" r="${R}" fill="${SLICE[k]}"/>`
+      : `<path d="M${C} ${C} L${pt(a0)} A${R} ${R} 0 ${v > .5 ? 1 : 0} 1 ${pt(a1)} Z" fill="${SLICE[k]}"/>`;
+    if (v >= .1) { const m = v >= .999 ? 0 : (a0 + a1) / 2; labels += `<text x="${C + Math.sin(m) * L}" y="${C - Math.cos(m) * L}">${k}</text>`; }
+    a0 = a1;
+  });
+  return paths + rim + labels;
+}
 function renderSeats() {
   for (const p of G.players.slice(1)) {
     const el = p.el; if (!el) continue;
@@ -541,28 +653,35 @@ function renderSeats() {
     const pips = p.retired.map(r => PIP(r)).join("");
     if (el.querySelector(".pips").dataset.k !== pips) { el.querySelector(".pips").innerHTML = pips; el.querySelector(".pips").dataset.k = pips; }
     // BRANCH: no speech bubble – the thumbs themselves show the bluff.
-    // timer: only public lifts are visible (they stay up after the lock); reveal: everything is shown.
+    // timer: lifts are public (reversible before the red zone, final in it); reveal: the final state.
     let vis = [false, false];
     if (G.phase === "reveal") vis = [...p.up];
     else if (G.phase === "timer") { let n = p.pubUp; vis = p.retired.map(r => !r && n-- > 0); }
     p.hands?.forEach((h, k) => {
       const ret = p.retired[k];
       h.classList.toggle("up", vis[k] && !ret); h.classList.toggle("down", !vis[k] && !ret); h.classList.toggle("retired", ret);
-      h.querySelector(".medal").style.display = ret ? "" : "none";
     });
-    const st = p.statsEl || el.querySelector(".stats");
-    const show = G.players[G.guesser]?.isHuman && !p.finished && ["match", "tutorial"].includes(G.mode) && G.phase !== "tut";
-    st.classList.toggle("hide", !show);
-    if (show) { const h = statsHTML(p); if (st.dataset.k !== h) { st.innerHTML = h; st.dataset.k = h; } }
+    const ring = el.querySelector(".ring"), rh = ringHTML(p);
+    if (ring.dataset.k !== rh) { ring.innerHTML = rh; ring.dataset.k = rh; }
   }
 }
 
+// ---------- settings ----------
+// invert (default): mouse & keys press = thumb UP (thumbs rest down). Touch always keeps finger = thumb down, since sliding needs a finger.
+const SET = { invert: true };
+try { const s = TAMA ? TAMA.load("main-jempol-settings") : JSON.parse(localStorage.getItem("mj_settings")); if (s) Object.assign(SET, s); } catch {}
+const saveSet = () => { try { if (TAMA) TAMA.save("main-jempol-settings", SET); else localStorage.setItem("mj_settings", JSON.stringify(SET)); } catch {} };
+
 // ---------- input ----------
 const input = { L: false, R: false, dev: null };
+// is the inverted mapping in use right now? (before any input, guess the device from the pointer)
+const inv = () => SET.invert && (input.dev ? input.dev !== "touch" : !matchMedia("(hover: none)").matches);
+// which thumbs are down, after the control mapping
+const downs = () => inv() ? [!input.L, !input.R] : [input.L, input.R];
 const KL = new Set(["ShiftLeft", "KeyF", "ControlLeft"]), KR = new Set(["ShiftRight", "KeyJ", "ControlRight"]);
 let dragAcc = 0;
 const touches = new Map(); let lastAvgY = null;
-const uiTarget = e => e.target.closest?.("button");
+const uiTarget = e => e.target.closest?.("button, input, a");
 
 function onHeld() { ac(); handleThumbs(); }
 addEventListener("mousedown", e => {
@@ -570,10 +689,10 @@ addEventListener("mousedown", e => {
   if (e.button === 0) input.L = true; if (e.button === 2) input.R = true; e.preventDefault(); onHeld();
 });
 addEventListener("mouseup", e => { if (e.button === 0) input.L = false; if (e.button === 2) input.R = false; onHeld(); });
-addEventListener("mousemove", e => { if ((input.L || input.R) && heldAll()) slide(-e.movementY, 26); });
+addEventListener("mousemove", e => { if (allDown()) slide(-e.movementY, 26); });
 addEventListener("contextmenu", e => e.preventDefault());
 addEventListener("keydown", e => {
-  if (e.repeat) return;
+  if (e.repeat || e.target.closest?.("input")) return;
   if (KL.has(e.code)) { input.L = true; input.dev = "keys"; e.preventDefault(); onHeld(); }
   else if (KR.has(e.code)) { input.R = true; input.dev = "keys"; e.preventDefault(); onHeld(); }
   else if (e.code === "ArrowUp") stepCall(1);
@@ -583,7 +702,7 @@ addEventListener("keyup", e => { if (KL.has(e.code)) input.L = false; if (KR.has
 addEventListener("blur", () => { input.L = input.R = false; touches.clear(); onHeld(); });
 function syncTouches() { const s = [...touches.values()]; input.L = s.includes("L"); input.R = s.includes("R"); }
 addEventListener("touchstart", e => {
-  if (uiTarget(e)) return; e.preventDefault(); input.dev = "touch";
+  input.dev = "touch"; if (uiTarget(e)) return; e.preventDefault();
   const h = human(), inGame = h && ["match", "tutorial"].includes(G.mode);
   for (const t of e.changedTouches) {
     let side = t.clientX < innerWidth / 2 ? "L" : "R";
@@ -597,20 +716,27 @@ addEventListener("touchstart", e => {
 addEventListener("touchmove", e => {
   e.preventDefault(); if (e.touches.length < 1) return;
   const ys = [...e.touches].map(t => t.clientY), y = ys.reduce((a, b) => a + b) / ys.length;
-  if (lastAvgY !== null && heldAll()) slide(lastAvgY - y, 30);
+  if (lastAvgY !== null && allDown()) slide(lastAvgY - y, 30);
   lastAvgY = y;
 }, { passive: false });
 const tEnd = e => { for (const t of e.changedTouches) touches.delete(t.identifier); syncTouches(); lastAvgY = null; onHeld(); };
 addEventListener("touchend", tEnd, { passive: false }); addEventListener("touchcancel", tEnd, { passive: false });
 
 function slide(d, step) { dragAcc += d; while (Math.abs(dragAcc) >= step) { stepCall(Math.sign(dragAcc)); dragAcc -= Math.sign(dragAcc) * step; } }
-// "all your live thumbs are held" – with one thumb retired, one finger is enough
-function heldAll() { const h = human(); if (!h) return input.L && input.R; return [input.L, input.R].every((held, k) => held || h.retired[k]); }
+// "all your live thumbs are down" – with one thumb retired, one finger is enough
+function allDown() { const h = human(), d = downs(); if (!h) return d[0] && d[1]; return d.every((down, k) => down || h.retired[k]); }
 function canSetCall() {
   const h = human();
   if (!h || G.players[G.guesser] !== h || G.sealed || G.finalised) return false;
-  if (!["wait", "intro", "timer", "tut"].includes(G.phase)) return false;
-  return heldAll();
+  // sliding works all turn, even while the clock shows (the how-to waits for its "your number" step)
+  return allDown() && (G.phase === "tut" ? G.tutCard : ["wait", "timer"].includes(G.phase));
+}
+// the clock opens every round (at least one tick); then the card takes its place
+function cardOn() {
+  if (G.phase === "tut") return !!G.tutCard;   // the how-to shows the card from its "your number" step
+  if (G.phase !== "timer") return false;
+  const tl = timeLeft();
+  return tl <= Math.min(CARD_AT, G.len - MIN_CLOCK);
 }
 function stepCall(d) {
   if (!canSetCall()) return;
@@ -618,24 +744,23 @@ function stepCall(d) {
   if (nv === G.call) return;
   G.call = nv; SFX.blip(); buzz(6);
   const c = $("card"); c.classList.add("bump"); setTimeout(() => c.classList.remove("bump"), 90);
-  G.script?.onCall?.(); render();
+  G.script?.onCall?.(); NET.sendInput(); render();
 }
 
-// hold = down. Before the lock, lifts are public & reversible. After the lock, lifts are one-way and secret.
+// Lifts are always public. Before the red zone they are reversible; in the red zone they are final.
 function handleThumbs() {
   const h = human(); if (!h) { render(); return; }
   if (G.finalised) { render(); return; }
-  const held = [input.L, input.R];
+  const down = downs();
   for (let k = 0; k < 2; k++) {
     if (h.retired[k]) { h.up[k] = false; continue; }
-    const want = !held[k];
+    const want = !down[k];
     if (G.phase === "timer" && G.locked) { if (want && !h.up[k]) { h.up[k] = true; SFX.lift(); buzz(12); } }
     else if (want !== h.up[k]) { h.up[k] = want; want ? (SFX.lift(), buzz(12)) : SFX.drop(); }
   }
-  if (G.phase === "timer" && !G.locked) h.pubUp = h.up.filter(Boolean).length;
-  if (G.phase === "timer" && G.locked && h.up.some(Boolean) && G.players[G.guesser] === h) G.sealed = true;
-  if (G.phase === "wait" && heldAll() && ["match", "tutorial"].includes(G.mode)) startIntro();
+  if (G.phase === "timer") h.pubUp = h.up.filter(Boolean).length;
   G.script?.onInput?.();
+  NET.sendInput();
   render();
 }
 
@@ -647,13 +772,13 @@ function posOf(p) {
 }
 function renderPool() {
   const pool = $("pool"); pool.querySelectorAll(".coin").forEach(c => c.remove());
-  // treasure mound: rows of 5,4,3,2,1… from the bottom, slightly jittered
+  // stacked rows of 4 from the bottom, slightly jittered
   let i = 0, row = 0;
   while (i < G.pool) {
-    const inRow = Math.max(1, 5 - row);
-    for (let c = 0; c < inRow && i < G.pool; c++, i++) {
+    const inRow = Math.min(4, G.pool - i);
+    for (let c = 0; c < inRow; c++, i++) {
       const el = document.createElement("span"); el.className = "coin";
-      const x = 85 - (inRow - 1) * 11 + c * 22 - 15 + ((i * 13) % 5 - 2), y = 40 - row * 11 + ((i * 7) % 4 - 2);
+      const x = 85 - (inRow - 1) * 13 + c * 26 - 15 + ((i * 13) % 5 - 2), y = 40 - row * 20 + ((i * 7) % 4 - 2);
       el.style.left = x + "px"; el.style.top = y + "px"; el.style.transform = `rotate(${(i * 37) % 40 - 20}deg)`;
       pool.appendChild(el);
     }
@@ -666,20 +791,24 @@ function flyCoin(a, b, delay) {
     c.className = "coin flycoin"; c.style.left = (a.x - s.left) + "px"; c.style.top = (a.y - s.top) + "px"; stage.appendChild(c);
     const dx = b.x - a.x, dy = b.y - a.y;
     c.animate([{ transform: "translate(0,0) rotate(0)" }, { transform: `translate(${dx}px,${dy}px) rotate(540deg)` }],
-      { duration: 520, easing: "cubic-bezier(.5,0,.3,1)" }).finished.then(() => { c.remove(); SFX.coin(); res(); });
+      { duration: 520, easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" });
+    setTimeout(() => { c.remove(); SFX.coin(); res(); }, 520);   // a timer, not the animation: unpainted tabs never finish animations
   }, delay));
 }
 async function ante() {
-  G.pool = 0; renderPool();
+  G.pool = 0; renderPool(); G.coinsLive = true;
   const target = centerOf($("pool")), jobs = [];
   G.players.forEach((p, i) => {
     if (p.isHuman) { G.tokens -= G.stake; saveTokens(); }
     for (let k = 0; k < G.stake; k++) jobs.push(flyCoin(posOf(p), target, (i * G.stake + k) * 110).then(() => { G.pool++; renderPool(); }));
   });
   render(); await Promise.all(jobs);
+  G.coinsLive = false; render();
 }
 async function payout(p, n) {
   if (!n) return;
+  G.coinsLive = true;
+  if (hurry()) { G.pool = Math.max(0, G.pool - n); renderPool(); if (p.isHuman) { G.tokens += n; saveTokens(); } render(); return; }
   const from = centerOf($("pool")), jobs = [];
   for (let k = 0; k < n; k++) {
     G.pool = Math.max(0, G.pool - 1); renderPool();
@@ -687,43 +816,59 @@ async function payout(p, n) {
     await wait(120);
   }
   await Promise.all(jobs);
+  G.coinsLive = false; render();
 }
 
 // ---------- round flow ----------
 let botPlans = [];
 const PAYOUT = { 2: [4, 0], 3: [4, 2, 0], 4: [4, 2, 2, 0] };
+const isGuest = () => NET.role === "guest";
+// opts.roster (online): one entry per seat in this screen's order, this player first
 function newMatch(n, opts = {}) {
   G.mode = opts.tutorial ? "tutorial" : "match"; G.n = n;
-  G.players = [makePlayer(0)];
-  const bots = opts.bots || BOTS.slice(0, n - 1);
-  bots.forEach((b, k) => G.players.push(makePlayer(k + 1, b)));
+  if (opts.roster) G.players = opts.roster.map((r, i) => makePlayer(i, r.bot != null ? BOTS[r.bot] : null, r));
+  else {
+    G.players = [makePlayer(0)];
+    const bots = opts.bots || BOTS.slice(0, n - 1);
+    bots.forEach((b, k) => G.players.push(makePlayer(k + 1, b)));
+  }
   G.guesser = 0; G.roundNo = 0; G.place = 0; G.pool = 0; G.mid = (G.mid || 0) + 1;
-  $("titleScreen").classList.add("hide"); $("resultScreen").classList.add("hide");
-  buildSeats(); newRound();
+  ["titleScreen", "resultScreen", "statsScreen", "passScreen", "setScreen", "friendsScreen"].forEach(id => $(id).classList.add("hide"));
+  buildSeats();
+  if (isGuest()) render(); else newRound();   // a guest waits for the host's first round
   if (G.mode === "match") requestAnimationFrame(() => ante());
 }
 function newRound() {
   G.roundNo++; G.phase = "wait"; G.locked = G.finalised = G.sealed = G.stamped = false; G.call = 0;
-  for (const p of G.players) { p.up = [false, false]; p.pubUp = 0; }
-  $("count").className = ""; $("burst").classList.remove("on"); $("card").style.opacity = 1;
+  for (const p of G.players) { p.up = [false, false]; p.pubUp = 0; p.call = 0; }
+  $("count").className = ""; $("burst").classList.remove("on"); $("card").style.opacity = "";
   $("clockWrap").classList.remove("gone"); G.len = roundLen(); setClock(G.len, true);
-  botPlans = G.players.map(p => p.isHuman || p.finished ? null : planBot(p));
+  // the host's browser runs the bots and starts each round; a guest just follows
+  if (isGuest()) { botPlans = []; handleThumbs(); render(); return; }
+  botPlans = G.players.map(p => p.bot && !p.finished ? planBot(p) : null);
   const g = G.players[G.guesser];
-  if (!g.isHuman) { G.botCall = botGuess(g); G.botCallInfo = botCallLogic(g); }
-  if (AUTO_START_MS) setTimeout(() => { if (G.phase === "wait") startIntro(); }, AUTO_START_MS);
+  if (g.bot) G.botCall = botGuess(g);
+  G.callInfo = g.bot ? botCallLogic(g) : habitCall(g);
+  NET.lastPub = ""; NET.send({ t: "round", g: G.guesser, info: G.callInfo });
+  const rid = G.rid = (G.rid || 0) + 1;
+  const ms = G.mode === "tutorial" ? AUTO_START_MS.tutorial : G.roundNo === 1 ? AUTO_START_MS.first : AUTO_START_MS.next;
+  setTimeout(() => { if (rid === G.rid && G.phase === "wait") startIntro(); }, ms);
   handleThumbs(); render();
 }
 function planBot(p) {
   const f = G.forced?.[p.name], k = activeThumbs(p), b = p.bot;
   const lifts = Math.min(k, f?.lifts ?? pick(b.dist[k]));
   const ev = [];
-  const bl = f ? f.bluff : (rng() < b.bluff ? { at: 8.6 - rng() * 3.2, n: k > 1 && rng() < .3 ? 2 : 1, dur: .5 + rng() * 1.3, stay: rng() < b.stay } : null);
+  // bluffs land while the clock is still readable: 8.6–5.4 s left in a 10 s round, 3.6–2.8 s in a 5 s round
+  const hi = G.len - 1.4, lo = Math.max(LOCK_AT + .8, G.len - 4.6);
+  const bl = f ? f.bluff : (rng() < b.bluff ? { at: hi - rng() * (hi - lo), n: k > 1 && rng() < .3 ? 2 : 1, dur: .5 + rng() * 1.3, stay: rng() < b.stay } : null);
   if (bl) {
     const n = Math.min(bl.n, k);
     ev.push({ at: bl.at, up: n, pub: true });
     if (!bl.stay) ev.push({ at: Math.max(LOCK_AT + .15, bl.at - bl.dur), up: 0, pub: true });
   }
-  ev.push({ at: f?.secretAt ?? (LOCK_AT - .2 - rng() * (LOCK_AT - .3)), up: lifts, final: true });
+  // the real move comes early in the red zone (1.9–1.1 s left), where everyone watches it land
+  ev.push({ at: f?.finalAt ?? (LOCK_AT - .1 - rng() * .8), up: lifts, final: true });
   return { lifts, ev: ev.sort((a, b) => b.at - a.at), done: 0 };
 }
 // bot guessing logic: own lifts + expected lifts of everyone else (+ a little noise, sometimes its favourite number)
@@ -731,7 +876,7 @@ function botGuessFrom(g, own) {
   let est = own;
   for (const p of G.players) if (p !== g && active(p)) {
     const k = activeThumbs(p); if (!k) continue;
-    const d = p.isHuman ? (liftDist(p).d || Array(k + 1).fill(1 / (k + 1))) : p.bot.dist[k];
+    const d = p.bot ? p.bot.dist[k] : (liftDist(p).d || Array(k + 1).fill(1 / (k + 1)));
     est += d.reduce((a, v, i) => a + v * i, 0);
   }
   let c = Math.round(est + (rng() - .5) * 1.0);
@@ -749,15 +894,21 @@ function botCallLogic(g) {          // what its logic tends to call, shown on it
   const [c, n] = Object.entries(hist).sort((a, b) => b[1] - a[1])[0];
   return { c, pct: Math.round(n / N * 100) };
 }
+// a person's card shows what they usually call at a table this size (their own history)
+function habitCall(p) {
+  const tbl = (p.isHuman ? MY.calls : p.calls)?.[totalActiveThumbs()];
+  const all = tbl ? Object.entries(tbl) : [], N = all.reduce((a, [, n]) => a + n, 0);
+  if (!N) return { c: "?", pct: null };
+  const [c, n] = all.sort((a, b) => b[1] - a[1])[0];
+  return { c, pct: Math.round(n / N * 100) };
+}
+// the clock starts straight away: whose turn it is already shows in the top bar and on the orbiting arrow
 function startIntro() {
-  G.phase = "intro";
-  const g = G.players[G.guesser];
-  showBanner(g.isHuman ? "YOU GUESS" : `${g.name.toUpperCase()} GUESSES`, `ROUND ${G.roundNo}`);
-  const mid = G.mid;
-  setTimeout(() => { if (mid !== G.mid) return; hideBanner(); G.phase = "timer"; G.t0 = performance.now(); G.lastTick = G.len + 1;
-    const h = human(); h.up = [!input.L && !h.retired[0], !input.R && !h.retired[1]]; h.pubUp = h.up.filter(Boolean).length; render(); },
-    G.mode === "tutorial" ? 900 : 1100);
-  render();
+  NET.send({ t: "intro" });
+  G.phase = "timer"; G.t0 = performance.now(); G.lastTick = G.len;
+  for (const p of G.players) if (p.remote) p.pubUp = p.up.filter(Boolean).length;
+  const h = human(), d = downs(); h.up = [!d[0] && !h.retired[0], !d[1] && !h.retired[1]]; h.pubUp = h.up.filter(Boolean).length;
+  NET.sendInput(); render();
 }
 function showBanner(t, s) { const b = $("banner"); b.innerHTML = `<small>${s}</small>${t}`; b.classList.add("on"); }
 function hideBanner() { $("banner").classList.remove("on"); }
@@ -779,9 +930,8 @@ function tick(now) {
     const tl = timeLeft(now);
     setClock(tl);
     const shown = Math.ceil(tl);
-    if (shown < G.lastTick && shown >= FADE_AT) { SFX.tick(); buzz(8); }
+    if (shown < G.lastTick && shown >= 1) { SFX.tick(); buzz(8); }
     G.lastTick = shown;
-    $("clockWrap").classList.toggle("gone", tl <= FADE_AT - .25);
     G.players.forEach((p, i) => {
       const plan = botPlans[i]; if (!plan) return;
       while (plan.done < plan.ev.length && tl <= plan.ev[plan.done].at) {
@@ -790,44 +940,51 @@ function tick(now) {
         let n = e.final ? Math.max(e.up, G.locked ? cur : 0) : e.up;
         if (G.locked && n < cur) n = cur;
         p.up = [n >= 1, n >= 2];
-        if (!G.locked && e.pub) { p.pubUp = n; if (n > cur) SFX.lift(); }
+        p.pubUp = n; if (n > cur) SFX.lift();
       }
     });
-    if (!G.locked && tl <= LOCK_AT) G.locked = true;      // silent
-    if (tl <= 0 && !G.stamped) {                          // stamp exactly at 0 …
-      G.stamped = true; SFX.bell(); buzz([20, 30, 20]);
+    if (!G.locked && tl <= LOCK_AT) G.locked = true;      // red zone: lifts are final (the guess can still change)
+    if (tl <= 0 && !G.stamped) {                          // stamp exactly at 0, and the guess is sealed …
+      G.stamped = G.sealed = true; SFX.bell(); buzz([20, 30, 20]);
       $("stamp").classList.remove("on"); void $("stamp").offsetWidth; $("stamp").classList.add("on");
     }
-    if (tl <= -GRACE) finalise();                         // … but late lifts within the grace still count
+    if (tl <= -GRACE && !isGuest()) finalise();           // … but late lifts within the grace still count (a guest waits for the host)
     G.script?.onTick?.(tl);
     render();
   }
   requestAnimationFrame(tick);
 }
 
-async function finalise() {
+// net (guest only): the host's final thumbs and call, in this screen's order
+async function finalise(net = null) {
+  if (G.finalised) return;
   G.finalised = true; G.phase = "reveal"; const mid = G.mid, gone = () => mid !== G.mid;
   const g = G.players[G.guesser];
-  const call = g.isHuman ? G.call : G.botCall;
-  for (const p of G.players) if (active(p) && p.isHuman) { const k = activeThumbs(p); p.stats.lift[k][p.up.filter(Boolean).length]++; }
+  if (net) G.players.forEach((p, i) => { p.up = net.up[i]; });
+  const call = net ? net.call : g.isHuman ? G.call : g.bot ? G.botCall : g.call;
+  NET.send({ t: "fin", up: G.players.map(p => p.up), call });
+  for (const p of G.players) if (active(p) && !p.bot) { const k = activeThumbs(p); p.stats.lift[k][p.up.filter(Boolean).length]++; }
   const tableThumbs = totalActiveThumbs();
+  if (g.remote) { const c = ((g.calls ||= {})[tableThumbs] ||= {}); c[call] = (c[call] || 0) + 1; }
   render();
-  await wait(350); if (gone()) return;
+  await pause(350); if (gone()) return;
   $("card").style.opacity = 0; $("burstNum").textContent = call; $("burst").classList.add("on"); SFX.drop();
   if (G.players.some(p => !p.isHuman && p.up.filter(Boolean).length > p.pubUp)) { SFX.lift(); buzz(15); }
-  await wait(550); if (gone()) return;
+  await pause(550); if (gone()) return;
   const srcs = [];
   for (const p of G.players) if (active(p)) p.up.forEach((u, k) => { if (u) srcs.push(sourcePoint(p, k)); });
   const count = $("count"); let n = 0;
   count.textContent = 0; count.classList.remove("on");
   const c = centerOf($("burst"));
   for (const s of srcs) {
-    fly(s, c).then(() => { n++; count.textContent = n; count.classList.add("on"); count.classList.remove("pop"); void count.offsetWidth; count.classList.add("pop"); SFX.note(n); buzz(10); });
-    await wait(210);
+    fly(s, c).then(() => { n = Math.min(n + 1, srcs.length); count.textContent = n; count.classList.add("on"); count.classList.remove("pop"); void count.offsetWidth; count.classList.add("pop"); SFX.note(n); buzz(10); });
+    await pause(150);
   }
-  await wait(srcs.length ? 520 : 300); if (gone()) return;
+  await pause(srcs.length ? 420 : 250); if (gone()) return;
+  // the result comes from the thumbs, never from the animation (a hidden tab finishes animations late)
+  const total = srcs.length; n = total; count.textContent = total;
   count.classList.add("on");
-  const hit = n === call;
+  const hit = total === call;
   let finisher = null;
   if (hit) {
     count.classList.add("match"); $("burstNum").style.opacity = 0;
@@ -845,16 +1002,18 @@ async function finalise() {
   }
   G.script?.onResult?.(hit, n, call);
   render();
-  await wait(1500); if (gone()) return;
+  await pause(1500); if (gone()) return;
   if (finisher && G.mode === "match") await payout(finisher, PAYOUT[G.players.length][finisher.finished - 1]);
-  await wait(300); if (gone()) return;
+  await pause(300); if (gone()) return;
   $("burstNum").style.opacity = 1;
-  if (G.script?.hold) return;
+  if (G.script?.hold || isGuest()) return;
   nextOrEnd();
 }
 function nextOrEnd() {
   const left = G.players.filter(active);
-  if (human().finished || left.length <= 1) return endMatch();
+  // vs bots the match ends once you finish; online it goes on while a person is still playing
+  const over = NET.role ? left.length <= 1 || !left.some(p => !p.bot) : human().finished || left.length <= 1;
+  if (over) return endMatch();
   let gi = G.guesser; do { gi = (gi + 1) % G.players.length; } while (!active(G.players[gi]));
   G.guesser = gi; newRound();
 }
@@ -873,7 +1032,7 @@ function fly(a, b) {
     { transform: "translate(0,0) scale(.6) rotate(0deg)" },
     { transform: `translate(${dx * .5}px,${dy * .5 - 70}px) scale(1.5) rotate(${dx > 0 ? 25 : -25}deg)`, offset: .5 },
     { transform: `translate(${dx}px,${dy}px) scale(.9) rotate(0deg)`, opacity: 1, offset: .9 },
-    { transform: `translate(${dx}px,${dy}px) scale(.3)`, opacity: 0 }], { duration: 560, easing: "cubic-bezier(.4,0,.3,1)" });
+    { transform: `translate(${dx}px,${dy}px) scale(.3)`, opacity: 0 }], { duration: 450, easing: "cubic-bezier(.4,0,.3,1)" });
   return anim.finished.then(() => img.remove());
 }
 function plusAt(p, txt) {
@@ -882,20 +1041,28 @@ function plusAt(p, txt) {
   el.style.left = (pt.x - s.left - 30) + "px"; el.style.top = (pt.y - s.top - 50) + "px"; stage.appendChild(el); setTimeout(() => el.remove(), 1300);
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
+// online, a hidden tab (browsers pause its animations) or a backlog of host messages skips the show, so nobody falls behind
+const hurry = () => !!NET.role && (document.hidden || NET.backlog > 1);
+const pause = ms => hurry() ? Promise.resolve() : wait(ms);
 
 // ---------- end of match ----------
-async function endMatch() {
+// order (guest only): the host's ranking of whoever was still playing, as seat indices on this screen
+async function endMatch(order = null) {
   G.phase = "ending";
-  const rest = G.players.filter(active);
-  const restBots = rest.filter(p => !p.isHuman).sort(() => rng() - .5);
-  const restHuman = rest.filter(p => p.isHuman);
+  let rest;
+  if (order) rest = order.map(i => G.players[i]);
+  else {
+    const left = G.players.filter(active);
+    rest = [...left.filter(p => p.bot).sort(() => rng() - .5), ...left.filter(p => !p.bot)];
+    NET.send({ t: "end", order: rest.map(p => p.i) });
+  }
   const pay = PAYOUT[G.players.length];
-  for (const p of [...restBots, ...restHuman]) { p.finished = ++G.place; render(); await payout(p, pay[p.finished - 1]); }
-  await wait(500);
+  for (const p of rest) { p.finished = ++G.place; render(); await payout(p, pay[p.finished - 1]); }
+  await pause(500);
   G.phase = "idle"; G.mode = "result";
   const grades = ["A+", "B", "C", "D"];
   $("repTable").innerHTML = [...G.players].sort((a, b) => a.finished - b.finished).map(p =>
-    `<tr class="${p.isHuman ? "me" : ""}"><td class="grade">${grades[p.finished - 1]}</td><td>${p.name}</td>
+    `<tr class="${p.isHuman ? "me" : ""}"><td class="grade">${grades[p.finished - 1]}</td><td>${esc(p.name)}</td>
      <td><span style="display:inline-flex;gap:3px;vertical-align:middle">${p.retired.map(r => PIP(r)).join("")}</span></td><td class="r">+${pay[p.finished - 1]} <span class="coin sm"></span></td></tr>`).join("");
   const me = human(), ml = me.stats.lift[2], mt = ml.reduce((a, b) => a + b, 0) || 1, fav = ml.indexOf(Math.max(...ml));
   $("repNote").innerHTML = (me.finished === 1 ? "Excellent reading! " : me.finished === pay.length ? "Pay attention in class. " : "Not bad. ") +
@@ -913,35 +1080,63 @@ function render() {
   const h = human(), inGame = G.mode === "match" || G.mode === "tutorial";
   stage.classList.toggle("mode-off", !inGame);
   for (const [k, id] of [[0, "thumbL"], [1, "thumbR"]]) {
-    const w = $(id), held = k ? input.R : input.L;
+    const w = $(id), down = downs()[k];
     const retired = inGame && h?.retired[k];
     let up;
-    if (!inGame || !h) up = !held; else if (G.phase === "reveal" || G.phase === "timer") up = h.up[k]; else up = !held;
+    if (!inGame || !h) up = !down; else if (G.phase === "reveal" || G.phase === "timer") up = h.up[k]; else up = !down;
     w.classList.toggle("up", !!up && !retired); w.classList.toggle("down", !up && !retired);
-    w.classList.toggle("retired", !!retired); w.querySelector(".medal").style.display = retired ? "" : "none";
+    w.classList.toggle("retired", !!retired);
   }
   const mb = $("myBubble"), pub = h && inGame && (G.phase === "timer" || G.phase === "tut") ? h.pubUp : 0;
   mb.classList.toggle("on", pub > 0);
   if (pub > 0 && mb.dataset.n != pub) { mb.innerHTML = emojiImg().repeat(pub); mb.dataset.n = pub; }
-  $("holdHint").style.opacity = inGame && G.phase === "wait" && !heldAll() ? 1 : 0;
-  $("holdHint").textContent = h && h.retired.some(Boolean) ? "hold your thumb to start" : "hold both thumbs to start";
+  // the round starts by itself; nudge the player to get their thumbs down first
+  $("holdHint").style.opacity = inGame && G.phase === "wait" && !allDown() ? 1 : 0;
+  const one = h && h.retired.some(Boolean);
+  $("holdHint").textContent = inv() ? (one ? "let go: thumb down" : "let go: thumbs down")
+    : (one ? "hold your thumb down" : "hold both thumbs down");
   $("roundChip").textContent = G.mode === "tutorial" ? "PRACTICE" : `ROUND ${G.roundNo}`;
   $("tokN").textContent = G.tokens;
   if (inGame && h) {
     const g = G.players[G.guesser], mine = g === h;
-    const [x, y] = CARD_POS[mine ? "me" : g.seat];
-    const card = $("card");
-    card.style.left = x + "%"; card.style.top = y + "%";
+    const card = $("card"), on = cardOn();
     card.classList.toggle("bot", !mine);
-    $("cardNum").textContent = mine ? G.call : (G.botCallInfo ? G.botCallInfo.c : "?");
-    $("cardSub").innerHTML = mine ? (G.sealed ? "sealed!" : heldAll() ? "slide ↕" : "")
-      : G.botCallInfo ? `chance: <b>${G.botCallInfo.pct}%</b>` : "";
+    card.classList.toggle("gone", !on);
+    card.classList.toggle("red", G.locked && G.phase === "timer");
+    $("clockWrap").classList.toggle("gone", on || !["wait", "intro", "timer"].includes(G.phase));
+    $("cardNum").textContent = mine ? G.call : (G.callInfo ? G.callInfo.c : "?");
+    $("cardSub").innerHTML = mine ? (G.sealed ? "locked!" : allDown() ? "slide ↕" : "")
+      : G.callInfo?.pct != null ? `<b>${G.callInfo.pct}%</b>` : "";
     $("cardArrows").style.display = mine && !G.sealed ? "" : "none";
     card.classList.toggle("sealed", mine && G.sealed);
     $("clockWrap").classList.toggle("off", G.mode === "tutorial" && G.phase === "tut");
+    $("turnName").textContent = mine ? "YOUR TURN" : `${shortName(g.name).toUpperCase()}'S TURN`;
+    $("turnDot").style.background = mine ? "var(--yellow)" : g.color;
+    aimArrow(g);
     $("pool").style.display = G.mode === "match" ? "" : "none";
+    $("pool").classList.toggle("dim", !G.coinsLive);
   }
   renderSeats();
+  NET.syncPub();
+}
+
+// long names are cut so "'S TURN" always fits
+const shortName = n => [...n].length > 6 ? [...n].slice(0, 5).join("") + "…" : n;
+// the turn arrow always travels clockwise, like the turn order
+let arrowDeg = 180, arrowKey = "";
+function aimArrow(g) {
+  const a = $("turnArrow"), tut = G.mode === "tutorial" && G.phase === "tut";
+  a.classList.toggle("off", tut);
+  const key = `${G.mid}:${G.guesser}`;
+  if (key === arrowKey || tut) return;
+  // aim at the guesser's thumbs
+  const c = centerOf($("clockWrap")), L = centerOf(g.isHuman ? $("thumbL") : g.hands[0]), Rt = centerOf(g.isHuman ? $("thumbR") : g.hands[1]);
+  const deg = Math.atan2((L.x + Rt.x) / 2 - c.x, c.y - (L.y + Rt.y) / 2) * 180 / Math.PI;
+  const fresh = !arrowKey.startsWith(G.mid + ":");
+  arrowKey = key;
+  arrowDeg = fresh ? deg : arrowDeg + ((deg - arrowDeg) % 360 + 360) % 360;
+  a.style.transition = fresh ? "none" : ""; a.style.transform = `rotate(${arrowDeg}deg)`;
+  $("turnTri").setAttribute("fill", g.isHuman ? "var(--yellow)" : g.color);
 }
 
 // ---------- title ----------
@@ -949,38 +1144,43 @@ document.querySelectorAll("#seg button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("on", x === b)); G.n = +b.dataset.n;
 });
 $("playBtn").onclick = () => { ac(); if (canAfford()) newMatch(G.n); };
-$("againBtn").onclick = () => { if (canAfford()) newMatch(G.n); else toTitle(); };
+$("againBtn").onclick = () => { if (NET.role) { G.mode = "lobby"; openFriends(); NET.ready(); } else if (canAfford()) newMatch(G.n); else toTitle(); };
 // the table stake needs coins; on PlayTama, more Tama Tokens come from visiting games on the home page
-function canAfford() {
+const BROKE = () => `You need ${G.stake} coins to sit at the table.<br><a href="../../">Collect Tama Tokens on PlayTama</a>`;
+function canPay() {
   if (TAMA) G.tokens = TAMA.tokens();
-  if (G.tokens >= G.stake) { $("brokeNote").innerHTML = ""; return true; }
-  if (!TAMA) { G.tokens = 20; saveTokens(); render(); return true; }   // standalone file: just refill
-  setTimeout(() => { $("brokeNote").innerHTML = `You need ${G.stake} coins to sit at the table.<br><a href="../../">Collect Tama Tokens on PlayTama</a>`; });
+  else if (G.tokens < G.stake) { G.tokens = 20; saveTokens(); }   // standalone file: just refill
+  return G.tokens >= G.stake;
+}
+function canAfford() {
+  if (canPay()) { $("brokeNote").innerHTML = ""; return true; }
+  setTimeout(() => { $("brokeNote").innerHTML = BROKE(); });
   return false;
 }
 if (TAMA) $("homeLink").style.display = "";
-$("menuBtn").onclick = toTitle;
+$("menuBtn").onclick = () => { NET.leave(); toTitle(); };
 $("howBtn").onclick = () => { ac(); startTutorial(); };
 function toTitle() {
   G.mid = (G.mid || 0) + 1; hideBanner(); $("count").className = ""; $("burst").classList.remove("on"); $("modal").classList.add("hide");
   if (TAMA) G.tokens = TAMA.tokens();
   G.mode = "title"; G.phase = "idle"; G.players = []; G.script = null; G.forced = null; coach(""); $("seats").innerHTML = "";
-  $("titleScreen").classList.remove("hide"); $("resultScreen").classList.add("hide"); $("statsScreen").classList.add("hide"); render();
+  $("titleScreen").classList.remove("hide"); $("resultScreen").classList.add("hide"); $("statsScreen").classList.add("hide"); $("passScreen").classList.add("hide"); $("setScreen").classList.add("hide"); $("friendsScreen").classList.add("hide"); render();
 }
 
 // ---------- leave the table ----------
-// vs bots: leave for free (stake comes back). Online PvP: leaving = forfeit, you take last place and lose the stake.
-const VS_BOTS = true;
+// vs bots: leave for free (stake comes back). With friends: leaving = forfeit, a bot takes your seat and you lose the stake.
 $("exitBtn").onclick = () => {
+  const done = human()?.finished;
   $("modalText").innerHTML = G.mode === "tutorial" ? "Skip the tutorial?"
-    : VS_BOTS ? "It's only bots — your coins come back.<br><small>(Online, leaving = last place.)</small>"
-    : "Leaving now counts as a loss. You finish last and lose your coins.";
+    : !NET.role ? "It's only bots — your coins come back."
+    : NET.role === "host" ? "You're the host: leaving closes the table for everyone." + (done ? "" : " You lose your coins.")
+    : done ? "You're finished. Leave the table?" : "Leaving now counts as a loss. A bot takes your seat and you lose your coins.";
   $("modal").classList.remove("hide");
 };
 $("stayBtn").onclick = () => $("modal").classList.add("hide");
 $("leaveBtn").onclick = () => {
-  if (G.mode === "match" && !human()?.finished) { if (VS_BOTS) { G.tokens += G.stake; saveTokens(); } }
-  toTitle();
+  if (G.mode === "match" && !human()?.finished && !NET.role) { G.tokens += G.stake; saveTokens(); }
+  NET.leave(); toTitle();
 };
 
 // ---------- my stats ----------
@@ -1005,6 +1205,275 @@ $("statsBtn").onclick = () => {
 };
 $("statsBack").onclick = toTitle;
 
+// ---------- Tama Pass (the same save as the PlayTama home page) ----------
+function openPass() {
+  $("passCard").innerHTML = `<h2>TAMA PASS</h2>
+    <table>
+      <tr><td>Name</td><td class="r">${esc(TAMA.name())}</td></tr>
+      <tr><td>Coins</td><td class="r">${TAMA.tokens()} <span class="coin sm"></span></td></tr>
+    </table>
+    <p class="pnote">Your progress is saved in this browser. Write this code down to keep it or to carry it to another device.</p>
+    <div class="prow"><code>${esc(TAMA.passCode())}</code><button class="btn small" id="passCopy">COPY</button></div>
+    <form class="prow" id="passForm"><input id="passIn" autocomplete="off" spellcheck="false" placeholder="have a code?"><button class="btn small">LOAD</button></form>
+    <p class="pnote" id="passMsg" role="status"></p>`;
+  $("passCopy").onclick = async () => {
+    try { await navigator.clipboard.writeText(TAMA.passCode()); $("passMsg").textContent = "Copied!"; }
+    catch { getSelection().selectAllChildren($("passCard").querySelector("code")); $("passMsg").textContent = "Select and copy the code"; }
+  };
+  $("passForm").onsubmit = e => {
+    e.preventDefault();
+    const code = $("passIn").value;
+    // cheat: "MORE TOKEN PLEASE" (letters only, never a real pass code) gives 10 coins
+    if (/^MORETOKENS?(PLE)?PLEASE$/.test(code.toUpperCase().replace(/[^A-Z]/g, ""))) {
+      ac(); G.tokens += 10; saveTokens(); SFX.coin(); render(); openPass(); $("passMsg").textContent = "+10 coins!"; return;
+    }
+    const check = TAMA.checkPass(code);
+    if (!check.ok) { $("passMsg").textContent = check.error; return; }
+    if (!confirm(`Load this pass? Your coins become ${check.save.tokens}.`)) return;
+    TAMA.usePass(code); G.tokens = TAMA.tokens(); render(); openPass(); $("passMsg").textContent = "Pass loaded. Welcome back!";
+  };
+  $("titleScreen").classList.add("hide"); $("passScreen").classList.remove("hide");
+}
+$("passBack").onclick = toTitle;
+
+// ---------- settings + controls legend ----------
+function renderControls() {
+  document.querySelectorAll("#ctlSeg button").forEach(b => b.classList.toggle("on", +b.dataset.inv === +SET.invert));
+  $("ctlNote").innerHTML = SET.invert
+    ? "Thumbs rest down. Click to lift one.<br>Move the mouse without clicking to pick your number.<br>Phone: a finger still means thumb down."
+    : "Hold left + right click: thumbs down. Let go to lift.<br>Move the mouse while holding to pick your number.";
+  $("legend").innerHTML = SET.invert
+    ? `<b>CONTROLS</b>Click <kbd>LEFT</kbd> or <kbd>RIGHT</kbd> = thumb up.<br>Let go = thumb down.
+       <b>YOUR GUESS</b>Don't click, just move the mouse ↕
+       <b>KEYBOARD</b>Hold <kbd>F</kbd> / <kbd>J</kbd> = thumb up.<br><kbd>↑</kbd><kbd>↓</kbd> = your guess.
+       <b>PHONE</b>One finger each side = down. Slide ↕.`
+    : `<b>CONTROLS</b>Hold <kbd>LEFT</kbd> + <kbd>RIGHT</kbd> click = thumbs down.<br>Let go = thumb up.
+       <b>YOUR GUESS</b>Keep your thumbs held and move the mouse ↕
+       <b>KEYBOARD</b><kbd>F</kbd> + <kbd>J</kbd> (or both <kbd>Shift</kbd>) · <kbd>↑</kbd><kbd>↓</kbd>
+       <b>PHONE</b>One finger each side. Slide ↕.`;
+}
+document.querySelectorAll("#ctlSeg button").forEach(b => b.onclick = () => {
+  SET.invert = b.dataset.inv === "1"; saveSet(); renderControls(); render();
+});
+$("setBtn").onclick = () => { renderControls(); $("titleScreen").classList.add("hide"); $("setScreen").classList.remove("hide"); };
+$("setBack").onclick = toTitle;
+renderControls();
+
+// ---------- play with friends (online) ----------
+// WebRTC through PeerJS and its free public broker, loaded only when this screen is used.
+// The host's browser runs the match (clock, bots, results); friends send their thumbs and guess, and mirror the host.
+// Messages use seat numbers in the host's order. A guest turns them into its own order: itself first, same clockwise order.
+const PEER_SRC = "https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js", ROOM = "playtama-mj-", CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+const FRIEND_COLORS = ["#fea046", "#aa88ff", "#fe94de", "#68c1ff"];
+let peerLib = null;
+const loadPeer = () => peerLib ||= new Promise((ok, no) => {
+  const s = document.createElement("script"); s.src = PEER_SRC; s.onload = ok;
+  s.onerror = () => { peerLib = null; no(new Error("PeerJS did not load")); }; document.head.appendChild(s);
+});
+const myName = () => ((TAMA ? TAMA.name() : "") || "Player").slice(0, 12);
+// friends' stats arrive over the network: keep only the numbers we use
+const cleanLift = l => ({ 1: [0, 1].map(i => +l?.[1]?.[i] || 0), 2: [0, 1, 2].map(i => +l?.[2]?.[i] || 0) });
+const cleanCalls = c => Object.fromEntries(Object.entries(c || {}).slice(0, 12).map(([t, tbl]) =>
+  [+t || 0, Object.fromEntries(Object.entries(tbl || {}).slice(0, 12).map(([k, v]) => [+k || 0, +v || 0]))]));
+
+const NET = {
+  role: null, peer: null, pending: null, host: null, code: "", lobby: [], n: 4, me: 0, N: 0, lastPub: "", q: Promise.resolve(), backlog: 0,
+  local(hi) { return (hi - this.me + this.N) % this.N; },
+  // host → the friends playing this match
+  send(m) { if (this.role === "host" && G.mode === "match") for (const p of G.players) if (p.conn?.open) p.conn.send(m); },
+  // guest → host: my thumbs and (when I guess) my number
+  sendInput() { if (this.role === "guest" && G.mode === "match" && this.host?.open && human()) this.host.send({ t: "in", up: human().up, call: G.call }); },
+  // host: tell friends whenever the visible thumbs change
+  syncPub() {
+    if (this.role !== "host" || G.phase !== "timer") return;
+    const k = G.players.map(p => p.pubUp).join();
+    if (k !== this.lastPub) { this.lastPub = k; this.send({ t: "st", pub: G.players.map(p => p.pubUp) }); }
+  },
+  ready() {
+    if (this.role === "host") return lobbyOut();
+    if (this.role !== "guest" || !this.host?.open) return;
+    const ok = canPay(); this.host.send({ t: "ready", ok, lift: MY.lift, calls: MY.calls });
+    $("fMsg").innerHTML = ok ? "" : BROKE();
+  },
+  leave() {
+    this.pending?.destroy(); this.pending = null;
+    if (!this.role) return;
+    if (this.role === "host") for (const p of this.lobby) if (p.conn?.open) p.conn.send({ t: "closed" });
+    const peer = this.peer;
+    Object.assign(this, { role: null, peer: null, host: null, code: "", lobby: [], q: Promise.resolve(), backlog: 0 });
+    setTimeout(() => peer?.destroy(), 300);   // let the goodbye go out first
+  },
+};
+
+function openFriends(msg = "") {
+  ["titleScreen", "resultScreen"].forEach(id => $(id).classList.add("hide"));
+  $("friendsScreen").classList.remove("hide"); $("fMsg").innerHTML = msg; renderRoom();
+}
+function renderRoom() {
+  const host = NET.role === "host";
+  $("fPick").hidden = !!NET.role; $("fRoom").hidden = !NET.role;
+  if (!NET.role) return;
+  $("bigCode").textContent = NET.code;
+  const people = host ? NET.lobby.filter(p => !p.conn || p.conn.open) : NET.lobby;
+  const n = host ? G.n : NET.n, playing = people.filter(p => p.ready).length, bots = Math.max(0, n - playing);
+  $("roster").innerHTML = people.map((p, i) => `<tr><td>${esc(p.name)}${p.me || p.you ? " (you)" : ""}</td>
+      <td class="r">${i === 0 ? "host" : p.ready ? "ready ✓" : "not ready"}</td></tr>`).join("")
+    + (bots ? `<tr><td>🤖 ${bots} bot${bots > 1 ? "s" : ""}</td><td class="r">fill the table</td></tr>` : "");
+  $("fInfo").textContent = !host ? "Waiting for the host to start…"
+    : playing > 1 ? `Table of ${n}. Press START when everyone is in.` : "Share the code. Waiting for a friend…";
+  $("goBtn").style.display = host ? "" : "none"; $("goBtn").disabled = playing < 2;
+}
+function netFail(e) {
+  const msg = e?.type === "peer-unavailable" ? "No table with that code. Check the letters?"
+    : e?.type === "full" ? "That table is full or already playing."
+    : "Couldn't connect. Check the internet and try again.";
+  NET.leave(); openFriends(msg);
+}
+
+// ----- host -----
+function hostTable(tries = 0) {
+  if (!canPay()) { $("fMsg").innerHTML = BROKE(); return; }
+  $("fMsg").textContent = "Opening a table…";
+  loadPeer().then(() => {
+    const code = Array.from({ length: 4 }, () => CODE_ABC[Math.random() * CODE_ABC.length | 0]).join("");
+    const peer = NET.pending = new Peer(ROOM + code);
+    peer.on("open", () => {
+      Object.assign(NET, { role: "host", peer, pending: null, code, lobby: [{ name: myName(), color: FRIEND_COLORS[0], ready: true, me: true }] });
+      $("fMsg").textContent = ""; renderRoom();
+    });
+    peer.on("connection", c => { c.on("data", m => onHostData(c, m)); c.on("close", () => onFriendGone(c)); });
+    peer.on("disconnected", () => { if (NET.peer === peer) peer.reconnect(); });   // lost the broker: open tables keep working
+    peer.on("error", e => {
+      if (NET.peer === peer) return console.warn(e);
+      peer.destroy(); NET.pending = null;
+      if (e.type === "unavailable-id" && tries < 5) hostTable(tries + 1); else netFail(e);
+    });
+  }, () => netFail());
+}
+function lobbyOut() {
+  NET.lobby = NET.lobby.filter(p => !p.conn || p.conn.open);
+  NET.lobby.forEach(p => p.conn?.send({ t: "lobby", n: G.n, people: NET.lobby.map(q => ({ name: q.name, ready: q.ready, you: q === p })) }));
+  renderRoom();
+}
+function onHostData(c, m) {
+  if (NET.role !== "host" || !m) return;
+  const entry = NET.lobby.find(p => p.conn === c);
+  if (m.t === "hello" && !entry) {
+    if (G.mode === "match" || NET.lobby.length >= G.n) { c.send({ t: "full" }); setTimeout(() => c.close(), 300); return; }
+    const base = String(m.name || "Player").slice(0, 12); let name = base, k = 2;
+    while (NET.lobby.some(p => p.name === name) || name === "You") name = `${base} ${k++}`;
+    NET.lobby.push({ conn: c, name, color: FRIEND_COLORS[NET.lobby.length % 4], ready: !!m.ok, lift: cleanLift(m.lift), calls: cleanCalls(m.calls) });
+    SFX.blip(); lobbyOut();
+  } else if (m.t === "ready" && entry) {
+    Object.assign(entry, { ready: !!m.ok, lift: cleanLift(m.lift), calls: cleanCalls(m.calls) }); lobbyOut();
+  } else if (m.t === "in" && G.mode === "match") {
+    const p = G.players.find(q => q.conn === c); if (p) applyRemote(p, m);
+  }
+}
+// a friend's thumbs, under the same rules as your own: reversible before the red zone, final in it
+function applyRemote(p, m) {
+  if (G.finalised || p.finished || !p.remote || !Array.isArray(m.up)) return;
+  for (let k = 0; k < 2; k++) {
+    const want = !!m.up[k] && !p.retired[k];
+    if (G.phase === "timer" && G.locked) { if (want && !p.up[k]) { p.up[k] = true; SFX.lift(); } }
+    else if (want !== p.up[k]) { p.up[k] = want; if (want && G.phase === "timer") SFX.lift(); }
+  }
+  if (G.phase === "timer") p.pubUp = p.up.filter(Boolean).length;
+  if (G.players[G.guesser] === p && !G.sealed) p.call = Math.max(0, Math.min(totalActiveThumbs(), m.call | 0));
+  render();
+}
+function onFriendGone(c) {
+  if (NET.role !== "host") return;
+  const p = G.mode === "match" && G.players.find(q => q.conn === c);
+  if (p && !p.finished && G.phase !== "ending") { takeOver(p); NET.send({ t: "bot", i: p.i, b: BOTS.indexOf(p.bot) }); }
+  lobbyOut();
+}
+// a friend left mid-match: a bot plays on in their seat
+function takeOver(p, bi = null) {
+  if (bi == null) { const used = new Set(G.players.map(q => q.bot?.name)); bi = BOTS.findIndex(b => !used.has(b.name)); }
+  p.bot = BOTS[bi]; p.remote = false; p.conn = null; p.name += " 🤖";
+  if (p.el) p.el.querySelector(".name").textContent = p.name;
+  if (NET.role === "host" && !G.finalised) {
+    botPlans[p.i] = planBot(p);
+    if (G.players[G.guesser] === p) G.botCall = botGuessFrom(p, botPlans[p.i].lifts);
+  }
+  render();
+}
+function hostStart() {
+  if (!canPay()) { $("fMsg").innerHTML = BROKE(); return; }
+  const people = NET.lobby.filter(p => p.me || (p.ready && p.conn.open)).slice(0, G.n);
+  if (people.length < 2) return;
+  const bots = BOTS.slice(0, G.n - people.length);
+  const roster = [...people.map(p => ({ name: p.name, color: p.color, lift: p.me ? MY.lift : p.lift, calls: p.me ? MY.calls : p.calls })),
+    ...bots.map((b, k) => ({ name: b.name, bot: k }))];
+  Object.assign(NET, { N: roster.length, me: 0, lastPub: "" });
+  people.forEach((p, i) => { if (p.conn) { p.ready = false; p.conn.send({ t: "start", n: G.n, me: i, roster }); } });
+  ac(); newMatch(G.n, { roster: roster.map((r, i) => i ? { ...r, remote: r.bot == null, conn: people[i]?.conn } : {}) });
+}
+
+// ----- guest -----
+function joinTable() {
+  const code = $("codeIn").value.toUpperCase().replace(/[^A-Z]/g, "");
+  if (code.length !== 4) { $("fMsg").textContent = "A table code has 4 letters."; return; }
+  if (!canPay()) { $("fMsg").innerHTML = BROKE(); return; }
+  NET.leave(); $("fMsg").textContent = "Joining…";
+  loadPeer().then(() => {
+    const peer = NET.pending = new Peer();
+    peer.on("open", () => {
+      const c = peer.connect(ROOM + code, { reliable: true });
+      c.on("open", () => {
+        Object.assign(NET, { role: "guest", peer, pending: null, host: c, code, lobby: [] });
+        c.send({ t: "hello", name: myName(), ok: canPay(), lift: MY.lift, calls: MY.calls });
+        $("fMsg").textContent = ""; renderRoom();
+      });
+      // one message at a time, so a reveal finishes before the next round starts
+      c.on("data", m => {
+        NET.backlog++;
+        NET.q = NET.q.then(() => onGuestData(m)).catch(e => console.error(e)).then(() => { NET.backlog--; });
+      });
+      c.on("close", hostGone);
+    });
+    peer.on("error", e => { if (NET.role !== "guest") netFail(e); });
+  }, () => netFail());
+}
+const localize = arr => G.players.map((_, li) => arr[(li + NET.me) % NET.N]);
+async function onGuestData(m) {
+  if (NET.role !== "guest" || !m) return;
+  const inMatch = G.mode === "match";
+  switch (m.t) {
+    case "lobby": NET.lobby = m.people; NET.n = m.n; renderRoom(); break;
+    case "full": netFail({ type: "full" }); break;
+    case "closed": hostGone(); break;
+    case "start":
+      Object.assign(NET, { me: m.me, N: m.roster.length }); ac();
+      newMatch(m.n, { roster: m.roster.map((_, li) => { const r = m.roster[(li + m.me) % NET.N]; return li ? { ...r, remote: r.bot == null } : {}; }) });
+      break;
+    case "round": if (inMatch) { G.guesser = NET.local(m.g); newRound(); G.callInfo = m.info; render(); } break;
+    case "intro": if (inMatch && G.phase === "wait") startIntro(); break;
+    case "st":
+      if (!inMatch || !["intro", "timer"].includes(G.phase)) break;
+      m.pub.forEach((n, hi) => { const p = G.players[NET.local(hi)]; if (!p.isHuman) { if (n > p.pubUp && G.phase === "timer") SFX.lift(); p.pubUp = n; } });
+      render(); break;
+    case "fin": if (inMatch) await finalise({ up: localize(m.up), call: m.call }); break;
+    case "end": if (inMatch) await endMatch(m.order.map(hi => NET.local(hi))); break;
+    case "bot": if (inMatch) takeOver(G.players[NET.local(m.i)], m.b); break;
+  }
+}
+function hostGone() {
+  if (NET.role !== "guest") return;
+  const mid = G.mode === "match" && !human()?.finished;
+  if (mid) { G.tokens += G.stake; saveTokens(); }   // not your fault: the stake comes back
+  NET.leave(); toTitle();
+  openFriends("The host closed the table." + (mid ? " Your coins came back." : ""));
+}
+
+$("friendsBtn").onclick = () => { ac(); openFriends(); };
+$("friendsBack").onclick = () => { NET.leave(); toTitle(); };
+$("hostBtn").onclick = () => hostTable();
+$("joinBtn").onclick = joinTable;
+$("codeIn").addEventListener("keydown", e => { if (e.key === "Enter") joinTable(); });
+$("goBtn").onclick = hostStart;
+
 // ---------- tutorial ----------
 function coach(html, top = "28.5%", arrow = null) {
   const c = $("coach"); c.innerHTML = html; c.style.top = top; c.style.opacity = html ? 1 : 0;
@@ -1020,26 +1489,35 @@ function coach(html, top = "28.5%", arrow = null) {
 }
 const step = (n, t) => `<span class="step">HOW TO PLAY · ${n}/5</span>${t}`;
 function startTutorial() {
-  G.forced = { Ayu: { lifts: 1, bluff: { at: 8.2, n: 1, dur: 1.4, stay: false }, secretAt: 1.2 } };
+  G.forced = { Ayu: { lifts: 1, bluff: { at: 8.2, n: 1, dur: 1.4, stay: false }, finalAt: 1.2 } };
   newMatch(2, { tutorial: true, bots: [BOTS[0]] });
   G.phase = "tut"; let s = 0, okSince = null, calls = 0;
-  const S = [
-    { t: () => step(1, "Hold <mark>both thumbs</mark> down.<br>Mouse: left + right click.<br>Phone: one finger each side."), arrow: [.4, .37, .27, .74],
-      ok: () => input.L && input.R, hold: 500 },
-    { t: () => step(2, "Now <mark>lift one</mark>.<br>Everyone sees it — that's a bluff."), arrow: [.4, .34, .2, .62],
-      ok: () => input.L !== input.R, hold: 700, tutPub: true },
+  const both = () => downs().every(Boolean), oneUp = () => downs().filter(Boolean).length === 1;
+  // inverted controls: thumbs rest down, so there is no "hold both" step
+  const S = inv() ? [
+    { t: () => step(1, "Hold <mark>left click</mark> to lift your left thumb,<br><mark>right click</mark> to lift your right thumb."),
+      ok: oneUp, hold: 700, tutPub: true },
+    { t: () => step(2, "Everyone sees it — that's a <mark>bluff</mark>.<br>Let go to put it back down.<br>Until the last 2 seconds you can <mark>change your mind</mark>."),
+      ok: both, hold: 400 },
+    { t: () => step(3, "This is <mark>your number</mark>.<br>Don't click, just move the mouse ↕"),
+      ok: () => calls >= 2 && both(), hold: 600, card: true },
+  ] : [
+    { t: () => step(1, "Hold <mark>both thumbs</mark> down.<br>Mouse: left + right click.<br>Phone: one finger each side."),
+      ok: both, hold: 500 },
+    { t: () => step(2, "Now <mark>lift one</mark>.<br>Everyone sees it — that's a bluff."),
+      ok: oneUp, hold: 700, tutPub: true },
     { t: () => step(2, "Put it back down.<br>Until the last 2 seconds you can <mark>change your mind</mark>."),
-      ok: () => input.L && input.R, hold: 400 },
-    { t: () => step(3, "This is <mark>your number</mark>.<br>Keep both held and slide ↕"), arrow: [.5, .37, .5, .6],
-      ok: () => calls >= 2 && input.L && input.R, hold: 600 },
+      ok: both, hold: 400 },
+    { t: () => step(3, "This is <mark>your number</mark>.<br>Keep both held and slide ↕"),
+      ok: () => calls >= 2 && both(), hold: 600, card: true },
   ];
   G.script = { onCall: () => calls++ };
   const tut = () => {
     if (G.mode !== "tutorial" || G.phase !== "tut") return;
-    const h = human(); h.up = [!input.L, !input.R];
+    const h = human(); h.up = downs().map(d => !d);
     h.pubUp = S[s]?.tutPub ? h.up.filter(Boolean).length : 0;
-    const st = S[s];
-    coach(st.t(), "28.5%", st.arrow);
+    const st = S[s]; G.tutCard = !!st.card;
+    coach(st.t(), "66%", st.arrow);
     if (st.ok()) { okSince ??= performance.now(); if (performance.now() - okSince > st.hold) { s++; okSince = null; if (s >= S.length) return practice(); } }
     else okSince = null;
     render(); $("holdHint").style.opacity = 0;
@@ -1051,22 +1529,23 @@ function startTutorial() {
     G.script = {
       hold: true,
       onTick: tl => {
-        if (tl > 6.9) coach("Guess the <mark>total</mark>. Ayu mostly lifts 1…", "33.5%");
-        else if (tl > 5.2) coach("Ayu flashed a thumb! <mark>Bluff?</mark>", "33.5%");
-        else if (tl > 0) coach("Clock's gone. <mark>Count in your head</mark>…", "33.5%");
+        if (tl > 6.9) coach("Guess the <mark>total</mark>. Ayu mostly lifts 1…", "66%");
+        else if (tl > 5.2) coach("Ayu flashed a thumb! <mark>Bluff?</mark>", "66%");
+        else if (tl > LOCK_AT) coach("Listen to the <mark>ticks</mark>.<br>The bell is coming…", "66%");
+        else if (tl > 0) coach("Red zone! Lifts <mark>can't go back down</mark>.<br>Change your number until the bell.", "66%");
         else coach("");
       },
       onResult: (hit, n, call) => {
         if (hit) {
-          coach(step(5, `<mark>You read it!</mark> ${n} up, you said ${call}.<br>Your thumb retires with a star.<br>Two stars = you win.`), "67%");
+          coach(step(5, `<mark>You read it!</mark> ${n} up, you said ${call}.<br>That thumb leaves the table.<br>Score with both = you win.`), "68%");
           setTimeout(() => { coach(""); endTutorial(); }, 2600);
         } else {
-          coach(step(4, `Total was ${n}, you said ${call}.<br>Anything up in the last 2 seconds counts.<br><mark>Try again</mark>.`), "67%");
+          coach(step(4, `Total was ${n}, you said ${call}.<br>Whatever is up at the bell counts.<br><mark>Try again</mark>.`), "68%");
           setTimeout(() => { const h = human(); h.points = 0; h.retired = [false, false]; G.roundNo = 0; newRound(); }, 2600);
         }
       },
     };
-    coach(step(4, "Practice duel vs Ayu.<br><mark>Hold both</mark> to start."), "28.5%");
+    coach(step(4, `Practice duel vs Ayu.<br>${inv() ? "Let go:" : "Hold both"} <mark>thumbs down</mark>, it starts by itself.`), "66%");
     newRound();
   }
 }

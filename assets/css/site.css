@@ -47,7 +47,7 @@ body {
   margin: 0; background: var(--bg); color: var(--ink);
   font: 500 17px/1.5 var(--body);
   background-image: radial-gradient(var(--dot) 1.6px, transparent 1.7px);
-  background-size: 26px 26px;
+  background-size: 40px 40px;
 }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
@@ -104,10 +104,12 @@ button { font: inherit; color: inherit; }
   padding: 3px 14px 3px 6px; box-shadow: 0 3px 0 var(--line);
 }
 .tok-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+@media (prefers-color-scheme: dark) { .tok-btn { background: #fff; color: var(--on-color); } }
 .tok-btn .emo { width: 30px; height: 30px; vertical-align: middle; }
 
 /* ---------- hero ---------- */
 .hero { text-align: center; padding: 10px 16px 28px; }
+#heroEgg { width: fit-content; margin: 0 auto; }   /* hover and taps only count on the egg itself */
 .hero-egg { width: clamp(100px, 14vw, 150px); height: auto; aspect-ratio: 120 / 165; cursor: pointer; display: block; margin: 0 auto -6px; }
 .hero h1 { font: clamp(30px, 6vw, 52px)/1.05 var(--display); margin: 0 0 8px; }
 .hero p { margin: 0; color: var(--ink-soft); font-size: clamp(16px, 2.4vw, 20px); font-weight: 700; }
@@ -150,9 +152,16 @@ a.tile:hover .art .emo { transform: scale(1.08) rotate(-4deg); }
 .bonus { font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 3px; color: var(--ink-soft); white-space: nowrap; }
 .bonus .emo { width: 20px; height: 20px; }
 .bonus.got { opacity: .6; }
+/* a bookmark ribbon coming in from the left edge: dark outer shape, red inner shape, notch at the right end */
 .tag {
-  position: absolute; top: 12px; left: -4px; z-index: 1; transform: rotate(-4deg); color: var(--on-color);
-  background: var(--yellow); border: 2.5px solid var(--line); border-radius: 6px; font: 14px/1 var(--display); padding: 6px 10px;
+  --notch: 8px;
+  position: absolute; top: 12px; left: 0; z-index: 1; isolation: isolate; color: var(--on-color);
+  font: 14px/1 var(--display); padding: 7px calc(var(--notch) + 10px) 7px 10px; background: var(--line);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--notch)) 50%, 100% 100%, 0 100%);
+}
+.tag::before {
+  content: ""; position: absolute; z-index: -1; inset: 2.5px 3px 2.5px 0; background: var(--red);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--notch)) 50%, 100% 100%, 0 100%);
 }
 .tile.next { border-style: dashed; box-shadow: none; background: transparent; }
 .tile.next .art { --c: var(--purple); border-bottom-style: dashed; }
@@ -161,8 +170,10 @@ a.tile:hover .art .emo { transform: scale(1.08) rotate(-4deg); }
 .cta {
   max-width: 760px; margin: 70px auto 0; padding: 26px 20px; text-align: center;
   background: var(--yellow); color: var(--on-color); border: 3px solid var(--line); border-radius: var(--r); box-shadow: 0 6px 0 var(--line);
+  background-color: color-mix(in srgb, var(--yellow) 90%, #000);   /* a touch darker so the bulb stands out */
 }
 .cta-wrap { padding: 0 16px; }
+@media (prefers-color-scheme: dark) { .cta { border-color: #fff; box-shadow: 0 6px 0 #fff; } }
 .cta .emo { width: 72px; height: 72px; }
 .cta h2 { font: clamp(24px, 4.5vw, 34px)/1.15 var(--display); margin: 6px 0 6px; }
 .cta p { margin: 0 0 16px; font-size: 18px; font-weight: 700; }
