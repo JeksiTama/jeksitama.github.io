@@ -387,6 +387,7 @@ body{background:
       <div id="fRoom" hidden>
         <div class="fl">table code</div>
         <div class="bigcode" id="bigCode"></div>
+        <div class="menu"><button class="btn small" id="linkBtn">COPY INVITE LINK</button></div>
         <table id="roster"></table>
         <p class="fl" id="fInfo"></p>
         <div class="menu"><button class="btn primary" id="goBtn">START</button></div>
@@ -1322,6 +1323,7 @@ function renderRoom() {
   $("fInfo").textContent = !host ? "Waiting for the host to start…"
     : playing > 1 ? `Table of ${n}. Press START when everyone is in.` : "Share the code. Waiting for a friend…";
   $("goBtn").style.display = host ? "" : "none"; $("goBtn").disabled = playing < 2;
+  $("linkBtn").style.display = host ? "" : "none";
 }
 function netFail(e) {
   const msg = e?.type === "peer-unavailable" ? "No table with that code. Check the letters?"
@@ -1472,6 +1474,20 @@ $("friendsBack").onclick = () => { NET.leave(); toTitle(); };
 $("hostBtn").onclick = () => hostTable();
 $("joinBtn").onclick = joinTable;
 $("codeIn").addEventListener("keydown", e => { if (e.key === "Enter") joinTable(); });
+// invite link: this page with ?join=CODE. Opening one fills in the code; the friend still presses JOIN.
+$("linkBtn").onclick = async () => {
+  const url = location.origin + location.pathname + "?join=" + NET.code, b = $("linkBtn");
+  try { await navigator.clipboard.writeText(url); b.textContent = "COPIED ✓"; }
+  catch { prompt("Copy this link:", url); }
+  setTimeout(() => { b.textContent = "COPY INVITE LINK"; }, 1500);
+};
+{
+  const join = new URLSearchParams(location.search).get("join");
+  if (join) {
+    history.replaceState(null, "", location.pathname);
+    openFriends("Invited to a table: press <b>JOIN</b>."); $("codeIn").value = join.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4);
+  }
+}
 $("goBtn").onclick = hostStart;
 
 // ---------- tutorial ----------
