@@ -41,16 +41,39 @@
     </div>`;
 
   grid.querySelectorAll("a.tile").forEach(a => a.addEventListener("click", () => {
-    if (Tama.collect(a.dataset.slug)) toast(`+1 Tama Token for visiting ${a.querySelector("h3").textContent}!`);
+    if (Tama.collect(a.dataset.slug)) toast(`+${Tama.VISIT_BONUS} Tama Tokens for visiting ${a.querySelector("h3").textContent}!`);
   }));
   function renderBonuses() {
     grid.querySelectorAll("a.tile").forEach(a => {
       const b = a.querySelector("[data-bonus]"), can = Tama.canCollect(a.dataset.slug);
       b.classList.toggle("got", !can);
-      b.innerHTML = can ? `+1 ${COIN()} today` : `✓ collected today`;
+      b.innerHTML = can ? `+${Tama.VISIT_BONUS} ${COIN()} today` : `✓ collected today`;
     });
   }
   renderBonuses();
   Tama.onChange(renderBonuses);
   window.addEventListener("pageshow", renderBonuses);
+
+  // ---------- daily pocket money ----------
+  // The first home page visit of each day (local midnight) gives POCKET_MONEY tokens. Saved first, then the popup says so.
+  function pocketMoney() {
+    if (!Tama.pocket()) return;
+    let dlg = document.getElementById("pocketDlg");
+    if (!dlg) {
+      document.body.insertAdjacentHTML("beforeend", `
+        <dialog class="panel pocket" id="pocketDlg" aria-labelledby="pocketTitle">
+          ${COIN("big", "auto")}
+          <h2 id="pocketTitle">Here's some pocket money!</h2>
+          <p class="pocket-n">+${Tama.POCKET_MONEY} Tama Tokens</p>
+          <button class="btn" type="button" data-close autofocus>Thanks!</button>
+        </dialog>`);
+      dlg = document.getElementById("pocketDlg");
+      dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest("[data-close]")) dlg.close(); });
+    }
+    if (!dlg.open) dlg.showModal();
+  }
+  pocketMoney();
+  // a tab left open past midnight, or coming back with the back button
+  window.addEventListener("pageshow", pocketMoney);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) pocketMoney(); });
 })();

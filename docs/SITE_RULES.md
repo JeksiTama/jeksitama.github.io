@@ -18,7 +18,7 @@ Break none of these.
 1. No ads, trackers, analytics, accounts or personal data.
 2. Plain HTML, CSS and JS. No build step, bundler or npm. Libraries come from a CDN at a pinned version.
 3. Outside requests only to Google Fonts, Google's Noto emoji, pinned CDN libraries, and the PeerJS broker for online play.
-4. A game must still run when opened as a lone file, with or without `window.Tama` and `window.TamaKit`.
+4. Games run from the site: the live site or the local server. They don't need to work when opened as a lone file, so `window.Tama`, `window.TamaKit` and `window.TamaQuestions` are always there and need no stand-ins.
 5. A player can never be stuck forever. Out of tokens means a message and a link home, where more can be collected.
 6. Never renumber or reuse an id in `PASS_IDS` (tama.js). Old Tama Passes depend on them.
 7. Never wait on an animation's `.finished`. Start the animation, then wait on a `setTimeout` of the same length. A hidden tab never finishes animations, and online that freezes the other player too.
@@ -34,6 +34,9 @@ jeksitama.github.io/            static site on GitHub Pages
   about.html                    the brand story, Tama Tokens and the Tama Pass explained
   assets/js/tama.js             shared save (window.Tama)
   assets/js/tama-kit.js         shared game pieces (window.TamaKit)
+  assets/js/tama-questions.js   question bank loader (window.TamaQuestions)
+  assets/data/questions.json    the question bank
+  assets/img/q/                 pictures used by the question bank
   assets/js/site.js             header, egg logo, Tama Pass panel, footer (site pages only)
   assets/js/games.js            the home page tiles + footer socials
   assets/js/home.js             home page grid and hero egg
@@ -49,7 +52,6 @@ jeksitama.github.io/            static site on GitHub Pages
 - **The site file is the main version** of each game.
 - **A prototype is a side branch** for testing mechanic changes away from the site. Main Jempol's is `D:\Game Projects\main_jempol\prototype\jempol_hands.html`. Other games may get one. Don't copy between a prototype and the site unless asked.
 - **Test locally** from the site root: `python -m http.server 8765` (the "site" entry in `.claude/launch.json`), then open `http://localhost:8765/games/<slug>/`.
-- **Also open the game as a lone file** to check it still plays without the site.
 
 ## 5. Adding a game
 
@@ -64,11 +66,14 @@ jeksitama.github.io/            static site on GitHub Pages
    <link rel="icon" href="../../assets/img/egg.svg" type="image/svg+xml">
    ```
    Don't add `maximum-scale` or `user-scalable=no`; players must be able to zoom.
-3. Load the shared save and kit **before** the game's own script. The third line fetches the kit from the live site when the file is opened on its own:
+3. Load the shared save and kit **before** the game's own script:
    ```html
    <script src="../../assets/js/tama.js"></script>
    <script src="../../assets/js/tama-kit.js"></script>
-   <script>window.TamaKit || document.write('<script src="https://jeksitama.github.io/assets/js/tama-kit.js"><\/script>')</script>
+   ```
+   A game that asks questions also loads the bank's loader:
+   ```html
+   <script src="../../assets/js/tama-questions.js"></script>
    ```
 4. Put `<a href="../../">/PlayTama home/</a>` on the title screen.
 5. Add a tile in `assets/js/games.js`: `slug`, `title`, a **one-sentence** `blurb`, `where: "here"`, `href: "games/<slug>/"`, `players`, `learns`, `color` as a palette variable, `emoji` (Noto codepoint + character) or `art` (16:9 image path), and `tag: "Prototype"` while it is one.
@@ -79,7 +84,7 @@ External games (itch.io, Steam, downloads) only need step 5, with `where: "itch"
 
 ## 6. The shared save: `window.Tama`
 
-Guard it: `const TAMA = window.Tama || null;`. Without it, fall back to `localStorage` under the game's own key.
+It is always loaded: `const TAMA = window.Tama;`. Keep game data in it rather than in `localStorage` directly.
 
 | Call | What it does |
 |---|---|
@@ -91,6 +96,7 @@ Guard it: `const TAMA = window.Tama || null;`. Without it, fall back to `localSt
 | `Tama.score(slug)` | Read them back |
 | `Tama.save(slug, obj)` / `Tama.load(slug, fallback)` | The game's own detailed data and settings. **Stays on this device.** |
 | `Tama.onChange(fn)` | Called when the save changes, in this tab or another |
+| `Tama.today()` | The player's local date as `"YYYY-MM-DD"`, for anything that resets at midnight |
 | `Tama.cheat(code)` | "MORE TOKEN PLEASE" (any spacing or case) adds 10 tokens and returns `true` |
 
 Keep stored numbers small integers (0 to 65535).
@@ -100,7 +106,9 @@ Keep stored numbers small integers (0 to 65535).
 The cross-game currency. Nothing about them has real value, so cheating is tolerated.
 
 - **Start:** 20 tokens.
-- **Daily bonus:** today the home page gives +1 the first time each game's tile is opened each day. Planned: +10 for the first visit each day, counted from the player's local midnight. Games shouldn't depend on either.
+- **Pocket money:** the first home page visit each day gives +10 (`Tama.POCKET_MONEY`) with a small popup, counted from the player's local midnight. It starts on the player's second day, and days away don't add up.
+- **Visit bonus:** the home page gives +2 (`Tama.VISIT_BONUS`) the first time each game's tile is opened each day, enough for one match's stake.
+- Games shouldn't depend on either; only the home page calls `Tama.pocket()` and `Tama.collect()`.
 - **Stakes:** the usual entry is 2 tokens per match. Coins fly from each player into a prize pool in the middle; the winner's prize flies from the pool to the winner.
 - **When to change the balance:**
   - Read `Tama.tokens()` fresh whenever a screen opens. The player may have loaded a pass or collected tokens in another tab.
@@ -108,7 +116,7 @@ The cross-game currency. Nothing about them has real value, so cheating is toler
   - Save the whole prize as soon as the result is known, **before** the coins fly. The chip then counts up as each coin lands.
   - Change the balance by a delta (`addTokens`, or a fresh read plus the change). Never write back a balance the game cached earlier.
 - **Refunds:** leaving a match against bots gives the stake back. If the online host leaves, guests get their stake back. A player who leaves an online match forfeits.
-- **Broke:** say what's needed and link home (`../../`) to collect more. A lone file with no `window.Tama` may simply refill to 20.
+- **Broke:** say what's needed and link home (`../../`) to collect more.
 
 ## 8. The game kit: `window.TamaKit`
 
@@ -117,13 +125,37 @@ Shared pieces so every game looks and behaves the same. Copy how Sumpit uses the
 | Call | What it does |
 |---|---|
 | `TamaKit.bar(el, { sound, onSound(on), onTokens() })` | Puts the **token chip + sound button** at the start of `el`. Returns `{ tokens(n), sound(on), clickable(on) }`. Put the game's exit button after them with `class="tk-chip tk-btn"`. |
-| `TamaKit.passCard(el, { btnClass, onTokens(), tokens(), addTokens(n) })` | Fills a card with the **Tama Pass**: name, tokens, the code with COPY, a LOAD box that also takes the cheat. The last two options are for a lone file without `window.Tama`. |
+| `TamaKit.passCard(el, { btnClass, onTokens() })` | Fills a card with the **Tama Pass**: name, tokens, the code with COPY, a LOAD box that also takes the cheat. |
 | `TamaKit.pool(el)` | The **prize pool**: a pile of coins drawn in `el`. Returns `{ n, set(n), add(k), take(k), center() }`. |
 | `TamaKit.fly(from, to, { delay, duration, onLand })` | One coin flying between two elements or `{x, y}` points. Resolves when it lands (on a timer). |
 | `TamaKit.coin("sm")` | A coin as HTML, for text and buttons |
 
 - **Theme** it with CSS variables on `:root`: `--tk-ink`, `--tk-chip`, `--tk-font`, `--tk-coin-font`, `--tk-gold`, `--tk-gold-d`. Kit rules are plain class selectors, so a game's element resets don't break them and any id or two-class rule still overrides them.
-- **Stand-ins:** if the kit can't load, keep the game playable with small stand-ins (`const KIT = window.TamaKit || {…}`). A stand-in must only **add** elements, never replace the contents of `el`: the game's own exit button lives there.
+
+### The question bank: `window.TamaQuestions`
+
+Multiple-choice questions any game can use, kept in `assets/data/questions.json`. Cerdas Cermat is the first game to use it.
+
+Each question:
+
+| Field | What it is |
+|---|---|
+| `id` | A short, unique, lowercase name (`"apollo-last"`). Never reuse or change one: saved papers and the daily pick depend on it. |
+| `q` | The question |
+| `answer` | The right answer |
+| `wrong` | Two or more wrong answers. Each time, two are picked at random, so more wrong answers means more variety. |
+| `tags` | Topics, e.g. `["space", "history"]`, so a game can pick only some |
+
+An answer is plain text, or `{ "text", "img", "credit" }` for a picture answer. `img` is a path from the site root (`assets/img/q/…`, a free CC0 or CC BY picture) and `credit` names the author and licence; the game lists credits on its title screen. A question shows pictures when its answers have them, and their names only after marking.
+
+| Call | What it does |
+|---|---|
+| `TamaQuestions.load()` | Loads the bank from the site |
+| `TamaQuestions.daily(bank, n, { salt, filter })` | `n` questions for today, the same for everyone on that date. Use the game's slug as `salt`. |
+| `TamaQuestions.random(bank, n, { filter })` | `n` questions at random |
+| `TamaQuestions.credits(bank)` | Every picture credit |
+
+A picked question is `{ id, q, tags, choices, correct }`: three `choices` (the answer and two wrong ones, shuffled) and the index of the right one. To move the bank to a server later, change `SOURCE` in `tama-questions.js`; the server must answer with the same JSON.
 
 ## 9. Screens and controls
 
@@ -179,7 +211,7 @@ GitHub Pages only serves files, so browsers talk to each other directly over Web
 
 ## 14. Before handing back
 
-- [ ] Plays from `games/<slug>/` on the local server **and** as a lone file, including offline
+- [ ] Plays from `games/<slug>/` on the local server
 - [ ] No console errors while loading, playing, leaving and playing again
 - [ ] Tokens go down when staked, the prize is saved before the coins fly, and the new balance shows on the home page
 - [ ] Tile in `games.js`, `PASS_IDS` entry if it records scores, `about.html` updated if it uses tokens

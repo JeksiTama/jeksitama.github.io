@@ -8,7 +8,7 @@
  * art:    optional image path that replaces the emoji, e.g. "games/foo/thumb.png" (16:9)
  * color:  tile background, from the palette in assets/css/site.css
  * tag:    optional small label on the tile, e.g. "Prototype"
- * Opening any game from its tile gives 1 Tama Token, once a day per game.
+ * Opening any game from its tile gives 2 Tama Tokens (Tama.VISIT_BONUS), once a day per game.
  */
 window.TAMA_GAMES = [
   {
@@ -34,6 +34,18 @@ window.TAMA_GAMES = [
     tag: "Prototype",
     emoji: ["270c_fe0f", "✌️"],
     color: "var(--purple)",
+  },
+  {
+    slug: "cerdas-cermat",
+    title: "Cerdas Cermat",
+    blurb: "Smart & Sharp: five questions a day, and every right answer earns Tama Tokens.",
+    where: "here",
+    href: "games/cerdas-cermat/",
+    players: "👤 1 player",
+    learns: "🧠 General knowledge",
+    tag: "Prototype",
+    emoji: ["1f9e0", "🧠"],
+    color: "var(--green)",
   },
   {
     slug: "free-the-biscuits",

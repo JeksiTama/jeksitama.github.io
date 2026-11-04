@@ -9,15 +9,18 @@
 
   const KEY = "playtama.save";
   const START_TOKENS = 20;
+  const POCKET_MONEY = 10;   // once a day, from the player's second day on
+  const VISIT_BONUS = 2;     // once a day per game, for opening its tile: one match's stake
   const MAX16 = 65535;
   // Numeric ids used inside the Tama Pass. Never reuse or renumber an id.
-  const PASS_IDS = { "main-jempol": 1, "sumpit": 2 };
+  const PASS_IDS = { "main-jempol": 1, "sumpit": 2, "cerdas-cermat": 3 };
 
   const listeners = new Set();
   // the player's local date (YYYY-MM-DD), so daily things reset at their own midnight
   const today = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
   const clamp16 = n => Math.max(0, Math.min(MAX16, Math.floor(+n || 0)));
-  const fresh = () => ({ name: "Player", tokens: START_TOKENS, scores: {}, data: {}, visits: {} });
+  // pocket: the last day pocket money was given ("" = never, so a save from before pocket money gets it today)
+  const fresh = () => ({ name: "Player", tokens: START_TOKENS, scores: {}, data: {}, visits: {}, pocket: "" });
 
   // Memory fallback when storage is blocked (private mode, some embeds).
   let memory = null;
@@ -36,8 +39,10 @@
   function update(fn) { const s = read(); const r = fn(s); write(s); return r; }
 
   // First visit: carry over anything the old standalone Main Jempol saved.
+  // A brand-new player starts with START_TOKENS; pocket money begins tomorrow.
   function migrate() {
     const s = fresh();
+    s.pocket = today();
     try {
       const t = +localStorage.getItem("mj_tokens"); if (t) s.tokens = clamp16(t);
       const m = JSON.parse(localStorage.getItem("mj_stats"));
@@ -95,7 +100,7 @@
 
   // ---------- public API ----------
   const Tama = {
-    START_TOKENS,
+    START_TOKENS, POCKET_MONEY, VISIT_BONUS,
 
     name() { return read().name; },
     rename(name) { name = String(name || "").trim().slice(0, 16); if (name) update(s => { s.name = name; }); },
@@ -118,11 +123,18 @@
     load(slug, fallback = null) { const d = read().data[slug]; return d === undefined ? fallback : d; },
     save(slug, value) { update(s => { s.data[slug] = value; }); },
 
-    // one free token per game per day for visiting it
+    // VISIT_BONUS tokens per game per day for opening it from the home page
     canCollect(slug) { return read().visits[slug] !== today(); },
     collect(slug) {
-      return update(s => { if (s.visits[slug] === today()) return false; s.visits[slug] = today(); s.tokens = clamp16(s.tokens + 1); return true; });
+      return update(s => { if (s.visits[slug] === today()) return false; s.visits[slug] = today(); s.tokens = clamp16(s.tokens + VISIT_BONUS); return true; });
     },
+
+    // daily pocket money: POCKET_MONEY tokens once a day (local midnight). Days away don't add up.
+    canPocket() { return read().pocket !== today(); },
+    pocket() {
+      return update(s => { if (s.pocket === today()) return false; s.pocket = today(); s.tokens = clamp16(s.tokens + POCKET_MONEY); return true; });
+    },
+    today,
 
     // cheat: "MORE TOKEN PLEASE" typed into any Tama Pass box gives 10 tokens (letters only, so never a real pass code)
     isCheat(code) { return /^MORETOKENS?(PLE)?PLEASE$/.test(String(code || "").toUpperCase().replace(/[^A-Z]/g, "")); },

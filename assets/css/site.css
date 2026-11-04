@@ -248,6 +248,12 @@ input {
 .msg.bad { color: var(--red); }
 .msg.good { color: var(--green); }
 
+/* ---------- daily pocket money popup ---------- */
+.pocket { width: min(340px, calc(100% - 24px)); text-align: center; padding: 22px 20px 20px; }
+.pocket .emo { width: 84px; height: 84px; display: block; margin: 0 auto 6px; }
+.pocket h2 { display: block; font-size: 24px; margin: 0 0 6px; }
+.pocket-n { margin: 0 0 16px; font-weight: 800; font-size: 20px; }
+
 /* ---------- toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 140%); z-index: 10;

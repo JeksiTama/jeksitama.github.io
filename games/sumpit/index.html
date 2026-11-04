@@ -10,10 +10,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
-<!-- PlayTama shared save (tokens + stats) and game kit (top bar, Tama Pass, prize pool). Opened on its own, the kit comes from the live site. -->
+<!-- PlayTama shared save (tokens + stats) and game kit (top bar, Tama Pass, prize pool) -->
 <script src="../../assets/js/tama.js"></script>
 <script src="../../assets/js/tama-kit.js"></script>
-<script>window.TamaKit || document.write('<script src="https://jeksitama.github.io/assets/js/tama-kit.js"><\/script>')</script>
 <style>
 @font-face{font-family:"Super Trend";src:url("../../assets/fonts/super-trend.ttf")}
 :root{--ink:#2b2b2b;--cream:#fffaf0;--red:#fe6767;--green:#73d049;--blue:#68c1ff;--pink:#fe94de;--orange:#fea046;--purple:#aa88ff;--yellow:#ffdb33;--grey:#666;
@@ -283,15 +282,7 @@ a{color:inherit}
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
-const TAMA = window.Tama || null;
-// the kit didn't load (offline and opened on its own): plain stand-ins so the game still plays
-const KIT = window.TamaKit || {
-  bar(el) { const s = document.createElement("span"); s.className = "tk-chip"; el.prepend(s); return { tokens(n) { s.textContent = "🪙 " + n; }, sound() {}, clickable() {} }; },
-  passCard(el) { el.innerHTML = "<h2>TAMA PASS</h2><p>Open this game from PlayTama.</p>"; },
-  pool(el) { return { n: 0, set() {}, add() {}, take() {}, el }; },
-  fly(a, b, o = {}) { return new Promise(r => setTimeout(() => { o.onLand?.(); r(); }, o.delay || 0)); },
-  coin() { return "🪙"; },
-};
+const TAMA = window.Tama, KIT = window.TamaKit;
 const COIN = KIT.coin("sm");
 const SLUG = "sumpit";
 const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -496,25 +487,15 @@ void main(){
 })();
 
 // ---------- save, tokens, settings ----------
-function tok() {
-  if (TAMA) return TAMA.tokens();
-  try { const t = localStorage.getItem("sumpit_tokens"); return t == null ? 20 : +t || 0; } catch { return 20; }
-}
-function setTok(v) {
-  v = Math.max(0, Math.min(65535, v | 0));
-  if (TAMA) TAMA.setTokens(v); else try { localStorage.setItem("sumpit_tokens", v); } catch {}
-  renderTok();
-}
+const tok = () => TAMA.tokens();
+function setTok(v) { TAMA.setTokens(v); renderTok(); }
 const pay = n => { const p = Math.min(n, tok()); setTok(tok() - p); return p; };
 // the stake needs tokens; on PlayTama more come from opening games on the home page
 const BROKE = () => `You need ${COIN}${STAKE} to sit down.<br><a href="../../">Collect Tama Tokens on PlayTama</a>`;
-function canSit() {
-  if (!TAMA && tok() < STAKE) setTok(20);   // standalone file: just refill
-  return tok() >= STAKE;
-}
+const canSit = () => tok() >= STAKE;
 const SET = { sound: true, help: false, level: 0, nums: false, debug: false };
-try { Object.assign(SET, TAMA ? TAMA.load(SLUG, {}) : JSON.parse(localStorage.getItem("sumpit_set") || "{}")); } catch {}
-const saveSet = () => { try { if (TAMA) TAMA.save(SLUG, SET); else localStorage.setItem("sumpit_set", JSON.stringify(SET)); } catch {} };
+Object.assign(SET, TAMA.load(SLUG, {}));
+const saveSet = () => TAMA.save(SLUG, SET);
 
 // ---------- top bar (from the kit) ----------
 const BAR = KIT.bar($("bar"), {
@@ -524,7 +505,7 @@ const BAR = KIT.bar($("bar"), {
 });
 // while prize coins are still flying, the chip counts up as they land instead
 function renderTok() { if (!G.coinsLive) BAR.tokens(tok()); }
-TAMA?.onChange?.(renderTok);
+TAMA.onChange(renderTok);
 
 // ---------- sound ----------
 const SFX = (() => {
@@ -714,7 +695,7 @@ async function finish() {
   // the prize: saved now, shown as the coins land
   const shown = tok();
   if (gain) { G.coinsLive = true; setTok(tok() + gain); BAR.tokens(shown); }
-  if (TAMA) TAMA.addScore(SLUG, { plays: 1, wins: win ? 1 : 0, best: gain });
+  TAMA.addScore(SLUG, { plays: 1, wins: win ? 1 : 0, best: gain });
   await wait(S.over.why === "back" ? 200 : 700);
   const to = $(win ? "meTag" : "oppTag"), n = POOL.n, jobs = [];
   for (let k = 0; k < n; k++) {
@@ -1001,7 +982,7 @@ $("setOk").onclick = () => $("setBox").classList.add("hide");
 // the token chip on the menu opens the Tama Pass (the same save as the PlayTama home page)
 function openPass() {
   if (G.screen !== "titleScreen") return;
-  KIT.passCard($("passCard"), { btnClass: "btn small", tokens: tok, addTokens: n => setTok(tok() + n), onTokens() { renderTok(); SFX.coin(); } });
+  KIT.passCard($("passCard"), { btnClass: "btn small", onTokens() { renderTok(); SFX.coin(); } });
   $("passBox").classList.remove("hide");
 }
 $("passOk").onclick = () => $("passBox").classList.add("hide");
@@ -1029,7 +1010,7 @@ const loadPeer = () => peerLib ||= new Promise((ok, no) => {
   const s = document.createElement("script"); s.src = PEER_SRC; s.onload = ok;
   s.onerror = () => { peerLib = null; no(new Error("PeerJS did not load")); }; document.head.appendChild(s);
 });
-const myName = () => ((TAMA ? TAMA.name() : "") || "Player").slice(0, 12);
+const myName = () => (TAMA.name() || "Player").slice(0, 12);
 
 const NET = {
   role: null, peer: null, pending: null, conn: null, code: "", guest: null, lobby: null, q: Promise.resolve(), seen: 0,

@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cerdas Cermat · PlayTama</title>
+<meta name="description" content="Cerdas Cermat (Smart and Sharp): five questions a day, and every right answer earns Tama Tokens.">
+<meta name="theme-color" content="#73d049">
+<link rel="icon" href="../../assets/img/egg.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<!-- PlayTama shared save, game kit and question bank -->
+<script src="../../assets/js/tama.js"></script>
+<script src="../../assets/js/tama-kit.js"></script>
+<script src="../../assets/js/tama-questions.js"></script>
+<style>
+@font-face{font-family:"Super Trend";src:url("../../assets/fonts/super-trend.ttf")}
+:root{--ink:#2b2b2b;--cream:#fffaf0;--red:#fe6767;--green:#73d049;--blue:#68c1ff;--pink:#fe94de;--orange:#fea046;--purple:#aa88ff;--yellow:#ffdb33;--grey:#666;
+  --pen:#e23b3b;--board:#2c5e45;--board-d:#1b3a2b;
+  --display:"Super Trend","Nunito",system-ui,sans-serif;
+  --tk-font:Nunito,system-ui,sans-serif;--tk-chip:var(--cream)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--board-d) radial-gradient(circle at 50% 30%,var(--board),var(--board-d) 75%) fixed;font-family:Nunito,system-ui,sans-serif;color:var(--ink);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#app{max-width:560px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.hide{display:none!important}
+
+/* top bar, right: the kit's tokens + sound, then back */
+#top{position:sticky;top:0;z-index:20;display:flex;justify-content:flex-end;align-items:center;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+#exitBtn{font-family:var(--tk-font);font-size:12px;font-weight:800}
+
+.screen{flex:1;display:flex;flex-direction:column;align-items:center;gap:14px;padding:8px 16px 28px;text-align:center}
+#titleScreen{justify-content:center}
+
+/* title */
+.logo{font-family:var(--display);font-size:clamp(46px,14vw,80px);line-height:.95;color:var(--yellow);letter-spacing:2px;
+  text-shadow:3px 0 var(--ink),-3px 0 var(--ink),0 3px var(--ink),0 -3px var(--ink),2px 2px var(--ink),-2px -2px var(--ink),2px -2px var(--ink),-2px 2px var(--ink),0 8px 0 var(--ink)}
+.pill{background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:900;box-shadow:0 4px 0 var(--ink)}
+.hero{width:min(130px,18dvh);aspect-ratio:1;display:grid;place-items:center;font-size:min(100px,14dvh);line-height:1}
+.hero img{width:100%;height:100%}
+.menu{display:flex;flex-direction:column;gap:12px;align-items:center}
+.links{display:flex;flex-direction:column;gap:6px;align-items:center}
+.link{font:900 16px Nunito,sans-serif;color:var(--cream);background:none;border:0;cursor:pointer;text-shadow:0 2px 0 var(--ink);
+  text-decoration:underline wavy var(--yellow) 1.5px;text-underline-offset:6px;padding:4px 6px}
+.note{color:var(--cream);font-weight:800;text-shadow:0 2px 0 var(--ink);font-size:15px;max-width:340px;margin:0;min-height:20px}
+.note a{color:var(--yellow)}
+.credit{font-size:12px;color:var(--cream);opacity:.85;text-shadow:0 1px 0 var(--ink);max-width:360px}
+.credit .link{font-size:12px;padding:0 2px;text-underline-offset:4px}
+
+.btn{font-family:var(--display);font-size:24px;letter-spacing:1px;padding:12px 26px;min-width:250px;border:3px solid var(--ink);border-radius:16px;background:var(--yellow);
+  color:var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.btn:active:not(:disabled){translate:0 4px;box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.green{background:var(--green)}.btn.cream{background:var(--cream)}.btn.blue{background:var(--blue)}
+.btn.small{font-size:18px;padding:8px 18px;min-width:0}
+
+.card{background:var(--cream);border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:18px;width:min(100%,400px)}
+.card h2{font-family:var(--display);font-weight:400;font-size:30px;margin:0 0 10px;letter-spacing:1px}
+.row{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+
+/* the test paper: ruled lines and a red margin */
+.paper{position:relative;width:100%;text-align:left;background:#fffdf6;border:3px solid var(--ink);border-radius:8px;box-shadow:0 6px 0 var(--ink);
+  padding:16px 14px 20px 52px;background-image:linear-gradient(90deg,transparent 40px,#f3a0a0 40px,#f3a0a0 42px,transparent 42px),repeating-linear-gradient(#fffdf6 0 31px,#d5e6f5 31px 32px)}
+.phead{border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:6px}
+.graded .phead{padding-right:84px}
+.phead h1{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:1px;margin:0;line-height:1.1}
+.phead h1 small{display:block;font:800 13px Nunito,sans-serif;letter-spacing:0;color:var(--grey)}
+.phead .who{display:flex;flex-wrap:wrap;gap:4px 16px;font-weight:800;font-size:14px;margin-top:6px}
+.phead .who span b{font-weight:900;border-bottom:2px dotted var(--ink);padding:0 4px}
+.qs{list-style:none;margin:0;padding:0}
+.q{position:relative;padding:14px 0 8px;border-radius:10px}
+.q.flash{animation:flash .9s ease-out}
+@keyframes flash{0%,60%{background:rgba(255,219,51,.55)}100%{background:transparent}}
+.qn{position:absolute;left:-46px;top:12px;width:34px;text-align:right;font:400 24px/1 var(--display)}
+.qt{margin:0 0 10px;font-weight:900;font-size:17px;line-height:1.35;padding-right:34px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:6px 12px 6px 6px;text-align:left;font-weight:800;font-size:16px;
+  background:#fff;border:2.5px solid var(--ink);border-radius:12px;box-shadow:0 3px 0 var(--ink);cursor:pointer;position:relative}
+.opt .let{flex:none;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);display:grid;place-items:center;font:400 16px/1 var(--display);background:var(--cream)}
+.opt[aria-checked="true"]{background:var(--yellow)}
+.opt[aria-checked="true"] .let{background:var(--ink);color:var(--yellow)}
+.opt:active:not(:disabled){translate:0 2px;box-shadow:0 1px 0 var(--ink)}
+.opt:disabled{cursor:default}
+/* picture answers: three in a row, the names stay hidden until the paper is marked */
+.opts.pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pics .opt{flex-direction:column;align-items:stretch;padding:5px;gap:4px}
+.pics .opt .let{position:absolute;top:-8px;left:-8px;width:28px;height:28px;z-index:1}
+.pics .opt img{width:100%;aspect-ratio:3/4;object-fit:contain;padding:4px;border-radius:8px;border:2px solid var(--ink);display:block;background:#fff}
+.pics .opt .tx{display:none;font-size:13px;text-align:center;line-height:1.2}
+.pics .opt.noimg img{display:none}
+.pics .opt.noimg .tx,.graded .pics .opt .tx{display:block}
+.pics .opt.noimg{min-height:110px;justify-content:center}
+
+/* marking, in red pen */
+.mark{position:absolute;right:-6px;top:4px;width:44px;height:44px;pointer-events:none}
+.mark svg{width:100%;height:100%;overflow:visible}
+.mark path{fill:none;stroke:var(--pen);stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+.graded .mark{animation:pop .35s cubic-bezier(.3,1.6,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes pop{from{scale:0;rotate:-30deg;opacity:0}}
+.graded .opt{box-shadow:none}
+.graded .opt:not(.right):not(.miss){opacity:.55}
+.opt.right{background:var(--green)!important;opacity:1}
+.opt.right .let{background:var(--cream);color:var(--ink)}
+.opt.miss{background:#ffd3d3!important}
+.opt.miss .tx{text-decoration:line-through 2.5px var(--pen)}
+.stamp{position:absolute;right:12px;top:10px;width:84px;height:84px;border:4px solid var(--pen);border-radius:50%;color:var(--pen);display:grid;place-items:center;
+  font:400 30px/1 var(--display);rotate:-12deg;background:rgba(255,253,246,.85);animation:stamp .4s ease-out both}
+.stamp small{display:block;font:900 11px Nunito,sans-serif;text-align:center;margin-top:-18px}
+@keyframes stamp{from{scale:1.8;opacity:0}}
+.foot{margin-top:16px;text-align:center}
+.foot p{font-weight:800;margin:0 0 10px}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(15,30,22,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.help{text-align:left;max-height:86dvh;overflow-y:auto}
+.help .step{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.help .pic{flex:none;width:34px;font-size:28px;text-align:center}
+.help p{margin:0;font-weight:700;font-size:15px}
+.help b{font-weight:900}
+.big{font-family:var(--display);font-size:52px;line-height:1;margin:4px 0 6px}
+.coins{font:900 22px Nunito,sans-serif;margin:8px 0 14px;min-height:30px}
+.coins .tk-coin{width:26px;height:26px;font-size:11px;vertical-align:-5px;margin:0 2px}
+#resultBox .card{text-align:center}
+#credList{text-align:left;font-size:13px;font-weight:700;padding-left:18px;max-height:50dvh;overflow-y:auto}
+
+/* Tama Pass, in this game's card style (content from the kit) */
+#passCard table{font-weight:800;margin-bottom:6px}
+#passCard td{padding:6px 2px;border-bottom:2px dashed #cfc6b8;text-align:left}
+#passCard td.r{text-align:right}
+#passCard .pnote{font-size:13px;font-weight:700;margin:10px 0 4px}
+#passCard code{background:#fff3a8;border-radius:10px;font-size:15px}
+#passCard input{border-width:3px;border-radius:10px}
+#passCard .prow .btn{min-width:0}
+
+#toast{position:fixed;left:50%;top:70px;translate:-50% 0;z-index:70;background:var(--cream);border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--ink);
+  padding:6px 14px;font-weight:900;max-width:90vw;text-align:center;transition:opacity .3s;opacity:0;pointer-events:none}
+#toast.on{opacity:1}
+@media (max-width:400px){.paper{padding-left:46px;background-image:linear-gradient(90deg,transparent 34px,#f3a0a0 34px,#f3a0a0 36px,transparent 36px),repeating-linear-gradient(#fffdf6 0 31px,#d5e6f5 31px 32px)}
+  .qn{left:-42px;width:30px;font-size:20px}}
+@media (max-height:600px){.hero{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <div id="bar"><button class="tk-chip tk-btn" id="exitBtn" type="button" aria-label="Back">✕</button></div>
+  </div>
+
+  <div class="screen" id="titleScreen">
+    <div class="hero" id="hero"></div>
+    <div class="logo">CERDAS<br>CERMAT</div>
+    <div class="pill">Smart &amp; Sharp: the daily quiz</div>
+    <div class="menu">
+      <button class="btn" id="playBtn" type="button" disabled>PLAY</button>
+      <p class="note" id="titleMsg" role="status">Loading questions…</p>
+    </div>
+    <div class="links">
+      <button class="link" id="helpBtn" type="button">/how to play/</button>
+      <a class="link" href="../../">/PlayTama home/</a>
+    </div>
+    <div class="credit">Fonts: Super Trend, Nunito (Google Fonts). Emoji: Google Noto (CC BY 4.0).<span id="credLink" class="hide"> <button class="link" id="credBtn" type="button">/photo credits/</button></span></div>
+  </div>
+
+  <div class="screen hide" id="paperScreen">
+    <div class="paper" id="paper">
+      <div class="phead">
+        <h1>CERDAS CERMAT<small>Smart &amp; Sharp · 5 questions</small></h1>
+        <div class="who"><span>Name: <b id="pName">Player</b></span><span>Date: <b id="pDate"></b></span></div>
+      </div>
+      <ol class="qs" id="qs"></ol>
+      <div class="foot" id="pFoot"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hide" id="helpBox"><div class="card help">
+  <h2>HOW TO PLAY</h2>
+  <div class="step"><span class="pic">📝</span><p><b>5 questions a day.</b> Everyone gets the same ones, so compare with your family.</p></div>
+  <div class="step"><span class="pic">👆</span><p><b>Pick one answer</b> for each question. Take your time.</p></div>
+  <div class="step"><span class="pic">✅</span><p><b>Press SUBMIT</b> and your paper gets marked.</p></div>
+  <div class="step"><span class="pic" id="helpCoin">🪙</span><p><b>+2 Tama Tokens</b> for every right answer.</p></div>
+  <div class="step"><span class="pic">🌙</span><p><b>New questions</b> every day after midnight.</p></div>
+  <div class="row" style="margin-top:12px"><button class="btn small green" id="helpOk" type="button">GOT IT</button></div>
+</div></div>
+<div class="overlay hide" id="resultBox"><div class="card">
+  <h2>PAPER MARKED</h2>
+  <div class="big" id="resT"></div>
+  <div id="resWhy" style="font-weight:800"></div>
+  <div class="coins" id="resCoins"></div>
+  <button class="btn green" id="resOk" type="button">SEE MY PAPER</button>
+</div></div>
+<div class="overlay hide" id="passBox"><div class="card"><div id="passCard"></div>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="passOk" type="button">CLOSE</button></div></div></div>
+<div class="overlay hide" id="credBox"><div class="card">
+  <h2>PHOTO CREDITS</h2>
+  <ul id="credList"></ul>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="credOk" type="button">CLOSE</button></div>
+</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const TAMA = window.Tama, KIT = window.TamaKit, QS = window.TamaQuestions;
+const COIN = KIT.coin("sm");
+const SLUG = "cerdas-cermat";
+const COUNT = 5, PER_RIGHT = 2;
+const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const today = TAMA.today;
+
+// ---------- save ----------
+// settings and today's paper (stays on this device). last = { day, right, sheet, picks }
+const SET = Object.assign({ sound: true, help: false, last: null }, TAMA.load(SLUG, {}));
+const saveSet = () => TAMA.save(SLUG, SET);
+const doneToday = () => SET.last?.day === today();
+
+// ---------- top bar (from the kit) ----------
+const G = { screen: "titleScreen", bank: null, sheet: null, picks: [], graded: false, coinsLive: false, shown: 0 };
+const BAR = KIT.bar($("bar"), {
+  sound: SET.sound,
+  onSound(on) { SET.sound = on; saveSet(); SFX.ac(); SFX.blip(); },
+  onTokens: openPass,
+});
+// while reward coins are flying, the chip counts up as they land instead
+function renderTok() { if (!G.coinsLive) BAR.tokens(TAMA.tokens()); }
+TAMA.onChange(renderTok);
+
+// ---------- sound ----------
+const SFX = (() => {
+  let ctx = null;
+  const ac = () => {
+    if (!ctx) try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+    if (ctx?.state === "suspended") ctx.resume();
+    return ctx;
+  };
+  function tone(f, d = .12, type = "sine", v = .2, f2 = 0, delay = 0) {
+    if (!SET.sound) return; const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
+  }
+  const buzz = () => { if (SET.sound) navigator.vibrate?.(30); };
+  return {
+    ac,
+    blip() { tone(660, .09, "sine", .15); },
+    pick() { tone(520, .06, "triangle", .18); tone(780, .08, "triangle", .12, 0, .05); buzz(); },
+    right(delay) { tone(880, .12, "triangle", .16, 0, delay); tone(1320, .18, "triangle", .14, 0, delay + .08); },
+    wrong(delay) { tone(220, .22, "sawtooth", .08, 150, delay); },
+    coin() { tone(1200, .07, "square", .08); tone(1800, .2, "square", .08, 0, .07); },
+    win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .2, "triangle", .2, 0, i * .11)); },
+  };
+})();
+
+// ---------- screens ----------
+function show(id) {
+  ["titleScreen", "paperScreen"].forEach(s => $(s).classList.toggle("hide", s !== id)); G.screen = id;
+  BAR.clickable(id === "titleScreen"); renderTok(); scrollTo(0, 0);
+  if (id === "titleScreen") renderTitle();
+}
+let toastT = 0;
+function toast(msg, ms = 2200) { const t = $("toast"); t.innerHTML = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), ms); }
+const closeAll = () => ["resultBox", "passBox", "helpBox", "credBox"].forEach(id => $(id).classList.add("hide"));
+
+// animated Noto emoji, or the plain character if it doesn't load
+function emoji(code, ch) {
+  const img = new Image(); img.alt = ""; img.src = `https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.webp`;
+  img.onerror = () => img.replaceWith(ch);
+  return img;
+}
+$("hero").append(emoji("1f9e0", "🧠"));
+$("helpCoin").innerHTML = KIT.coin();
+
+// ---------- title ----------
+function untilMidnight() {
+  const now = new Date(), next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1), m = Math.ceil((next - now) / 60000);
+  return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m} min`;
+}
+function renderTitle() {
+  const b = $("playBtn"), msg = $("titleMsg");
+  if (doneToday()) {
+    b.textContent = "MY PAPER"; b.disabled = false;
+    msg.textContent = `You got ${SET.last.right} of ${COUNT} today. New questions in ${untilMidnight()}.`;
+  } else if (!G.bank) {
+    b.textContent = "PLAY"; b.disabled = true; msg.textContent = "Loading questions…";
+  } else {
+    b.textContent = "PLAY"; b.disabled = false;
+    msg.innerHTML = `Today's ${COUNT} questions are ready. Up to ${COIN}${COUNT * PER_RIGHT} to win.`;
+  }
+}
+// the day changes at midnight: a fresh paper waits on the title screen
+setInterval(() => {
+  if (G.sheet && G.sheet.day !== today() && !G.graded && G.screen !== "paperScreen") { G.sheet = null; G.picks = []; }
+  if (G.screen === "titleScreen") renderTitle();
+}, 30000);
+
+$("playBtn").onclick = () => {
+  SFX.ac(); SFX.blip();
+  if (doneToday()) { openPaper(SET.last.sheet, SET.last.picks, true); return; }
+  if (!G.bank) return;
+  if (!G.sheet || G.sheet.day !== today()) {
+    G.sheet = { day: today(), qs: QS.daily(G.bank, COUNT, { salt: SLUG }) };
+    G.picks = G.sheet.qs.map(() => -1);
+  }
+  openPaper(G.sheet, G.picks, false);
+};
+$("exitBtn").onclick = () => {
+  if (G.screen === "titleScreen") { location.href = "../../"; return; }
+  closeAll(); show("titleScreen");   // nothing is lost: an unsubmitted paper keeps its answers until midnight
+};
+
+// ---------- the paper ----------
+const TICK = '<svg viewBox="0 0 44 44"><path d="M8 24 18 34 38 8"/></svg>';
+const CROSS = '<svg viewBox="0 0 44 44"><path d="M10 10 34 34M34 10 10 34"/></svg>';
+const LETTERS = "ABC";
+function dateLabel(day) {
+  const [y, m, d] = day.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+}
+function openPaper(sheet, picks, graded) {
+  G.graded = graded;
+  $("pName").textContent = TAMA.name();
+  $("pDate").textContent = dateLabel(sheet.day);
+  $("paper").classList.toggle("graded", graded);
+  $("paper").querySelector(".stamp")?.remove();
+  $("qs").innerHTML = sheet.qs.map((q, i) => {
+    const pics = q.choices.some(c => c.img);
+    const opts = q.choices.map((c, k) => `<button class="opt" type="button" role="radio" aria-checked="${picks[i] === k}" data-q="${i}" data-k="${k}"${graded ? " disabled" : ""}>
+        <span class="let">${LETTERS[k]}</span>${pics && c.img ? `<img src="${esc(c.img)}" alt="Picture ${LETTERS[k]}" loading="lazy">` : ""}<span class="tx">${esc(c.text)}</span></button>`).join("");
+    return `<li class="q" id="q${i}"><span class="qn">${i + 1}.</span>
+      <p class="qt" id="qt${i}">${esc(q.q)}</p>
+      <div class="opts${pics ? " pics" : ""}" role="radiogroup" aria-labelledby="qt${i}">${opts}</div>
+      <div class="mark" aria-hidden="true"></div></li>`;
+  }).join("");
+  // a picture that doesn't load shows its name instead
+  $("qs").querySelectorAll(".opt img").forEach(img => img.addEventListener("error", () => img.closest(".opt").classList.add("noimg")));
+  if (graded) mark(sheet, picks, false);
+  else $("pFoot").innerHTML = `<button class="btn green" id="submitBtn" type="button">SUBMIT</button>`;
+  show("paperScreen");
+}
+$("qs").addEventListener("click", e => {
+  const b = e.target.closest(".opt"); if (!b || G.graded) return;
+  const i = +b.dataset.q, k = +b.dataset.k;
+  G.picks[i] = k; SFX.pick();
+  b.parentElement.querySelectorAll(".opt").forEach(o => o.setAttribute("aria-checked", o === b));
+});
+$("pFoot").addEventListener("click", e => { if (e.target.id === "submitBtn") submit(); });
+
+// red pen: a tick or a cross on each question, the right answer in green, a wrong pick crossed out
+function mark(sheet, picks, fresh) {
+  const right = sheet.qs.filter((q, i) => picks[i] === q.correct).length;
+  $("paper").classList.add("graded");
+  sheet.qs.forEach((q, i) => {
+    const li = $("q" + i), ok = picks[i] === q.correct;
+    li.querySelectorAll(".opt").forEach((o, k) => {
+      o.disabled = true;
+      o.classList.toggle("right", k === q.correct);
+      o.classList.toggle("miss", k === picks[i] && !ok);
+    });
+    const m = li.querySelector(".mark");
+    m.innerHTML = ok ? TICK : CROSS; m.style.setProperty("--d", fresh && !CALM ? `${i * .25}s` : "0s");
+    m.setAttribute("aria-hidden", "false"); m.setAttribute("aria-label", ok ? "Right" : "Wrong"); m.setAttribute("role", "img");
+    if (fresh) ok ? SFX.right(i * .25) : SFX.wrong(i * .25);
+  });
+  const stamp = document.createElement("div");
+  stamp.className = "stamp"; stamp.innerHTML = `${right}/${sheet.qs.length}`; stamp.setAttribute("aria-label", `${right} of ${sheet.qs.length} right`);
+  $("paper").append(stamp);
+  $("pFoot").innerHTML = `<p>${esc(gradeLine(right))} New questions in ${untilMidnight()}.</p><button class="btn small cream" id="menuBtn" type="button">MENU</button>`;
+  $("menuBtn").onclick = () => show("titleScreen");
+  return right;
+}
+function gradeLine(n) {
+  return ["Pay attention in class.", "Pay attention in class.", "Keep studying.", "Not bad at all.", "Sharp!", "Perfect paper!"][n] || "";
+}
+
+function submit() {
+  const left = G.picks.findIndex(p => p < 0);
+  if (left >= 0) {
+    toast(`Answer all ${COUNT} first.`);
+    const li = $("q" + left); li.scrollIntoView({ behavior: CALM ? "auto" : "smooth", block: "center" });
+    li.classList.remove("flash"); void li.offsetWidth; li.classList.add("flash");
+    return;
+  }
+  if (doneToday()) { show("titleScreen"); return; }   // already marked today in another tab
+  const sheet = G.sheet, picks = G.picks.slice();
+  const right = sheet.qs.filter((q, i) => picks[i] === q.correct).length, prize = right * PER_RIGHT;
+  // save first, then the coins fly
+  G.shown = TAMA.tokens(); G.coinsLive = prize > 0;
+  if (prize) TAMA.addTokens(prize);
+  TAMA.addScore(SLUG, { plays: 1, wins: right, best: right });
+  SET.last = { day: sheet.day, right, sheet, picks }; saveSet();
+  G.sheet = null; G.picks = [];
+  mark(sheet, picks, true);
+  scrollTo({ top: 0, behavior: CALM ? "auto" : "smooth" });
+  setTimeout(() => showResult(right, prize), CALM ? 200 : sheet.qs.length * 250 + 600);
+}
+function showResult(right, prize) {
+  $("resT").textContent = `${right} / ${COUNT}`;
+  $("resWhy").textContent = gradeLine(right);
+  $("resCoins").innerHTML = prize ? `+${prize} ${KIT.coin()}` : "No Tama Tokens this time.";
+  $("resultBox").classList.remove("hide");
+  if (right === COUNT) SFX.win();
+  if (!prize) { G.coinsLive = false; renderTok(); return; }
+  const from = $("resCoins").querySelector(".tk-coin"), to = BAR.tokenChip;
+  for (let k = 0; k < prize; k++) {
+    KIT.fly(from, to, { delay: 300 + k * 110, onLand() {
+      BAR.tokens(++G.shown); SFX.coin();
+      if (k === prize - 1) { G.coinsLive = false; renderTok(); }
+    } });
+  }
+}
+$("resOk").onclick = () => $("resultBox").classList.add("hide");
+
+// ---------- Tama Pass: the token chip on the title opens it ----------
+function openPass() {
+  if (G.screen !== "titleScreen") return;
+  KIT.passCard($("passCard"), { btnClass: "btn small", onTokens() { renderTok(); SFX.coin(); } });
+  $("passBox").classList.remove("hide");
+}
+$("passOk").onclick = () => $("passBox").classList.add("hide");
+
+// ---------- how to play, credits ----------
+$("helpBtn").onclick = () => { SFX.ac(); $("helpBox").classList.remove("hide"); };
+$("helpOk").onclick = () => { $("helpBox").classList.add("hide"); if (!SET.help) { SET.help = true; saveSet(); } };
+$("credBtn").onclick = () => $("credBox").classList.remove("hide");
+$("credOk").onclick = () => $("credBox").classList.add("hide");
+["helpBox", "passBox", "credBox"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.add("hide"); }));
+
+// ---------- start ----------
+show("titleScreen");
+if (!SET.help) $("helpBox").classList.remove("hide");
+QS.load().then(bank => {
+  G.bank = bank;
+  const cr = QS.credits(bank);
+  if (cr.length) { $("credList").innerHTML = cr.map(c => `<li>${esc(c)}</li>`).join(""); $("credLink").classList.remove("hide"); }
+}).catch(() => { $("titleMsg").innerHTML = `The questions didn't load.<br><a href="../../">Back to PlayTama</a>`; })
+  .finally(() => { if (G.bank && G.screen === "titleScreen") renderTitle(); });
+</script>
+</body>
+</html>

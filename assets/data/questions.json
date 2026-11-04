@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "questions": [
+    {
+      "id": "eiffel-tower",
+      "q": "Which picture is the Eiffel Tower?",
+      "answer": { "text": "Eiffel Tower", "img": "assets/img/q/Eiffel_tower.svg", "credit": "Eiffel Tower drawing: public domain, Wikimedia Commons" },
+      "wrong": [
+        { "text": "Tokyo Tower", "img": "assets/img/q/tokyo-tower.jpg", "credit": "" },
+        { "text": "Monas (Jakarta)", "img": "assets/img/q/monas.jpg", "credit": "" },
+        { "text": "Leaning Tower of Pisa", "img": "assets/img/q/pisa.jpg", "credit": "" }
+      ],
+      "tags": ["landmarks", "geography"]
+    },
+    {
+      "id": "bluey-girl",
+      "q": "In the cartoon Bluey, is Bluey a boy or a girl?",
+      "answer": "Girl",
+      "wrong": ["Boy", "The show never says"],
+      "tags": ["pop-culture", "tv"]
+    },
+    {
+      "id": "apollo-last",
+      "q": "Which was the last Apollo mission to land on the Moon?",
+      "answer": "Apollo 17",
+      "wrong": ["Apollo 11", "Apollo 13", "Apollo 15"],
+      "tags": ["space", "history"]
+    },
+    {
+      "id": "biggest-planet",
+      "q": "Which is the biggest planet in our solar system?",
+      "answer": "Jupiter",
+      "wrong": ["Saturn", "Neptune", "Earth"],
+      "tags": ["space", "science"]
+    },
+    {
+      "id": "hexagon-sides",
+      "q": "How many sides does a hexagon have?",
+      "answer": "6",
+      "wrong": ["5", "7", "8"],
+      "tags": ["maths"]
+    },
+    {
+      "id": "minecraft-creeper",
+      "q": "In Minecraft, which mob explodes when it gets close?",
+      "answer": "Creeper",
+      "wrong": ["Zombie", "Enderman", "Skeleton"],
+      "tags": ["pop-culture", "games"]
+    },
+    {
+      "id": "komodo-dragon",
+      "q": "What is the biggest lizard in the world? It lives in Indonesia.",
+      "answer": "Komodo dragon",
+      "wrong": ["Iguana", "Gecko", "Chameleon"],
+      "tags": ["animals", "indonesia"]
+    },
+    {
+      "id": "plants-co2",
+      "q": "Which gas do plants take from the air to make food?",
+      "answer": "Carbon dioxide",
+      "wrong": ["Oxygen", "Helium", "Nitrogen"],
+      "tags": ["science"]
+    },
+    {
+      "id": "pikachu-type",
+      "q": "What type of Pokémon is Pikachu?",
+      "answer": "Electric",
+      "wrong": ["Fire", "Water", "Grass"],
+      "tags": ["pop-culture", "games"]
+    },
+    {
+      "id": "byte-bits",
+      "q": "How many bits are in one byte?",
+      "answer": "8",
+      "wrong": ["4", "10", "16"],
+      "tags": ["computers", "maths"]
+    }
+  ]
+}

@@ -9,13 +9,12 @@
  * - TamaKit.fly(from, to, opts) one coin flying between two points (for stakes going in and prizes going out)
  * - TamaKit.coin(cls)           a coin as HTML ("sm" for the small one in text and chips)
  *
- * Works without window.Tama (a game opened on its own): the pass card then shows the tokens and the cheat box only.
  * Theme it from the game's CSS with the --tk-* variables below. Kit rules are plain class selectors: they beat a game's
  * element resets (like * { padding: 0 }), and any id or two-class rule in the game still overrides them.
  */
 (function () {
   "use strict";
-  const Tama = () => window.Tama || null;
+  const Tama = window.Tama;   // tama.js loads first
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   const CSS = `
@@ -68,43 +67,37 @@
     snd.addEventListener("click", () => { api.sound(!on); opts.onSound?.(on); });
     tok.addEventListener("click", () => { if (click) opts.onTokens?.(); });
     api.sound(on);
-    api.tokens(Tama() ? Tama().tokens() : 0);
+    api.tokens(Tama.tokens());
     return api;
   }
 
   // ---------- Tama Pass ----------
-  // Fills el (a card the game styles its own way). opts: btnClass for the buttons, onTokens() after the balance changed,
-  // and, for a game opened without tama.js, tokens() + addTokens(n) for its own local balance.
+  // Fills el (a card the game styles its own way). opts: btnClass for the buttons, onTokens() after the balance changed.
   function passCard(el, opts = {}) {
-    const T = Tama(), btn = opts.btnClass || "btn small";
-    const tokens = () => T ? T.tokens() : opts.tokens ? opts.tokens() : 0;
+    const btn = opts.btnClass || "btn small";
     el.classList.add("tk-pass");
     el.innerHTML = `<h2>TAMA PASS</h2>
       <table>
-        ${T ? `<tr><td>Name</td><td class="r">${esc(T.name())}</td></tr>` : ""}
-        <tr><td>Tama Tokens</td><td class="r">${tokens()} ${coin("sm")}</td></tr>
+        <tr><td>Name</td><td class="r">${esc(Tama.name())}</td></tr>
+        <tr><td>Tama Tokens</td><td class="r">${Tama.tokens()} ${coin("sm")}</td></tr>
       </table>
-      ${T ? `<p class="pnote">Your progress is saved in this browser. Write this code down to keep it or to carry it to another device.</p>
-      <div class="prow"><code>${esc(T.passCode())}</code><button class="${btn}" type="button" data-tk="copy">COPY</button></div>`
-        : `<p class="pnote">Open this game from PlayTama to get your Tama Pass.</p>`}
+      <p class="pnote">Your progress is saved in this browser. Write this code down to keep it or to carry it to another device.</p>
+      <div class="prow"><code>${esc(Tama.passCode())}</code><button class="${btn}" type="button" data-tk="copy">COPY</button></div>
       <form class="prow" data-tk="form"><input data-tk="in" autocomplete="off" spellcheck="false" placeholder="have a code?" aria-label="Tama Pass code"><button class="${btn}">LOAD</button></form>
       <p class="pnote" data-tk="msg" role="status"></p>`;
-    const q = k => el.querySelector(`[data-tk="${k}"]`), say = t => { const m = q("msg"); if (m) m.textContent = t; };
-    q("copy")?.addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText(T.passCode()); say("Copied!"); }
+    const q = k => el.querySelector(`[data-tk="${k}"]`), say = t => { q("msg").textContent = t; };
+    q("copy").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(Tama.passCode()); say("Copied!"); }
       catch { getSelection().selectAllChildren(el.querySelector("code")); say("Select and copy the code"); }
     });
     q("form").addEventListener("submit", e => {
       e.preventDefault();
       const code = q("in").value;
-      // "MORE TOKEN PLEASE": the same cheat as Tama.isCheat, for games opened on their own
-      const cheat = T ? T.cheat(code) : /^MORETOKENS?(PLE)?PLEASE$/.test(code.toUpperCase().replace(/[^A-Z]/g, "")) && (opts.addTokens?.(10), true);
-      if (cheat) { opts.onTokens?.(); passCard(el, opts); say("+10 Tama Tokens!"); return; }
-      if (!T) { say("That code needs PlayTama."); return; }
-      const check = T.checkPass(code);
+      if (Tama.cheat(code)) { opts.onTokens?.(); passCard(el, opts); say("+10 Tama Tokens!"); return; }   // "MORE TOKEN PLEASE"
+      const check = Tama.checkPass(code);
       if (!check.ok) { say(check.error); return; }
       if (!confirm(`Load this pass? Your Tama Tokens become ${check.save.tokens}.`)) return;
-      T.usePass(code); opts.onTokens?.(); passCard(el, opts); say("Pass loaded. Welcome back!");
+      Tama.usePass(code); opts.onTokens?.(); passCard(el, opts); say("Pass loaded. Welcome back!");
     });
   }
 
