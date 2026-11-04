@@ -14,7 +14,8 @@
   const PASS_IDS = { "main-jempol": 1, "sumpit": 2 };
 
   const listeners = new Set();
-  const today = () => new Date().toISOString().slice(0, 10);
+  // the player's local date (YYYY-MM-DD), so daily things reset at their own midnight
+  const today = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; };
   const clamp16 = n => Math.max(0, Math.min(MAX16, Math.floor(+n || 0)));
   const fresh = () => ({ name: "Player", tokens: START_TOKENS, scores: {}, data: {}, visits: {} });
 

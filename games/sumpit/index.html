@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sumpit</title>
+<title>Sumpit · PlayTama</title>
+<meta name="description" content="Basically super chopsticks: tap, split and snap to knock out both of your opponent's hands.">
+<meta name="theme-color" content="#73d049">
+<link rel="icon" href="../../assets/img/egg.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
@@ -85,6 +88,7 @@ a{color:inherit}
 #roster td.r{text-align:right}
 .msg{font-weight:800;min-height:20px}
 .or{font-weight:900;margin:10px 0;color:#777}
+.fsafe{font-size:13px;font-weight:700;color:#666;margin:12px 0 0}
 
 /* the table. Layers: band (1) < arms (2) < hands (3) */
 #game{position:absolute;inset:0;display:flex;flex-direction:column}
@@ -204,7 +208,7 @@ a{color:inherit}
         <div id="fPick">
           <button class="btn green" id="hostBtn">OPEN A TABLE</button>
           <div class="or">or join with a code</div>
-          <div class="row"><input id="codeIn" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ABCD"><button class="btn small" id="joinBtn">JOIN</button></div>
+          <div class="row"><input id="codeIn" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ABCD" aria-label="Table code"><button class="btn small" id="joinBtn">JOIN</button></div>
         </div>
         <div id="fRoom" hidden>
           <div>Table code</div>
@@ -216,6 +220,7 @@ a{color:inherit}
         </div>
         <div class="msg" id="fMsg"></div>
         <button class="btn small cream" id="friendBack">BACK</button>
+        <p class="fsafe">Online play connects you straight to your friends. Share codes only with people you know.</p>
       </div>
     </div>
 
@@ -281,7 +286,7 @@ const $ = id => document.getElementById(id);
 const TAMA = window.Tama || null;
 // the kit didn't load (offline and opened on its own): plain stand-ins so the game still plays
 const KIT = window.TamaKit || {
-  bar(el) { el.textContent = "🪙"; return { tokens(n) { el.textContent = "🪙 " + n; }, sound() {}, clickable() {} }; },
+  bar(el) { const s = document.createElement("span"); s.className = "tk-chip"; el.prepend(s); return { tokens(n) { s.textContent = "🪙 " + n; }, sound() {}, clickable() {} }; },
   passCard(el) { el.innerHTML = "<h2>TAMA PASS</h2><p>Open this game from PlayTama.</p>"; },
   pool(el) { return { n: 0, set() {}, add() {}, take() {}, el }; },
   fly(a, b, o = {}) { return new Promise(r => setTimeout(() => { o.onLand?.(); r(); }, o.delay || 0)); },
@@ -1202,7 +1207,7 @@ function hostGone() {
   if (mid) setTok(tok() + G.paid);   // not your fault: the stake comes back
   NET.leave(); G.mode = "title"; SFX.fuse(false);
   closeAll();
-  openFriends("The host closed the table." + (mid ? " Your coins came back." : ""));
+  openFriends("The host closed the table." + (mid ? " Your Tama Tokens came back." : ""));
 }
 
 $("friendBtn").onclick = () => { SFX.ac(); openFriends(); };
