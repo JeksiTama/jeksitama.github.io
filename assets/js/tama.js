@@ -11,7 +11,7 @@
   const START_TOKENS = 20;
   const MAX16 = 65535;
   // Numeric ids used inside the Tama Pass. Never reuse or renumber an id.
-  const PASS_IDS = { "main-jempol": 1 };
+  const PASS_IDS = { "main-jempol": 1, "sumpit": 2 };
 
   const listeners = new Set();
   const today = () => new Date().toISOString().slice(0, 10);
@@ -122,6 +122,10 @@
     collect(slug) {
       return update(s => { if (s.visits[slug] === today()) return false; s.visits[slug] = today(); s.tokens = clamp16(s.tokens + 1); return true; });
     },
+
+    // cheat: "MORE TOKEN PLEASE" typed into any Tama Pass box gives 10 tokens (letters only, so never a real pass code)
+    isCheat(code) { return /^MORETOKENS?(PLE)?PLEASE$/.test(String(code || "").toUpperCase().replace(/[^A-Z]/g, "")); },
+    cheat(code) { if (!this.isCheat(code)) return false; update(s => { s.tokens = clamp16(s.tokens + 10); }); return true; },
 
     // Tama Pass
     passCode() { return encodePass(read()); },

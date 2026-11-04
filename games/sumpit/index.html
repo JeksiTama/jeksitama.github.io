@@ -1,0 +1,1233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sumpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<!-- PlayTama shared save (tokens + stats) and game kit (top bar, Tama Pass, prize pool). Opened on its own, the kit comes from the live site. -->
+<script src="../../assets/js/tama.js"></script>
+<script src="../../assets/js/tama-kit.js"></script>
+<script>window.TamaKit || document.write('<script src="https://jeksitama.github.io/assets/js/tama-kit.js"><\/script>')</script>
+<style>
+@font-face{font-family:"Super Trend";src:url("../../assets/fonts/super-trend.ttf")}
+:root{--ink:#2b2b2b;--cream:#fffaf0;--red:#fe6767;--green:#73d049;--blue:#68c1ff;--pink:#fe94de;--orange:#fea046;--purple:#aa88ff;--yellow:#ffdb33;--grey:#666;
+  --display:"Super Trend","Nunito",system-ui,sans-serif;
+  --tk-font:Nunito,system-ui,sans-serif;--tk-chip:var(--cream);
+  --hand:min(31vw,150px,calc((100dvh - 300px)/2.6))}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:#24304a radial-gradient(circle at 50% 40%,#3d8fd6,#24304a 70%);font-family:Nunito,system-ui,sans-serif;color:var(--ink);overflow:hidden;
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#bg{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+#app{position:relative;z-index:1;max-width:520px;margin:0 auto;height:100dvh;display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+a{color:inherit}
+
+/* top bar, right: the kit's tokens + sound, then back / back out */
+#top{display:flex;justify-content:flex-end;align-items:center;padding:10px 12px;gap:8px;padding-top:max(10px,env(safe-area-inset-top));position:relative;z-index:6}
+#exitBtn{font-family:var(--tk-font);font-size:12px;font-weight:800}
+
+#stage{position:relative;flex:1;min-height:0}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;text-align:center;overflow-y:auto}
+.hide{display:none!important}
+
+/* title */
+.logo{font-family:var(--display);font-size:clamp(60px,19vw,104px);line-height:1;color:var(--yellow);letter-spacing:2px;
+  text-shadow:3px 0 var(--ink),-3px 0 var(--ink),0 3px var(--ink),0 -3px var(--ink),2px 2px var(--ink),-2px -2px var(--ink),2px -2px var(--ink),-2px 2px var(--ink),0 9px 0 var(--ink)}
+.pill{background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:900;box-shadow:0 4px 0 var(--ink)}
+.hero{display:flex;gap:18px;align-items:flex-end;height:min(150px,20dvh)}
+.hero .g{height:100%;aspect-ratio:120/150}
+.hero .g svg{width:100%;height:100%;overflow:visible}
+.hero .g.L svg{transform:scaleX(-1) rotate(-8deg)}
+.hero .g.R svg{transform:rotate(-8deg)}
+.menu{display:flex;flex-direction:column;gap:12px;align-items:center}
+.links{display:flex;flex-direction:column;gap:6px;align-items:center}
+.link{font:900 16px Nunito,sans-serif;color:var(--cream);background:none;border:0;cursor:pointer;text-shadow:0 2px 0 var(--ink);
+  text-decoration:underline wavy var(--red) 1.5px;text-underline-offset:6px;padding:2px 6px}
+.note{color:var(--cream);font-weight:800;text-shadow:0 2px 0 var(--ink);font-size:15px;max-width:330px}
+.credit{font-size:11px;color:var(--cream);opacity:.8;text-shadow:0 1px 0 var(--ink)}
+
+.btn{font-family:var(--display);font-size:24px;letter-spacing:1px;padding:12px 26px;min-width:250px;border:3px solid var(--ink);border-radius:16px;background:var(--yellow);
+  color:var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.btn:active:not(:disabled){translate:0 4px;box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.blue{background:var(--blue)}.btn.green{background:var(--green)}.btn.cream{background:var(--cream)}.btn.red{background:var(--red)}
+.btn.small{font-size:18px;padding:8px 18px;min-width:0}
+
+.card{background:var(--cream);border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:18px;width:min(100%,400px)}
+.card h2{font-family:var(--display);font-weight:400;font-size:30px;margin:0 0 10px;letter-spacing:1px}
+
+/* settings */
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:2px dashed #cfc6b8;font-weight:900;text-align:left}
+.set:last-of-type{border:0}
+.set small{display:block;font-weight:700;color:#666}
+.seg{display:flex;gap:4px;flex:none}
+.seg button{font:900 14px Nunito,sans-serif;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer}
+.seg button.on{background:var(--yellow);box-shadow:0 2px 0 var(--ink)}
+
+/* Tama Pass, in this game's card style (content from the kit) */
+#passCard table{font-weight:800;margin-bottom:6px}
+#passCard td{padding:6px 2px;border-bottom:2px dashed #cfc6b8;text-align:left}
+#passCard td.r{text-align:right}
+#passCard .pnote{font-size:13px;font-weight:700;margin:10px 0 4px}
+#passCard code{background:#fff3a8;border-radius:10px;font-size:15px}
+#passCard input{border-width:3px;border-radius:10px}
+
+/* friends */
+#codeIn{font-family:var(--display);font-size:30px;letter-spacing:6px;text-transform:uppercase;width:150px;text-align:center;border:3px solid var(--ink);border-radius:12px;padding:6px;background:#fff}
+#bigCode{font-family:var(--display);font-size:56px;letter-spacing:8px;line-height:1.1}
+.row{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+#roster{width:100%;border-collapse:collapse;margin:10px 0;font-weight:800}
+#roster td{padding:6px 2px;border-bottom:2px dashed #cfc6b8;text-align:left}
+#roster td.r{text-align:right}
+.msg{font-weight:800;min-height:20px}
+.or{font-weight:900;margin:10px 0;color:#777}
+
+/* the table. Layers: band (1) < arms (2) < hands (3) */
+#game{position:absolute;inset:0;display:flex;flex-direction:column}
+#arms{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
+.zone{flex:1;display:flex;flex-direction:column;align-items:center;min-height:0;gap:6px;position:relative;z-index:3}
+#oppZone{justify-content:flex-start}
+#meZone{justify-content:flex-end}
+.zone.front{z-index:4}
+.hands{display:flex;justify-content:center;gap:clamp(14px,8vw,48px)}
+.tag{font:900 15px Nunito,sans-serif;background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:2px 14px;box-shadow:0 3px 0 var(--ink);transition:background .2s}
+.tag.on{background:var(--yellow)}
+/* the glove's wrist sits at (--wx, --wy) of its box; mirrored and turned hands flip those */
+.hand{position:relative;width:var(--hand);aspect-ratio:120/134;touch-action:none;cursor:pointer;transition:transform .15s;--wx:58.3%;--wy:90.3%}
+.hand.L{--wx:41.7%}
+#oppHands .hand{--wy:9.7%;--wx:41.7%}
+#oppHands .hand.L{--wx:58.3%}
+.hand .g{width:100%;height:100%}
+.hand svg{width:100%;height:100%;display:block;overflow:visible;transition:filter .2s,opacity .2s}
+.hand.L svg{transform:scaleX(-1)}
+#oppHands .hand svg{transform:rotate(180deg)}
+#oppHands .hand.L svg{transform:rotate(180deg) scaleX(-1)}
+.hand .num{position:absolute;left:var(--wx);top:var(--wy);translate:-50% -50%;width:34px;height:34px;border-radius:50%;background:var(--cream);border:3px solid var(--ink);
+  font:400 21px/28px var(--display);text-align:center;pointer-events:none;display:none}
+.nums .hand .num{display:block}
+.hand.dead svg{filter:grayscale(1);opacity:.4}
+.hand.dead .num{background:#ccc}
+#meHands .hand.sel{transform:translateY(-14px)}
+.hand.sel svg{filter:drop-shadow(0 0 7px var(--yellow)) drop-shadow(0 0 3px var(--yellow))}
+.hand.tgt svg{animation:glow .7s ease-in-out infinite alternate}
+.hand.hot svg{animation:none;filter:drop-shadow(0 0 12px #fff) drop-shadow(0 0 6px var(--yellow))}
+@keyframes glow{from{filter:drop-shadow(0 0 2px #fff)}to{filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 4px var(--yellow))}}
+.hand.drag{transition:none}
+
+#band{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px;padding:4px 10px;position:relative;z-index:1}
+.clockCol{display:flex;flex-direction:column;align-items:center;gap:4px}
+.clock{font:900 15px Nunito,sans-serif;background:var(--cream);border:3px solid var(--ink);border-radius:12px;padding:2px 6px;box-shadow:0 3px 0 var(--ink);text-align:center;min-width:66px}
+.clock small{display:block;font-size:9px;letter-spacing:.5px;color:#666;line-height:1}
+.clock.run{background:var(--orange)}
+.clock.low{background:var(--red);animation:throb .5s ease-in-out infinite alternate}
+@keyframes throb{to{scale:1.08}}
+/* whose turn: one arrow, under the clock of the player who is moving, pointing at them */
+.arrow{width:22px;height:15px;visibility:hidden}
+.arrow.on{visibility:visible;animation:nudge .6s ease-in-out infinite alternate}
+#arMe.on{animation-name:nudgeDown}
+@keyframes nudge{to{translate:0 -3px}}
+@keyframes nudgeDown{to{translate:0 3px}}
+#mid{display:flex;flex-direction:column;align-items:center;gap:2px}
+#roundLbl{font:900 15px Nunito,sans-serif;color:var(--cream);text-shadow:0 2px 0 var(--ink);white-space:nowrap}
+/* the token prize pool; tapping it asks GAS? or answers GAS!! (it only glows for the answer) */
+#pool{width:150px;height:62px;background:none;border:0;padding:0;border-radius:16px;cursor:default;outline:3px dashed transparent;outline-offset:2px;transition:outline-color .2s}
+#pool.can{cursor:pointer;outline-color:var(--yellow);animation:poolGlow .8s ease-in-out infinite alternate}
+@keyframes poolGlow{to{outline-offset:6px}}
+#gasLbl{font:900 15px Nunito,sans-serif;color:var(--cream);text-shadow:0 2px 0 var(--ink);min-height:20px;white-space:nowrap}
+#gasLbl.ask{color:var(--yellow)}
+#ropeRow{position:relative;height:18px;margin:0 18px;visibility:hidden;z-index:1}
+#ropeFill{position:absolute;right:0;top:3px;height:12px;width:100%;border:2px solid var(--ink);border-radius:6px;
+  background:repeating-linear-gradient(60deg,#d9a066 0 6px,#a8693a 6px 11px)}
+#spark{position:absolute;top:50%;translate:-50% -55%;font-size:24px;line-height:1;filter:drop-shadow(0 0 6px #ffb340)}
+#hint{min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;color:var(--cream);text-shadow:0 2px 0 var(--ink);
+  padding:4px 14px max(8px,env(safe-area-inset-bottom));font-size:15px;position:relative;z-index:3}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(20,24,40,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.splits{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px 0 14px}
+.splits button{font:400 24px var(--display);background:var(--green);border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--ink);padding:8px 14px;cursor:pointer}
+.splits button.rev{background:var(--pink)}
+.splits button small{display:block;font:800 11px Nunito,sans-serif}
+.help{text-align:left;max-height:84dvh;overflow-y:auto}
+.help .step{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.help .pics{display:flex;align-items:center;gap:2px;flex:none;font-weight:900}
+.help .pics .g{width:30px;aspect-ratio:120/150}
+.help .pics .g svg{width:100%;height:100%;overflow:visible}
+.help .pics .g.L svg{transform:scaleX(-1)}
+.help p{margin:0;font-weight:700;font-size:14px}
+.help b{font-weight:900}
+#banner{position:fixed;left:50%;top:44%;translate:-50% -50%;z-index:60;pointer-events:none;font-family:var(--display);font-size:clamp(80px,28vw,150px);color:var(--orange);
+  text-shadow:4px 0 var(--ink),-4px 0 var(--ink),0 4px var(--ink),0 -4px var(--ink),3px 3px var(--ink),-3px -3px var(--ink),3px -3px var(--ink),-3px 3px var(--ink),0 10px 0 var(--ink);
+  opacity:0}
+#banner.go{animation:bang 1.3s ease-out}
+@keyframes bang{0%{opacity:0;scale:.3;rotate:-12deg}15%{opacity:1;scale:1.15;rotate:4deg}30%{scale:1;rotate:-3deg}80%{opacity:1}100%{opacity:0;scale:1.05}}
+#toast{position:fixed;left:50%;top:70px;translate:-50% 0;z-index:70;background:var(--cream);border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--ink);
+  padding:6px 14px;font-weight:900;max-width:90vw;text-align:center;transition:opacity .3s;opacity:0;pointer-events:none}
+#toast.on{opacity:1}
+.big{font-family:var(--display);font-size:46px;line-height:1;margin:4px 0 8px}
+.coins{font:900 22px Nunito,sans-serif;margin:8px 0 14px}
+.coins .tk-coin{width:26px;height:26px;font-size:11px;vertical-align:-4px;margin:0 2px}
+@media (max-height:620px){.hero{display:none}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="app">
+  <div id="top">
+    <div id="bar"><button class="tk-chip tk-btn" id="exitBtn" aria-label="Back">✕</button></div>
+  </div>
+  <div id="stage">
+    <div class="screen" id="titleScreen">
+      <div class="logo">SUMPIT</div>
+      <div class="pill">Basically super chopsticks.</div>
+      <div class="hero"><div class="g L" id="heroL"></div><div class="g R" id="heroR"></div></div>
+      <div class="menu">
+        <button class="btn" id="playBtn">PLAY</button>
+        <button class="btn blue" id="friendBtn">PLAY A FRIEND</button>
+        <div class="msg" id="titleMsg" style="color:var(--cream);text-shadow:0 2px 0 var(--ink)"></div>
+      </div>
+      <div class="links">
+        <button class="link" id="helpBtn">/how to play/</button>
+        <button class="link" id="setBtn">/settings/</button>
+        <a class="link" href="../../">/PlayTama home/</a>
+      </div>
+      <div class="credit">Hands drawn for PlayTama. Fonts: Super Trend, Nunito (Google Fonts).</div>
+    </div>
+
+    <div class="screen hide" id="friendScreen">
+      <div class="card">
+        <h2>PLAY A FRIEND</h2>
+        <div id="fPick">
+          <button class="btn green" id="hostBtn">OPEN A TABLE</button>
+          <div class="or">or join with a code</div>
+          <div class="row"><input id="codeIn" maxlength="4" autocomplete="off" spellcheck="false" placeholder="ABCD"><button class="btn small" id="joinBtn">JOIN</button></div>
+        </div>
+        <div id="fRoom" hidden>
+          <div>Table code</div>
+          <div id="bigCode">----</div>
+          <div class="row"><button class="btn small" id="linkBtn">COPY INVITE LINK</button></div>
+          <table id="roster"></table>
+          <div id="fInfo" class="msg"></div>
+          <div class="row"><button class="btn green" id="goBtn">START</button></div>
+        </div>
+        <div class="msg" id="fMsg"></div>
+        <button class="btn small cream" id="friendBack">BACK</button>
+      </div>
+    </div>
+
+    <div id="game" class="hide">
+      <svg id="arms" aria-hidden="true"></svg>
+      <div class="zone" id="oppZone">
+        <div class="tag" id="oppTag">Bot</div>
+        <div class="hands" id="oppHands">
+          <div class="hand R" id="op1"><div class="g"></div><div class="num"></div></div>
+          <div class="hand L" id="op0"><div class="g"></div><div class="num"></div></div>
+        </div>
+      </div>
+      <div id="band">
+        <div class="clockCol">
+          <div class="clock" id="clkMe"><small>RESERVE</small><span>0:30</span></div>
+          <svg class="arrow" id="arMe" viewBox="0 0 22 15"><path d="M11 13 20 2H2Z" fill="#ffdb33" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        </div>
+        <div id="mid">
+          <div id="roundLbl">Round 1</div>
+          <button id="pool" aria-label="Token prize pool"></button>
+          <div id="gasLbl"></div>
+        </div>
+        <div class="clockCol">
+          <div class="clock" id="clkOpp"><small>RESERVE</small><span>0:30</span></div>
+          <svg class="arrow" id="arOpp" viewBox="0 0 22 15"><path d="M11 2 20 13H2Z" fill="#ffdb33" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div id="ropeRow"><div id="ropeFill"></div><span id="spark">🔥</span></div>
+      <div class="zone" id="meZone">
+        <div class="hands" id="meHands">
+          <div class="hand L" id="me0"><div class="g"></div><div class="num"></div></div>
+          <div class="hand R" id="me1"><div class="g"></div><div class="num"></div></div>
+        </div>
+        <div class="tag" id="meTag">You</div>
+      </div>
+      <div id="hint"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hide" id="splitBox"><div class="card"><h2>SPLIT</h2><div>Share your fingers between your hands.</div><div class="splits" id="splitList"></div>
+  <button class="btn small cream" id="splitCancel">CANCEL</button></div></div>
+<div class="overlay hide" id="helpBox"><div class="card help" id="helpCard"></div></div>
+<div class="overlay hide" id="setBox"><div class="card">
+  <h2>SETTINGS</h2>
+  <div class="set"><span>Bot<small>How hard the bot plays</small></span><span class="seg" id="segLevel"></span></div>
+  <div class="set"><span>Numbers<small>Show the count on each wrist</small></span><span class="seg" id="segNums"></span></div>
+  <div class="set"><span>Drop areas<small>Debug: draw where hands can be grabbed and dropped</small></span><span class="seg" id="segDebug"></span></div>
+  <div class="row" style="margin-top:12px"><button class="btn small green" id="setOk">DONE</button></div>
+</div></div>
+<div class="overlay hide" id="passBox"><div class="card"><div id="passCard"></div>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="passOk">CLOSE</button></div></div></div>
+<div class="overlay hide" id="askBox"><div class="card"><h2 id="askT"></h2><p id="askP" style="font-weight:800"></p>
+  <div class="row"><button class="btn small red" id="askYes">BACK OUT</button><button class="btn small cream" id="askNo">KEEP PLAYING</button></div></div></div>
+<div class="overlay hide" id="resultBox"><div class="card"><div class="big" id="resT"></div><div id="resWhy" style="font-weight:800"></div><div class="coins" id="resCoins"></div>
+  <div class="menu"><button class="btn green" id="againBtn">AGAIN</button><button class="btn small cream" id="menuBtn">MENU</button></div></div></div>
+<div id="banner">GAS?</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const TAMA = window.Tama || null;
+// the kit didn't load (offline and opened on its own): plain stand-ins so the game still plays
+const KIT = window.TamaKit || {
+  bar(el) { el.textContent = "🪙"; return { tokens(n) { el.textContent = "🪙 " + n; }, sound() {}, clickable() {} }; },
+  passCard(el) { el.innerHTML = "<h2>TAMA PASS</h2><p>Open this game from PlayTama.</p>"; },
+  pool(el) { return { n: 0, set() {}, add() {}, take() {}, el }; },
+  fly(a, b, o = {}) { return new Promise(r => setTimeout(() => { o.onLand?.(); r(); }, o.delay || 0)); },
+  coin() { return "🪙"; },
+};
+const COIN = KIT.coin("sm");
+const SLUG = "sumpit";
+const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+// ---------- rules ----------
+// Everything a round modifier may change lives here. Counters for limited actions are kept per player in the state (S.revives, S.splits).
+// null = no limit.
+const RULES = {
+  fingers: [5, 5],        // per hand [left, right]: a hand that reaches this is out
+  start: [1, 1],
+  over: "rollover",       // "rollover": past the limit wraps around (3 + 4 → 2 on a 5-hand); "cutoff": reaching it or more is out
+  revives: null,          // splits that bring an out hand back, per player per match
+  swaps: false,           // whether 3+1 → 1+3 counts as a move
+  splitsPerRound: null,   // splits/merges per player per round
+};
+const STAKE = 2, RESERVE = 30, TURN_START = 15, TURN_MIN = 5, ROPE = 5;
+const turnLen = round => Math.max(TURN_MIN, TURN_START - (round - 1));
+const lim = i => RULES.fingers[i];
+
+function newState(first) {
+  return { h: [[...RULES.start], [...RULES.start]], turn: first, first, ply: 0, round: 1, reserve: [RESERVE, RESERVE],
+    stake: STAKE, gas: null, asked: [false, false], revives: [0, 0], splits: [0, 0], over: null };
+}
+const hit = (v, add, L) => { const n = v + add; return RULES.over === "rollover" ? n % L : n >= L ? 0 : n; };
+function legal(S, s) {
+  const me = S.h[s], op = S.h[1 - s], out = [];
+  for (let f = 0; f < 2; f++) if (me[f]) for (let t = 0; t < 2; t++) if (op[t]) out.push({ k: "tap", f, t });
+  if (RULES.splitsPerRound == null || S.splits[s] < RULES.splitsPerRound) {
+    const [a, b] = me, tot = a + b;
+    for (let x = 0; x < lim(0); x++) {
+      const y = tot - x;
+      if (y < 0 || y >= lim(1) || (x === a && y === b)) continue;
+      if (!RULES.swaps && x === b && y === a) continue;
+      const revive = (!a || !b) && x > 0 && y > 0;
+      if (revive && RULES.revives != null && S.revives[s] >= RULES.revives) continue;
+      out.push({ k: "split", to: [x, y], revive });
+    }
+  }
+  return out;
+}
+// hands after a move: [mover's, other's]
+function next(S, s, m) {
+  const a = [...S.h[s]], o = [...S.h[1 - s]];
+  if (m.k === "tap") o[m.t] = hit(o[m.t], a[m.f], lim(m.t)); else { a[0] = m.to[0]; a[1] = m.to[1]; }
+  return [a, o];
+}
+function applyMove(S, s, m) {
+  [S.h[s], S.h[1 - s]] = next(S, s, m);
+  if (m.k === "split") { S.splits[s]++; if (m.revive) S.revives[s]++; }
+  S.ply++; S.turn = 1 - s;
+  if (S.turn === S.first) { S.round++; S.splits = [0, 0]; }
+  if (!S.h[1 - s][0] && !S.h[1 - s][1]) S.over = { w: s, why: "hands" };
+}
+const same = (x, m) => !!m && x.k === m.k && (x.k === "tap" ? x.f === m.f && x.t === m.t
+  : Array.isArray(m.to) && x.to[0] === m.to[0] && x.to[1] === m.to[1]);
+const posKey = S => S.h.join("|") + "/" + S.turn;
+
+// ---------- solver (bots) ----------
+// Every position is tiny, so bots know the true value of each one: win in n moves, loss in n moves, or a draw.
+// Per-player limits (revives, splits per round) are left out here; bots still only play legal moves.
+// v > 0: the player to move wins in v plies. v < 0: they lose in -v-1 plies. 0: draw.
+const SOLVE = (() => {
+  const A = lim(0), B = lim(1), H = A * B, at = (m, o) => (m[0] * B + m[1]) * H + o[0] * B + o[1];
+  let val = new Int16Array(H * H);
+  const kids = [];
+  for (let a = 0; a < A; a++) for (let b = 0; b < B; b++) for (let c = 0; c < A; c++) for (let d = 0; d < B; d++) {
+    const i = at([a, b], [c, d]);
+    if (!a && !b) { val[i] = -1; continue; }
+    if (!c && !d) { val[i] = 1; continue; }   // never reached in play
+    const S = { h: [[a, b], [c, d]], splits: [0, 0], revives: [0, 0] };
+    kids.push([i, legal(S, 0).map(m => { const [x, y] = next(S, 0, m); return at(y, x); })]);
+  }
+  for (let pass = 0, changed = true; changed && pass < 400; pass++) {
+    changed = false; const nv = val.slice();
+    for (const [i, ks] of kids) {
+      if (val[i]) continue;
+      let win = Infinity, worst = 0, allLose = true;
+      for (const k of ks) { const v = val[k]; if (v < 0) win = Math.min(win, -v); else if (v > 0) worst = Math.max(worst, v); else allLose = false; }
+      if (win < Infinity) { nv[i] = win; changed = true; } else if (allLose) { nv[i] = -(worst + 2); changed = true; }
+    }
+    val = nv;
+  }
+  return { v: (m, o) => val[at(m, o)] };
+})();
+
+// difficulty is picked in /settings/
+const BOTS = [
+  { name: "Gampang", emoji: "🐣", skill: .3, horizon: 1, ask: .12, yes: .5, think: [900, 1700] },
+  { name: "Sedang", emoji: "🐻", skill: .65, horizon: 5, ask: .25, yes: .3, think: [700, 1400] },
+  { name: "Susah", emoji: "🦊", skill: .93, horizon: 99, ask: .45, yes: .15, think: [600, 1200] },
+];
+function pickBot(S, s, b) {
+  const ms = legal(S, s).map(m => {
+    const [mine, theirs] = next(S, s, m), v = SOLVE.v(theirs, mine);   // their view: they move next
+    let sc = v < 0 ? 1000 + v : v > 0 ? -1000 + v : 0;
+    if (!v) { const k = [s ? theirs : mine, s ? mine : theirs].join("|") + "/" + (1 - s); sc -= 4 * (G.seen[k] || 0); }   // don't go round in circles
+    return { m, v, sc: sc + Math.random() * .5 };
+  }).sort((x, y) => y.sc - x.sc);
+  if (Math.random() < b.skill) return ms[0].m;
+  const safe = ms.filter(x => !(x.v > 0 && x.v <= b.horizon));   // a careless move, but not one that hands over a quick win
+  const pool = safe.length ? safe : ms;
+  return pool[Math.random() * pool.length | 0].m;
+}
+
+// ---------- hands ----------
+// A cartoon glove (right hand, back view, thumb on the left), drawn in a 120 × 134 box. The left hand is the same drawing mirrored with CSS.
+// Outline trick: every piece is drawn thick in ink, then filled grey, then filled white shifted up-left inside the silhouette (toon shading).
+// The arm is not part of the glove: it is a tube drawn from the screen edge to the wrist (WRIST below), so it stretches when the hand moves.
+const SKIN = { glove: "#ffffff", shade: "#d3d9e3", ink: "#2b2b2b", arm: "#2f86c6" };
+const VIEW = { x: -18, y: -2, w: 120, h: 134 };
+const WRIST = { x: 52, y: 119, bottom: 126 };   // centre of the visible wrist (where the number sits), and where the arm joins
+// fingers fan out from their knuckles at (bx, 70): index, middle, ring, pinky. len = when up.
+// A folded finger is a round knuckle standing straight up, its top at fold (they step down towards the pinky, like a fist).
+const FINGERS = [{ bx: 31, w: 13.5, len: 60, a: -7, fold: 41 }, { bx: 46.5, w: 13.5, len: 66, a: -1.5, fold: 39 },
+  { bx: 61.5, w: 13.5, len: 60, a: 5, fold: 42 }, { bx: 75, w: 12, len: 45, a: 13, fold: 48 }];
+const PALM = "M30 54H74Q86 54 86 68L83 100Q80 114 66 116H38Q24 114 22 100L20 68Q20 54 30 54Z";
+let clipN = 0;
+// stub: a short piece of arm under the wrist, for pictures without the table (title, how to play)
+function handSVG(n, sk = SKIN, stub = false) {
+  const id = "hc" + clipN++, up = Math.min(n, 4), parts = [`<path d="${PALM}"/>`];
+  let crease = "";
+  FINGERS.forEach((f, i) => parts.push(i < up
+    ? `<rect x="${-f.w / 2}" y="${-f.len}" width="${f.w}" height="${f.len + 8}" rx="${f.w / 2}" transform="translate(${f.bx} 70) rotate(${f.a})"/>`
+    : `<rect x="${f.bx - f.w / 2}" y="${f.fold}" width="${f.w}" height="${78 - f.fold}" rx="${f.w / 2}"/>`));
+  // thumb: out to the side on a five, otherwise folded behind the palm (a bulge and a crease)
+  if (n >= 5) parts.push(`<rect x="-7.5" y="-38" width="15" height="46" rx="7.5" transform="translate(28 90) rotate(-42)"/>`);
+  else { parts.push(`<ellipse cx="23" cy="90" rx="8" ry="15"/>`); crease = `<path d="M29 79Q34 90 29 101" fill="none" stroke="${sk.ink}" stroke-width="2.6" stroke-linecap="round"/>`; }
+  // between two folded fingers, a short line runs down into the palm so the knuckles read as separate fingers
+  for (let i = Math.max(up, 1); i < 4; i++) {
+    const x = (FINGERS[i - 1].bx + FINGERS[i - 1].w / 2 + FINGERS[i].bx - FINGERS[i].w / 2) / 2;
+    if (i - 1 >= up) crease += `<path d="M${x} ${Math.max(FINGERS[i - 1].fold, FINGERS[i].fold) + 6}V64" stroke="${sk.ink}" stroke-width="2.4" stroke-linecap="round"/>`;
+  }
+  const sil = parts.join("");
+  const h = stub ? 152 : VIEW.h;
+  const arm = stub ? `<path d="M52 122V150" stroke="${sk.ink}" stroke-width="17" stroke-linecap="round"/><path d="M52 122V150" stroke="${sk.arm}" stroke-width="11" stroke-linecap="round"/>` : "";
+  // the wrist band sits behind the palm, so only its lower edge shows
+  return `<svg viewBox="${VIEW.x} ${VIEW.y} ${VIEW.w} ${h}" aria-hidden="true"><defs><clipPath id="${id}">${sil}</clipPath></defs>${arm}
+<path d="M39 106H65L68 123Q68 126 65 126H39Q36 126 36 123Z" fill="${sk.glove}" stroke="${sk.ink}" stroke-width="3.6" stroke-linejoin="round"/>
+<path d="M40 121H64" stroke="${sk.shade}" stroke-width="3" stroke-linecap="round"/>
+<g fill="${sk.ink}" stroke="${sk.ink}" stroke-width="7" stroke-linejoin="round">${sil}</g>
+<g fill="${sk.shade}">${sil}</g>
+<g clip-path="url(#${id})"><g fill="${sk.glove}" transform="translate(-3.5 -3)">${sil}</g></g>${crease}</svg>`;
+}
+// where the wrist and the arm joint sit, as fractions of the hand's box (before mirroring / turning)
+const WX = (WRIST.x - VIEW.x) / VIEW.w, AY = (WRIST.bottom - VIEW.y) / VIEW.h;
+
+// ---------- backgrounds ----------
+// One entry per look. Round modifiers will pick theirs from here; "swirl" is the normal table.
+const BACKGROUNDS = {
+  swirl: { colors: [[.996, .404, .404], [.239, .561, .839], [.141, .188, .29]], ink: [.07, .08, .14], speed: .2, line: .55 },
+};
+const BG = (() => {
+  const cv = $("bg");
+  let gl = null, prog, U = {}, cur = BACKGROUNDS.swirl, t = 0, last = 0;
+  try { gl = cv.getContext("webgl", { antialias: false, alpha: false }); } catch {}
+  if (!gl) { cv.remove(); return { set() {} }; }   // the CSS gradient on <body> shows instead
+  const vs = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+  // a slow paint swirl, cut into three flat colour bands with ink lines where the bands meet
+  const fs = `precision mediump float;
+uniform vec2 R;uniform float T,L;uniform vec3 A,B,C,K;
+float field(vec2 f){
+  vec2 p=(f-.5*R)/min(R.x,R.y)*2.4;
+  float r=length(p),a=atan(p.y,p.x)+T*.11+1.3/(r+.45);
+  p=r*vec2(cos(a),sin(a));
+  for(int i=0;i<4;i++){float k=float(i);p+=.42*vec2(sin(p.y*1.6+T*.33+k),cos(p.x*1.4-T*.27+k*1.7));}
+  return .5+.5*sin(p.x*1.25+p.y*.9+T*.18);
+}
+void main(){
+  vec2 f=gl_FragCoord.xy;float v=field(f);
+  // distance in pixels to the nearest band edge, from the local slope: smooth ink lines of even width
+  float g=length(vec2(field(f+vec2(1.,0.))-v,field(f+vec2(0.,1.))-v))+1e-4;
+  float px=min(abs(v-1./3.),abs(v-2./3.))/g;
+  vec3 col=v<1./3.?C:(v<2./3.?B:A);
+  float hl=fract(v*3.);col*=hl>.84&&hl<.95?1.1:1.;
+  col=mix(col,K,1.-smoothstep(L*.5,L*.5+.8,px));
+  vec2 q=f/R-.5;col*=1.-.55*dot(q,q);
+  gl_FragColor=vec4(col,1.);
+}`;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
+  prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { cv.remove(); return { set() {} }; }
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  for (const n of ["R", "T", "L", "A", "B", "C", "K"]) U[n] = gl.getUniformLocation(prog, n);
+  // drawn at a lower resolution: it is soft art, and phones stay cool
+  const size = () => { const k = .6; cv.width = Math.max(1, innerWidth * k | 0); cv.height = Math.max(1, innerHeight * k | 0); gl.viewport(0, 0, cv.width, cv.height); };
+  addEventListener("resize", size); size();
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (now - last < 33) return;   // ~30 fps is plenty
+    t += Math.min(.1, (now - last) / 1000) * cur.speed * (CALM ? .1 : 1); last = now;
+    gl.uniform2f(U.R, cv.width, cv.height); gl.uniform1f(U.T, t + 7); gl.uniform1f(U.L, cur.line);
+    gl.uniform3fv(U.A, cur.colors[0]); gl.uniform3fv(U.B, cur.colors[1]); gl.uniform3fv(U.C, cur.colors[2]); gl.uniform3fv(U.K, cur.ink);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  requestAnimationFrame(frame);
+  return { set(id) { cur = BACKGROUNDS[id] || BACKGROUNDS.swirl; } };
+})();
+
+// ---------- save, tokens, settings ----------
+function tok() {
+  if (TAMA) return TAMA.tokens();
+  try { const t = localStorage.getItem("sumpit_tokens"); return t == null ? 20 : +t || 0; } catch { return 20; }
+}
+function setTok(v) {
+  v = Math.max(0, Math.min(65535, v | 0));
+  if (TAMA) TAMA.setTokens(v); else try { localStorage.setItem("sumpit_tokens", v); } catch {}
+  renderTok();
+}
+const pay = n => { const p = Math.min(n, tok()); setTok(tok() - p); return p; };
+// the stake needs tokens; on PlayTama more come from opening games on the home page
+const BROKE = () => `You need ${COIN}${STAKE} to sit down.<br><a href="../../">Collect Tama Tokens on PlayTama</a>`;
+function canSit() {
+  if (!TAMA && tok() < STAKE) setTok(20);   // standalone file: just refill
+  return tok() >= STAKE;
+}
+const SET = { sound: true, help: false, level: 0, nums: false, debug: false };
+try { Object.assign(SET, TAMA ? TAMA.load(SLUG, {}) : JSON.parse(localStorage.getItem("sumpit_set") || "{}")); } catch {}
+const saveSet = () => { try { if (TAMA) TAMA.save(SLUG, SET); else localStorage.setItem("sumpit_set", JSON.stringify(SET)); } catch {} };
+
+// ---------- top bar (from the kit) ----------
+const BAR = KIT.bar($("bar"), {
+  sound: SET.sound,
+  onSound(on) { SET.sound = on; saveSet(); if (!on) SFX.fuse(false); SFX.ac(); SFX.blip(); },
+  onTokens: openPass,
+});
+// while prize coins are still flying, the chip counts up as they land instead
+function renderTok() { if (!G.coinsLive) BAR.tokens(tok()); }
+TAMA?.onChange?.(renderTok);
+
+// ---------- sound ----------
+const SFX = (() => {
+  let ctx = null, noiseBuf = null, fz = null;
+  const ac = () => {
+    if (!ctx) try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+    if (ctx?.state === "suspended") ctx.resume();
+    return ctx;
+  };
+  const noiseOf = c => {
+    if (!noiseBuf) { noiseBuf = c.createBuffer(1, c.sampleRate * 2, c.sampleRate); const x = noiseBuf.getChannelData(0); for (let i = 0; i < x.length; i++) x[i] = Math.random() * 2 - 1; }
+    return noiseBuf;
+  };
+  function tone(f, d = .12, type = "sine", v = .2, f2 = 0, delay = 0) {
+    if (!SET.sound) return; const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
+  }
+  function noise(d = .08, v = .2, hp = 1500, delay = 0) {
+    if (!SET.sound) return; const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = noiseOf(c); f.type = "highpass"; f.frequency.value = hp;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    s.connect(f).connect(g).connect(c.destination); s.start(t, Math.random()); s.stop(t + d + .02);
+  }
+  // a burning fuse: a hiss that flickers in loudness and pitch, with little crackles
+  function fuse(on, loud = 1) {
+    if (!on) {
+      if (!fz) return;
+      const f = fz; fz = null; clearInterval(f.t);
+      f.g.gain.setTargetAtTime(0, ctx.currentTime, .05); setTimeout(() => { try { f.s.stop(); } catch {} }, 400);
+      return;
+    }
+    if (fz || !SET.sound) return; const c = ac(); if (!c) return;
+    const s = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = noiseOf(c); s.loop = true; bp.type = "bandpass"; bp.frequency.value = 3800; bp.Q.value = .6; g.gain.value = 0;
+    s.connect(bp).connect(g).connect(c.destination); s.start();
+    const t = setInterval(() => {
+      g.gain.setTargetAtTime((.05 + Math.random() * .08) * loud, c.currentTime, .02);
+      bp.frequency.setTargetAtTime(2800 + Math.random() * 2800, c.currentTime, .03);
+      if (Math.random() < .35) noise(.012 + Math.random() * .015, (.15 + Math.random() * .3) * loud, 1800);
+    }, 60);
+    fz = { s, g, t };
+  }
+  return {
+    ac, fuse,
+    whoosh() { noise(.14, .1, 2500); },
+    tap() { tone(190, .14, "triangle", .4, 70); noise(.05, .15, 700); },
+    out() { tone(320, .35, "sawtooth", .12, 70); },
+    split() { tone(420, .08, "square", .07, 640); tone(640, .09, "square", .07, 420, .1); },
+    ask() { tone(520, .12, "triangle", .15, 0); tone(700, .22, "triangle", .15, 980, .12); },
+    gas() { noise(.25, .25, 600); tone(110, .4, "sawtooth", .15, 260); tone(220, .35, "square", .08, 520, .05); },
+    coin() { tone(1200, .07, "square", .08); tone(1800, .2, "square", .08, 0, .07); },
+    tick() { tone(950, .03, "square", .05); },
+    blip() { tone(660, .09, "sine", .15); },
+    win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .2, "triangle", .2, 0, i * .11)); },
+    lose() { [392, 330, 262].forEach((f, i) => tone(f, .28, "triangle", .18, 0, i * .16)); },
+  };
+})();
+
+// ---------- screens ----------
+const SCREENS = ["titleScreen", "friendScreen", "game"];
+function show(id) {
+  SCREENS.forEach(s => $(s).classList.toggle("hide", s !== id)); G.screen = id;
+  BAR.clickable(id === "titleScreen"); renderTok(); renderExit();
+}
+// top-left: back out during a match, otherwise back
+function renderExit() { const m = G.mode === "match" && !G.S?.over; $("exitBtn").textContent = m ? "🏳️ Back out" : "✕"; $("exitBtn").setAttribute("aria-label", m ? "Back out" : "Back"); }
+let toastT = 0;
+function toast(msg, ms = 2200) { const t = $("toast"); t.innerHTML = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), ms); }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function banner(txt) { const b = $("banner"); b.textContent = txt; b.classList.remove("go"); void b.offsetWidth; b.classList.add("go"); }
+const closeAll = () => ["resultBox", "askBox", "splitBox", "setBox", "passBox"].forEach(id => $(id).classList.add("hide"));
+
+$("heroL").innerHTML = handSVG(2, SKIN, true); $("heroR").innerHTML = handSVG(3, SKIN, true);
+
+// ---------- the match ----------
+// Local play and the online host run the match. An online guest only mirrors the host's state and sends its choices.
+const G = { screen: "titleScreen", mode: "title", S: null, me: 0, opp: null, busy: false, waiting: false, sel: null, t0: 0, paid: 0, stakeLvl: 0, seen: {}, done: false, ticked: -1, coinsLive: false };
+const isGuest = () => NET.role === "guest";
+const oppName = () => G.opp?.bot ? G.opp.bot.name : G.opp?.name || "Friend";
+const myTurn = () => G.mode === "match" && !G.S.over && G.S.turn === G.me && !G.busy && !G.waiting;
+const handEl = (seat, i) => $((seat === G.me ? "me" : "op") + i);
+const POOL = KIT.pool($("pool"));
+
+function startMatch(o) {
+  G.S = o.S || newState(Math.random() < .5 ? 0 : 1);
+  Object.assign(G, { me: o.me || 0, opp: o.opp, busy: false, waiting: false, sel: null, seen: {}, done: false, ticked: -1, mode: "match", coinsLive: false });
+  G.paid = pay(STAKE); G.stakeLvl = STAKE; NET.seen = performance.now();
+  BG.set("swirl");
+  for (const id of ["me0", "me1", "op0", "op1"]) $(id).dataset.n = "";
+  $("oppTag").textContent = (G.opp.bot ? G.opp.bot.emoji + " " : "🙂 ") + oppName();
+  $("game").classList.toggle("nums", !!SET.nums);
+  closeAll(); POOL.set(0);
+  show("game");
+  G.t0 = performance.now();
+  if (isGuest()) render(); else startTurn();
+  ante(STAKE);
+}
+// both stakes fly into the prize pool: yours from your name, theirs from theirs
+function ante(n) {
+  for (let k = 0; k < n; k++) for (const [tag, j] of [["meTag", 0], ["oppTag", 1]])
+    KIT.fly($(tag), $("pool"), { delay: (k * 2 + j) * 110, onLand() { POOL.add(); SFX.coin(); } });
+}
+function clock() {
+  const S = G.S, el = (performance.now() - G.t0) / 1000, L = turnLen(S.round);
+  return { left: L - el, res: Math.max(0, S.reserve[S.turn] - Math.max(0, el - L)) };
+}
+function startTurn() {
+  const S = G.S; if (S.over) return;
+  G.t0 = performance.now(); G.ticked = -1;
+  const k = posKey(S); G.seen[k] = (G.seen[k] || 0) + 1;
+  render(); hostSync();
+  if (S.turn !== G.me && G.opp.bot) {
+    const b = G.opp.bot, ply = S.ply;
+    setTimeout(() => botTurn(ply), b.think[0] + Math.random() * (b.think[1] - b.think[0]));
+  }
+}
+function botTurn(ply) {
+  const S = G.S, b = G.opp?.bot;
+  if (G.mode !== "match" || !b || S.over || S.ply !== ply || G.busy) return;
+  const s = S.turn, v = SOLVE.v(S.h[s], S.h[1 - s]);
+  let said = false;
+  // asked GAS?: yes when ahead, sometimes when it's even, never when behind
+  if (S.gas && !S.gas.ok && S.gas.by !== s) { if (v > 0 || (v === 0 && Math.random() < b.yes)) { gasYes(s); said = true; } }
+  else if (canAsk(S, s) && (v > 0 ? Math.random() < b.ask : Math.random() < .02)) { gasAsk(s); said = true; }   // a rare bluff too
+  if (!said) return doMove(s, pickBot(S, s, b));
+  setTimeout(() => { if (G.S === S && S.ply === ply && !S.over && !G.busy) doMove(s, pickBot(S, s, b)); }, 1100);
+}
+async function doMove(s, m) {
+  const S = G.S;
+  if (G.busy || S.over || S.turn !== s) return;
+  const mv = legal(S, s).find(x => same(x, m)); if (!mv) return;
+  G.busy = true; G.sel = null; closeSplit();
+  S.reserve[s] = clock().res;   // bank what's left of the reserve
+  applyMove(S, s, mv);
+  const lapsed = S.gas && !S.gas.ok && s !== S.gas.by;
+  if (lapsed) S.gas = null;   // they moved without saying GAS!!: the stakes stay
+  NET.send({ t: "mv", s, m: mv, S });
+  if (lapsed) toast("No GAS this time.");
+  await animate(s, mv);
+  syncStake();
+  G.busy = false;
+  if (S.over) return finish();
+  startTurn();
+}
+// both said GAS: everyone tops up their stake, and the coins fly in
+function syncStake() {
+  if (G.mode !== "match" || G.S.stake <= G.stakeLvl) return;
+  const more = G.S.stake - G.stakeLvl;
+  G.paid += pay(more); G.stakeLvl = G.S.stake;
+  ante(more);
+  toast(`Stakes doubled: ${COIN}${G.S.stake} each`);
+}
+// GAS: on your turn, tap the coins to ask "GAS?" (once per match). If the other player taps them too before their
+// move is done, it's "GAS!!" and the stakes double. If they just move, nothing changes.
+const canAsk = (S, s) => !S.over && !S.gas && !S.asked[s] && S.stake === STAKE && S.turn === s;
+function gasAsk(s) {
+  const S = G.S;
+  if (!canAsk(S, s) || G.busy) return;
+  S.gas = { by: s, ok: false }; S.asked[s] = true;
+  banner("GAS?"); SFX.ask(); render(); hostSync();
+}
+function gasYes(s) {
+  const S = G.S;
+  if (S.over || !S.gas || S.gas.ok || S.gas.by === s) return;
+  S.gas.ok = true; S.stake = STAKE * 2;
+  banner("GAS!!"); SFX.gas(); syncStake(); render(); hostSync();
+}
+// a guest hears about GAS from the host's state
+function gasNews(prev, now) {
+  if (!prev && now && !now.ok) { banner("GAS?"); SFX.ask(); }
+  else if (now?.ok && !prev?.ok) { banner("GAS!!"); SFX.gas(); }
+  else if (prev && !prev.ok && !now) toast("No GAS this time.");
+}
+function backOut(s) {
+  const S = G.S; if (S.over || G.done) return;
+  S.over = { w: 1 - s, why: "back", by: s };
+  closeSplit(); render(); hostSync(); finish();
+}
+async function finish() {
+  if (G.done) return; G.done = true;
+  const S = G.S, win = S.over.w === G.me, gain = win ? G.paid + S.stake : 0;
+  render(); SFX.fuse(false); $("ropeRow").style.visibility = "hidden";
+  // the prize: saved now, shown as the coins land
+  const shown = tok();
+  if (gain) { G.coinsLive = true; setTok(tok() + gain); BAR.tokens(shown); }
+  if (TAMA) TAMA.addScore(SLUG, { plays: 1, wins: win ? 1 : 0, best: gain });
+  await wait(S.over.why === "back" ? 200 : 700);
+  const to = $(win ? "meTag" : "oppTag"), n = POOL.n, jobs = [];
+  for (let k = 0; k < n; k++) {
+    POOL.take();
+    jobs.push(KIT.fly($("pool"), to, { onLand() { SFX.coin(); if (win) BAR.tokens(Math.min(shown + gain, shown + k + 1)); } }));
+    await wait(90);
+  }
+  await Promise.all(jobs);
+  G.coinsLive = false; renderTok();
+  if (G.S !== S) return;
+  const why = S.over.why === "back" ? (S.over.by === G.me ? "You backed out." : `${esc(oppName())} backed out!`)
+    : win ? "Both of their hands are out!" : "Both of your hands are out.";
+  $("resT").textContent = win ? "YOU WIN!" : "YOU LOSE";
+  $("resWhy").innerHTML = why;
+  $("resCoins").innerHTML = win ? `You take ${COIN}${gain}` : `You lost ${COIN}${G.paid}`;
+  $("againBtn").textContent = NET.role ? "BACK TO TABLE" : "AGAIN";
+  $("resultBox").classList.remove("hide");
+  win ? SFX.win() : SFX.lose();
+}
+
+// ---------- animation ----------
+// waits on a timer, not the animation: a tab that is not painted (hidden, in the background) never finishes animations
+const play = (el, kf, o) => { el.animate(kf, o); return wait(o.duration); };
+async function animate(s, mv) {
+  const d = CALM ? .4 : 1, zone = handEl(s, 0).closest(".zone");
+  zone.classList.add("front");   // the moving hand passes over the other player's hands
+  if (mv.k === "tap") {
+    const a = handEl(s, mv.f), b = handEl(1 - s, mv.t), ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+    const dx = (rb.left + rb.width / 2 - ra.left - ra.width / 2) * .6, dy = (rb.top + rb.height / 2 - ra.top - ra.height / 2) * .6;
+    const hitPos = `${dx}px ${dy}px`;
+    SFX.whoosh();
+    await play(a, [{ translate: "0 0" }, { translate: hitPos }], { duration: 230 * d, easing: "cubic-bezier(.5,0,.9,.6)" });
+    SFX.tap(); render();
+    if (!G.S.h[1 - s][mv.t]) SFX.out();
+    b.animate([{ scale: 1 }, { scale: 1.18 }, { scale: 1 }], { duration: 280 * d });
+    await play(a, [{ translate: hitPos }, { translate: "0 0" }], { duration: 280 * d, easing: "ease-out" });
+  } else {
+    const a = handEl(s, 0), b = handEl(s, 1);
+    SFX.split();
+    const go = (el, x) => play(el, [{ translate: "0 0" }, { translate: `${x}px 0` }, { translate: "0 0" }], { duration: 420 * d, easing: "ease-in-out" });
+    setTimeout(render, 210 * d);
+    await Promise.all([go(a, 26), go(b, -26)]);
+  }
+  zone.classList.remove("front");
+}
+
+// ---------- arms (and the debug drawing of grab and drop areas) ----------
+// Each frame: a rubber-hose tube from just past the screen edge, below where the hand rests, to wherever the wrist is now.
+const ARM_IDS = ["op0", "op1", "me0", "me1"];
+$("arms").innerHTML = ARM_IDS.map(id => `<g data-arm="${id}"><path stroke="${SKIN.ink}" stroke-width="17"/><path stroke="${SKIN.arm}" stroke-width="11"/></g>`).join("")
+  + `<g id="dbg" fill="none" stroke-width="2" stroke-dasharray="6 5"></g>`;
+$("arms").querySelectorAll("path").forEach(p => { p.setAttribute("fill", "none"); p.setAttribute("stroke-linecap", "round"); });
+const wristX = el => { const mine = el.id[0] === "m", left = el.classList.contains("L"); return mine === left ? 1 - WX : WX; };
+function drawArms() {
+  requestAnimationFrame(drawArms);
+  if (G.screen !== "game") return;
+  const gr = $("game").getBoundingClientRect();
+  for (const id of ARM_IDS) {
+    const el = $(id), mine = id[0] === "m", fx = wristX(el), r = el.getBoundingClientRect();
+    const ax = el.offsetLeft + fx * el.offsetWidth, ay = mine ? gr.height + 30 : -30;
+    const wx = r.left - gr.left + fx * r.width, wy = r.top - gr.top + (mine ? AY : 1 - AY) * r.height;
+    const dir = mine ? -1 : 1, k = Math.max(30, Math.hypot(wx - ax, wy - ay) * .45);
+    const d = `M${ax} ${ay}C${ax} ${ay + dir * k} ${wx} ${wy - dir * k} ${wx} ${wy}`;
+    const g = $("arms").querySelector(`[data-arm="${id}"]`);
+    g.querySelectorAll("path").forEach(p => p.setAttribute("d", d));
+    g.style.opacity = el.classList.contains("dead") ? .45 : 1;
+  }
+  const dbg = $("dbg");
+  if (!SET.debug) { if (dbg.innerHTML) dbg.innerHTML = ""; return; }
+  // cyan box: where a hand can be grabbed. magenta circle: how close fingertips must get to drop on it. dot: the dragged fingertips.
+  let out = "";
+  for (const id of ARM_IDS) {
+    const r = $(id).getBoundingClientRect(), c = { x: r.left - gr.left + r.width / 2, y: r.top - gr.top + r.height / 2 };
+    out += `<rect x="${r.left - gr.left}" y="${r.top - gr.top}" width="${r.width}" height="${r.height}" stroke="#00e5ff"/>`;
+    out += `<circle cx="${c.x}" cy="${c.y}" r="${reach($(id))}" stroke="#ff3df2"/>`;
+  }
+  if (drag?.moved) { const p = tipOf(drag.el); out += `<circle cx="${p.x - gr.left}" cy="${p.y - gr.top}" r="6" fill="#ff3df2" stroke="none"/>`; }
+  dbg.innerHTML = out;
+}
+requestAnimationFrame(drawArms);
+
+// ---------- drawing the table ----------
+const fmt = x => { x = Math.ceil(Math.max(0, x)); return Math.floor(x / 60) + ":" + String(x % 60).padStart(2, "0"); };
+function render() {
+  renderTok(); renderExit();
+  if (G.mode !== "match") return;
+  const S = G.S, mine = myTurn();
+  for (const seat of [G.me, 1 - G.me]) for (let i = 0; i < 2; i++) {
+    const el = handEl(seat, i), n = S.h[seat][i], isMe = seat === G.me;
+    if (el.dataset.n !== String(n)) { el.dataset.n = n; el.querySelector(".g").innerHTML = handSVG(n); el.querySelector(".num").textContent = n; }
+    el.classList.toggle("dead", !n);
+    el.classList.toggle("sel", isMe && G.sel === i);
+    el.classList.toggle("tgt", mine && G.sel != null && (isMe ? i !== G.sel : n > 0));
+  }
+  $("oppTag").classList.toggle("on", !S.over && S.turn !== G.me);
+  $("meTag").classList.toggle("on", !S.over && S.turn === G.me);
+  $("arOpp").classList.toggle("on", !S.over && S.turn !== G.me);
+  $("arMe").classList.toggle("on", !S.over && S.turn === G.me);
+  $("roundLbl").textContent = S.over ? "Game over" : `Round ${S.round}`;
+  // the prize pool: tap it on your turn to say GAS!
+  const g = S.gas, answer = !S.over && g && !g.ok && g.by !== G.me;
+  $("pool").classList.toggle("can", !!answer);
+  $("pool").setAttribute("aria-label", answer ? "GAS!! Double the stakes" : "Token prize pool");
+  $("gasLbl").textContent = S.over || !g ? "" : g.ok ? "GAS!! ×2" : answer ? "Tap to GAS!!" : "GAS?";
+  $("gasLbl").classList.toggle("ask", !!answer);
+  // hint
+  const h = $("hint");
+  if (S.over) h.textContent = "";
+  else if (answer) h.innerHTML = `${esc(oppName())} asks GAS? Tap the coins to play for ${COIN}${STAKE * 4}, or just keep playing.`;
+  else if (S.turn !== G.me || G.busy) h.textContent = G.busy ? "" : G.opp?.bot ? `${oppName()} is thinking…` : `Waiting for ${oppName()}…`;
+  else if (G.waiting) h.textContent = "…";
+  else if (G.sel == null) h.textContent = "Your turn: pick one of your hands.";
+  else h.textContent = "Tap one of their hands, or your other hand to split.";
+  tick();
+}
+// clocks, rope and timeouts, every tenth of a second
+function tick() {
+  if (G.mode !== "match") return;
+  const S = G.S, rope = $("ropeRow");
+  const { left, res } = clock();
+  for (const [id, seat] of [["clkMe", G.me], ["clkOpp", 1 - G.me]]) {
+    const el = $(id), live = !S.over && seat === S.turn && !G.busy, r = live ? res : S.reserve[seat];
+    el.querySelector("span").textContent = fmt(r);
+    el.classList.toggle("run", live && left <= 0);
+    el.classList.toggle("low", live && left <= 0 && r <= 10);
+  }
+  const burning = !S.over && !G.busy && left > 0 && left <= ROPE;
+  rope.style.visibility = burning ? "visible" : "hidden";
+  if (burning) { const p = left / ROPE * 100; $("ropeFill").style.width = p + "%"; $("spark").style.left = (100 - p) + "%"; }
+  SFX.fuse(burning && G.screen === "game", S.turn === G.me ? 1 : .5);
+  // the last ten seconds of a reserve tick
+  if (!S.over && !G.busy && S.turn === G.me && left <= 0 && res <= 10) {
+    const sec = Math.ceil(res);
+    if (sec !== G.ticked) { G.ticked = sec; SFX.tick(); }
+  }
+  // out of time and reserve: a random move is played
+  if (!S.over && !G.busy && !isGuest() && left <= 0 && res <= 0) {
+    const ms = legal(S, S.turn);
+    toast(S.turn === G.me ? "Out of time: a random move was played." : `${esc(oppName())} ran out of time.`);
+    doMove(S.turn, ms[Math.random() * ms.length | 0]);
+  }
+}
+setInterval(tick, 100);
+
+// ---------- your moves ----------
+function act(m) {
+  if (!myTurn()) return;
+  G.sel = null; closeSplit();
+  if (isGuest()) {
+    if (!legal(G.S, G.me).some(x => same(x, m))) return;
+    G.waiting = true; NET.conn?.send({ t: "mv", m }); render();
+    const ply = G.S.ply; setTimeout(() => { if (G.waiting && G.S.ply === ply) { G.waiting = false; render(); } }, 4000);
+  } else doMove(G.me, m);
+}
+function openSplit() {
+  if (!myTurn()) return;
+  const ms = legal(G.S, G.me).filter(m => m.k === "split");
+  if (!ms.length) {
+    toast(RULES.splitsPerRound != null && G.S.splits[G.me] >= RULES.splitsPerRound ? "No splits left this round." : "No way to split those fingers.");
+    G.sel = null; render(); return;
+  }
+  $("splitList").innerHTML = ms.map((m, i) => `<button data-i="${i}" class="${m.revive ? "rev" : ""}">${m.to[0]} + ${m.to[1]}${m.revive ? "<small>brings a hand back</small>" : m.to.includes(0) ? "<small>one hand out</small>" : ""}</button>`).join("");
+  $("splitList").querySelectorAll("button").forEach(b => b.onclick = () => act(ms[+b.dataset.i]));
+  $("splitBox").classList.remove("hide");
+}
+function closeSplit() { $("splitBox").classList.add("hide"); }
+$("splitCancel").onclick = () => { closeSplit(); G.sel = null; render(); };
+$("splitBox").onclick = e => { if (e.target.id === "splitBox") $("splitCancel").onclick(); };
+
+// Pick a hand then a target, or drag your hand onto the target.
+// Grab: the hand itself. Drop: the fingertips only need to come near the target (fingers touch before the pointer gets there).
+let drag = null;
+const centerOf = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
+const tipOf = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height * .14 }; };
+const reach = el => el.getBoundingClientRect().height * .62;
+function dropTargets(i) {
+  const out = [{ el: handEl(G.me, 1 - i), split: true }];
+  for (let t = 0; t < 2; t++) if (G.S.h[1 - G.me][t]) out.push({ el: handEl(1 - G.me, t), m: { k: "tap", f: i, t } });
+  return out;
+}
+function hotTarget(d) {
+  const p = tipOf(d.el); let best = null, bd = Infinity;
+  for (const t of dropTargets(d.i)) { const c = centerOf(t.el), dist = Math.hypot(p.x - c.x, p.y - c.y); if (dist < reach(t.el) && dist < bd) { bd = dist; best = t; } }
+  return best;
+}
+const markHot = t => document.querySelectorAll(".hand").forEach(h => h.classList.toggle("hot", !!t && h === t.el));
+function onDown(e, mine, i) {
+  if (!myTurn()) return;
+  SFX.ac();
+  const S = G.S;
+  if (!mine) { if (G.sel != null && S.h[1 - G.me][i]) act({ k: "tap", f: G.sel, t: i }); return; }
+  if (G.sel != null && G.sel !== i) return openSplit();
+  if (!S.h[G.me][i]) return openSplit();   // an out hand can only come back through a split
+  const el = handEl(G.me, i), was = G.sel === i;
+  G.sel = i; render();
+  drag = { i, el, x: e.clientX, y: e.clientY, moved: false, was, id: e.pointerId, hot: null };
+  try { el.setPointerCapture(e.pointerId); } catch {}
+}
+function onMove(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.moved && Math.hypot(dx, dy) < 10) return;
+  drag.moved = true; drag.el.classList.add("drag"); drag.el.style.translate = `${dx}px ${dy}px`;
+  drag.hot = hotTarget(drag); markHot(drag.hot);
+}
+function onUp(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null;
+  const t = d.moved ? hotTarget(d) : null;
+  d.el.classList.remove("drag"); d.el.style.translate = ""; markHot(null);
+  if (!d.moved) { if (d.was) { G.sel = null; render(); } return; }
+  if (!t || !myTurn()) return;
+  if (t.split) openSplit(); else act(t.m);
+}
+for (const id of ARM_IDS) {
+  const el = $(id), mine = id.startsWith("me"), i = +id[2];
+  el.addEventListener("pointerdown", e => onDown(e, mine, i));
+  el.addEventListener("pointermove", onMove);
+  el.addEventListener("pointerup", onUp);
+  el.addEventListener("pointercancel", onUp);
+}
+$("pool").onclick = () => {
+  const S = G.S;
+  if (G.mode !== "match" || S.over) return;
+  const answer = S.gas && !S.gas.ok && S.gas.by !== G.me;
+  if (!answer && !(myTurn() && canAsk(S, G.me))) return;
+  if (tok() < STAKE) return toast(`GAS needs ${COIN}${STAKE} more.`);
+  if (isGuest()) { NET.conn?.send({ t: answer ? "gasok" : "gas" }); return; }
+  answer ? gasYes(G.me) : gasAsk(G.me);
+};
+function askBackOut() {
+  if (G.mode !== "match" || G.S.over) return;
+  $("askT").textContent = "BACK OUT?";
+  $("askP").innerHTML = `You lose the ${COIN}${G.paid} you put in.` + (NET.role === "host" ? " Your table stays open." : "");
+  $("askBox").classList.remove("hide");
+}
+$("askNo").onclick = () => $("askBox").classList.add("hide");
+$("askYes").onclick = () => {
+  $("askBox").classList.add("hide");
+  if (G.mode !== "match" || G.S.over) return;
+  if (isGuest()) { NET.conn?.send({ t: "back" }); return; }
+  backOut(G.me);
+};
+
+// ---------- menus ----------
+function toTitle() {
+  G.mode = "title"; G.S = null; SFX.fuse(false);
+  closeAll(); show("titleScreen");
+}
+$("exitBtn").onclick = () => {
+  if (G.mode === "match" && !G.S.over) return askBackOut();
+  if (G.screen === "titleScreen") { location.href = "../../"; return; }
+  NET.leave(); toTitle();
+};
+function playBot() {
+  SFX.ac();
+  if (!canSit()) { $("titleMsg").innerHTML = BROKE(); return false; }
+  $("titleMsg").textContent = "";
+  startMatch({ opp: { bot: BOTS[SET.level] || BOTS[0] } });
+  return true;
+}
+$("playBtn").onclick = playBot;
+$("againBtn").onclick = () => {
+  $("resultBox").classList.add("hide");
+  if (NET.role) { G.mode = "lobby"; openFriends(); NET.ready(); return; }
+  if (!playBot()) toTitle();
+};
+$("menuBtn").onclick = () => { NET.leave(); toTitle(); };
+
+// settings: little segmented switches
+function seg(id, opts, get, set) {
+  const el = $(id);
+  const draw = () => el.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", opts[i][1] === get()));
+  el.innerHTML = opts.map(([label]) => `<button type="button">${label}</button>`).join("");
+  el.querySelectorAll("button").forEach((b, i) => b.onclick = () => { set(opts[i][1]); saveSet(); draw(); SFX.blip(); });
+  draw();
+}
+seg("segLevel", BOTS.map((b, i) => [b.name, i]), () => SET.level, v => SET.level = v);
+seg("segNums", [["Off", false], ["On", true]], () => !!SET.nums, v => { SET.nums = v; $("game").classList.toggle("nums", v); });
+seg("segDebug", [["Off", false], ["On", true]], () => !!SET.debug, v => SET.debug = v);
+$("setBtn").onclick = () => { SFX.ac(); $("setBox").classList.remove("hide"); };
+$("setOk").onclick = () => $("setBox").classList.add("hide");
+
+// the token chip on the menu opens the Tama Pass (the same save as the PlayTama home page)
+function openPass() {
+  if (G.screen !== "titleScreen") return;
+  KIT.passCard($("passCard"), { btnClass: "btn small", tokens: tok, addTokens: n => setTok(tok() + n), onTokens() { renderTok(); SFX.coin(); } });
+  $("passBox").classList.remove("hide");
+}
+$("passOk").onclick = () => $("passBox").classList.add("hide");
+$("passBox").onclick = e => { if (e.target.id === "passBox") $("passBox").classList.add("hide"); };
+
+// ---------- how to play ----------
+const mini = (n, left) => `<span class="g${left ? " L" : ""}">${handSVG(n, SKIN, true)}</span>`;
+$("helpCard").innerHTML = `<h2>HOW TO PLAY</h2>
+<div class="step"><span class="pics">${mini(2)}→${mini(1, 1)}=${mini(3, 1)}</span><p><b>Tap.</b> Touch one of their hands with yours. They add your fingers: 2 taps 1 makes 3.</p></div>
+<div class="step"><span class="pics">${mini(3)}+${mini(2, 1)}</span><p><b>Exactly 5 is out.</b> Go past it and it wraps around: 3 + 4 = 7 → 2.</p></div>
+<div class="step"><span class="pics">${mini(4)}${mini(0, 1)}→${mini(2)}${mini(2, 1)}</span><p><b>Split.</b> Pick your hand, then your other hand, to share fingers. You can bring an out hand back. Just swapping sides doesn't count.</p></div>
+<div class="step"><span class="pics">${COIN.replace('sm"', '" style="width:30px;height:30px;font-size:13px"')}</span><p><b>GAS?</b> On your turn, tap the coins in the middle to ask for double stakes. If they tap the coins too, it's <b>GAS!!</b> and you play for ${COIN}${STAKE * 4}.</p></div>
+<div class="step"><span class="pics" style="font-size:30px">🔥</span><p><b>Clock.</b> Turns get shorter each round. When the rope burns out you use your reserve. If that runs out too, a random move is played.</p></div>
+<p style="text-align:center;margin-top:6px">Knock out both of their hands to win!</p>
+<div class="row" style="margin-top:12px"><button class="btn small green" id="helpOk">GOT IT</button></div>`;
+$("helpBtn").onclick = () => $("helpBox").classList.remove("hide");
+$("helpOk").onclick = () => { $("helpBox").classList.add("hide"); if (!SET.help) { SET.help = true; saveSet(); } };
+
+// ---------- play a friend (online) ----------
+// WebRTC through PeerJS and its free public broker, loaded only when this screen is used.
+// The host is seat 0 and runs the match (clock, timeouts, rules); the guest is seat 1, sends its choices and mirrors the host.
+const PEER_SRC = "https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js", ROOM = "playtama-sp-", CODE_ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+let peerLib = null;
+const loadPeer = () => peerLib ||= new Promise((ok, no) => {
+  const s = document.createElement("script"); s.src = PEER_SRC; s.onload = ok;
+  s.onerror = () => { peerLib = null; no(new Error("PeerJS did not load")); }; document.head.appendChild(s);
+});
+const myName = () => ((TAMA ? TAMA.name() : "") || "Player").slice(0, 12);
+
+const NET = {
+  role: null, peer: null, pending: null, conn: null, code: "", guest: null, lobby: null, q: Promise.resolve(), seen: 0,
+  // host → guest
+  send(m) { if (this.role === "host" && G.mode === "match" && G.opp?.net && this.conn?.open) this.conn.send(m); },
+  ready() {
+    if (this.role === "host") return lobbyOut();
+    if (this.role !== "guest" || !this.conn?.open) return;
+    const ok = canSit(); this.conn.send({ t: "ready", ok });
+    $("fMsg").innerHTML = ok ? "" : BROKE();
+  },
+  leave() {
+    this.pending?.destroy(); this.pending = null;
+    if (!this.role) return;
+    if (this.conn?.open) this.conn.send({ t: this.role === "host" ? "closed" : "bye" });
+    const peer = this.peer;
+    Object.assign(this, { role: null, peer: null, conn: null, code: "", guest: null, lobby: null, q: Promise.resolve() });
+    setTimeout(() => peer?.destroy(), 300);   // let the goodbye go out first
+  },
+};
+// A closed tab doesn't always close the connection, so both sides ping every 2 s; 10 s of silence mid-match counts as leaving.
+setInterval(() => {
+  if (!NET.role || !NET.conn?.open) return;
+  NET.conn.send({ t: "hb" });
+  if (G.mode === "match" && !G.S?.over && performance.now() - NET.seen > 10000) NET.role === "host" ? onGuestGone(NET.conn) : hostGone();
+}, 2000);
+addEventListener("pagehide", () => NET.leave());
+// host: the full state plus how long the current turn has been running
+function hostSync() { if (G.mode === "match") NET.send({ t: "st", S: G.S, ago: (performance.now() - G.t0) / 1000 }); }
+
+function openFriends(msg = "") { show("friendScreen"); $("fMsg").innerHTML = msg; renderRoom(); }
+function renderRoom() {
+  const host = NET.role === "host";
+  $("fPick").hidden = !!NET.role; $("fRoom").hidden = !NET.role;
+  if (!NET.role) return;
+  $("bigCode").textContent = NET.code;
+  const g = host ? NET.guest : NET.lobby && { name: NET.lobby.you, ready: NET.lobby.ready };
+  const hostName = host ? myName() : NET.lobby?.host || "Host";
+  $("roster").innerHTML = `<tr><td>${esc(hostName)}${host ? " (you)" : ""}</td><td class="r">host</td></tr>`
+    + (g ? `<tr><td>${esc(g.name)}${host ? "" : " (you)"}</td><td class="r">${g.ready ? "ready ✓" : "not ready"}</td></tr>` : `<tr><td>…</td><td class="r">empty seat</td></tr>`);
+  $("fInfo").textContent = !host ? "Waiting for the host to start…" : g?.ready ? "Press START when you're both set." : g ? "Waiting for your friend…" : "Share the code. Waiting for a friend…";
+  $("goBtn").style.display = host ? "" : "none"; $("goBtn").disabled = !g?.ready;
+  $("linkBtn").style.display = host ? "" : "none";
+}
+function netFail(e) {
+  const msg = e?.type === "peer-unavailable" ? "No table with that code. Check the letters?"
+    : e?.type === "full" ? "That table is full or already playing."
+    : "Couldn't connect. Check the internet and try again.";
+  NET.leave(); openFriends(msg);
+}
+
+// ----- host -----
+function hostTable(tries = 0) {
+  if (!canSit()) { $("fMsg").innerHTML = BROKE(); return; }
+  $("fMsg").textContent = "Opening a table…";
+  loadPeer().then(() => {
+    const code = Array.from({ length: 4 }, () => CODE_ABC[Math.random() * CODE_ABC.length | 0]).join("");
+    const peer = NET.pending = new Peer(ROOM + code);
+    peer.on("open", () => {
+      Object.assign(NET, { role: "host", peer, pending: null, code, guest: null, conn: null });
+      $("fMsg").textContent = ""; renderRoom();
+    });
+    peer.on("connection", c => {
+      c.on("open", () => {
+        if (NET.conn?.open || G.mode === "match") { c.send({ t: "full" }); setTimeout(() => c.close(), 300); return; }
+        NET.conn = c; NET.guest = null;
+      });
+      c.on("data", m => onHostData(c, m)); c.on("close", () => onGuestGone(c));
+    });
+    peer.on("disconnected", () => { if (NET.peer === peer) peer.reconnect(); });   // lost the broker: an open table keeps working
+    peer.on("error", e => {
+      if (NET.peer === peer) return console.warn(e);
+      peer.destroy(); NET.pending = null;
+      if (e.type === "unavailable-id" && tries < 5) hostTable(tries + 1); else netFail(e);
+    });
+  }, () => netFail());
+}
+function lobbyOut() {
+  if (NET.conn?.open && NET.guest) NET.conn.send({ t: "lobby", host: myName(), you: NET.guest.name, ready: NET.guest.ready });
+  renderRoom();
+}
+function onHostData(c, m) {
+  if (NET.role !== "host" || c !== NET.conn || !m) return;
+  NET.seen = performance.now();
+  const inMatch = G.mode === "match" && G.opp?.net && !G.S.over;
+  switch (m.t) {
+    case "hello": {
+      let name = String(m.name || "Player").slice(0, 12);
+      if (name === myName()) name += " 2";
+      NET.guest = { name, ready: !!m.ok }; SFX.blip(); lobbyOut(); break;
+    }
+    case "ready": if (NET.guest) { NET.guest.ready = !!m.ok; lobbyOut(); } break;
+    case "mv": if (inMatch) doMove(1, m.m); break;
+    case "gas": if (inMatch) gasAsk(1); break;
+    case "gasok": if (inMatch) gasYes(1); break;
+    case "back": if (inMatch) backOut(1); break;
+    case "bye": onGuestGone(c); break;
+  }
+}
+// the friend left: mid-match, Sedang plays on in their seat
+function onGuestGone(c) {
+  if (NET.role !== "host" || c !== NET.conn) return;
+  NET.conn = null; NET.guest = null;
+  if (G.mode === "match" && G.opp?.net && !G.S.over) {
+    G.opp = { bot: BOTS[1] };
+    $("oppTag").textContent = BOTS[1].emoji + " " + BOTS[1].name;
+    toast(`Your friend left. ${BOTS[1].emoji} ${BOTS[1].name} plays on.`, 3000);
+    if (G.S.turn !== G.me && !G.busy) { const ply = G.S.ply; setTimeout(() => botTurn(ply), 900); }
+    render();
+  }
+  renderRoom();
+}
+function hostStart() {
+  if (!canSit()) { $("fMsg").innerHTML = BROKE(); return; }
+  if (!NET.conn?.open || !NET.guest?.ready) return;
+  const S = newState(Math.random() < .5 ? 0 : 1);
+  NET.guest.ready = false;
+  NET.conn.send({ t: "start", S, host: myName(), you: NET.guest.name });
+  startMatch({ S, me: 0, opp: { net: true, name: NET.guest.name } });
+}
+
+// ----- guest -----
+function joinTable() {
+  const code = $("codeIn").value.toUpperCase().replace(/[^A-Z]/g, "");
+  if (code.length !== 4) { $("fMsg").textContent = "A table code has 4 letters."; return; }
+  if (!canSit()) { $("fMsg").innerHTML = BROKE(); return; }
+  NET.leave(); $("fMsg").textContent = "Joining…";
+  loadPeer().then(() => {
+    const peer = NET.pending = new Peer();
+    peer.on("open", () => {
+      const c = peer.connect(ROOM + code, { reliable: true });
+      c.on("open", () => {
+        Object.assign(NET, { role: "guest", peer, pending: null, conn: c, code, lobby: null });
+        c.send({ t: "hello", name: myName(), ok: canSit() });
+        $("fMsg").textContent = ""; renderRoom();
+      });
+      // one message at a time, so a move's animation finishes before the next state lands
+      c.on("data", m => { NET.seen = performance.now(); if (m?.t === "hb") return; NET.q = NET.q.then(() => onGuestData(m)).catch(e => console.error(e)); });
+      c.on("close", hostGone);
+    });
+    peer.on("error", e => { if (NET.role !== "guest") netFail(e); });
+  }, () => netFail());
+}
+function adopt(m) {
+  const prev = G.S.gas && { ...G.S.gas };
+  G.S = m.S; G.waiting = false;
+  G.t0 = performance.now() - (+m.ago || 0) * 1000;
+  gasNews(prev, G.S.gas);
+  syncStake(); render();
+  if (G.S.over) finish();
+}
+async function onGuestData(m) {
+  if (NET.role !== "guest" || !m) return;
+  const inMatch = G.mode === "match" && G.opp?.net;
+  switch (m.t) {
+    case "lobby": NET.lobby = m; renderRoom(); break;
+    case "full": netFail({ type: "full" }); break;
+    case "closed": hostGone(); break;
+    case "start": startMatch({ S: m.S, me: 1, opp: { net: true, name: String(m.host || "Host").slice(0, 12) } }); break;
+    case "st": if (inMatch) adopt(m); break;
+    case "mv":
+      if (!inMatch) break;
+      G.busy = true; G.waiting = false; G.sel = null; closeSplit();
+      const prev = G.S.gas && { ...G.S.gas };
+      G.S = m.S; gasNews(prev, G.S.gas);
+      await animate(m.s, m.m);
+      syncStake(); G.busy = false; render();
+      if (G.S.over) finish();
+      break;
+  }
+}
+function hostGone() {
+  if (NET.role !== "guest") return;
+  const mid = G.mode === "match" && !G.S?.over;
+  if (mid) setTok(tok() + G.paid);   // not your fault: the stake comes back
+  NET.leave(); G.mode = "title"; SFX.fuse(false);
+  closeAll();
+  openFriends("The host closed the table." + (mid ? " Your coins came back." : ""));
+}
+
+$("friendBtn").onclick = () => { SFX.ac(); openFriends(); };
+$("friendBack").onclick = () => { NET.leave(); toTitle(); };
+$("hostBtn").onclick = () => hostTable();
+$("joinBtn").onclick = joinTable;
+$("codeIn").addEventListener("keydown", e => { if (e.key === "Enter") joinTable(); });
+$("goBtn").onclick = hostStart;
+// invite link: this page with ?join=CODE. Opening one fills in the code; the friend still presses JOIN.
+$("linkBtn").onclick = async () => {
+  const url = location.origin + location.pathname + "?join=" + NET.code, b = $("linkBtn");
+  try { await navigator.clipboard.writeText(url); b.textContent = "COPIED ✓"; }
+  catch { prompt("Copy this link:", url); }
+  setTimeout(() => { b.textContent = "COPY INVITE LINK"; }, 1500);
+};
+
+// ---------- start ----------
+show("titleScreen");
+{
+  const join = new URLSearchParams(location.search).get("join");
+  if (join) {
+    history.replaceState(null, "", location.pathname);
+    openFriends("Invited to a table: press <b>JOIN</b>."); $("codeIn").value = join.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4);
+  } else if (!SET.help) $("helpBox").classList.remove("hide");
+}
+</script>
+</body>
+</html>

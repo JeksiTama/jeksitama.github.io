@@ -49,11 +49,8 @@ body{background:
 #topbar .chip{background:#fff;border:2px solid var(--ink);border-radius:999px;padding:3px 10px;box-shadow:2px 2px 0 var(--ink);display:inline-flex;align-items:center;gap:6px}
 #topbar .right,#topbar .left{display:flex;gap:6px;align-items:center;min-width:0}
 #turnChip{white-space:nowrap}
-#tokChip{font:inherit;color:inherit;cursor:default}
-.mode-off #tokChip{cursor:pointer}
 #turnChip i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);flex:none}
 #roundChip.hide{visibility:hidden}
-#exitBtn{font:inherit;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:3px 8px;box-shadow:2px 2px 0 var(--ink)}
 .mode-off #exitBtn{display:none}
 #modal{position:absolute;inset:0;z-index:80;background:rgba(36,32,28,.35);display:grid;place-items:center;transition:opacity .2s}
 #modal.hide{opacity:0;pointer-events:none}
@@ -65,18 +62,12 @@ body{background:
 .mystats .pies figure{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--mono);font-size:11px;font-weight:700}
 .mystats .pies .stats{transform:rotate(-1.5deg)}
 .mystats .pies .stats:last-child{transform:rotate(2deg)}
-#soundBtn{font:inherit;cursor:pointer;background:#fff;border:2px solid var(--ink);border-radius:8px;padding:3px 8px;box-shadow:2px 2px 0 var(--ink)}
 
 /* coins */
-.coin{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#ffe58a,var(--gold) 55%,var(--gold-d));border:2px solid var(--ink);
-  display:inline-grid;place-items:center;font-family:var(--display);font-size:13px;color:var(--gold-d);box-shadow:0 2px 0 var(--ink);flex:none}
-.coin::after{content:"T"}
-.coin.sm{width:16px;height:16px;font-size:8px;box-shadow:0 1px 0 var(--ink);border-width:1.5px}
+:root{--tk-ink:var(--ink);--tk-font:var(--mono);--tk-coin-font:var(--display);--tk-gold:var(--gold);--tk-gold-d:var(--gold-d)}
 /* the pile sits just outside the turn arrow's orbit, under the clock, faded while a round is on */
 #pool{position:absolute;left:50%;top:calc(47% + 186px);transition:opacity .3s;transform:translate(-50%,-50%);width:170px;height:70px;z-index:5;pointer-events:none}
-#pool .coin{position:absolute}
 #pool.dim{opacity:.35}
-.flycoin{position:absolute;z-index:50;pointer-events:none;margin:-15px 0 0 -15px}
 
 /* seats */
 .seat{position:absolute;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;z-index:12;transition:opacity .3s}
@@ -288,6 +279,9 @@ body{background:
 </style>
 <!-- PlayTama shared save (tokens + stats). Missing when the file is opened on its own; the game then saves locally. -->
 <script src="../../assets/js/tama.js"></script>
+<!-- PlayTama game kit (token chip + sound button, Tama Pass card, prize pool coins). Opened on its own, it comes from the live site. -->
+<script src="../../assets/js/tama-kit.js"></script>
+<script>window.TamaKit || document.write('<script src="https://jeksitama.github.io/assets/js/tama-kit.js"><\/script>')</script>
 </head>
 <body>
 <aside id="legend"></aside>
@@ -295,7 +289,7 @@ body{background:
 <div id="stage" class="mode-off">
   <div id="topbar">
     <span class="left"><span class="chip" id="roundChip">ROUND 1</span><span class="chip" id="turnChip"><i id="turnDot"></i><span id="turnName"></span></span></span>
-    <span class="right"><button class="chip" id="tokChip" aria-label="Tama Tokens"><span class="coin sm"></span><span id="tokN">20</span></button><button id="soundBtn" aria-label="Sound">♪ ON</button><button id="exitBtn" aria-label="Leave table">✕</button></span>
+    <span class="right" id="bar"><button class="tk-chip tk-btn" id="exitBtn" aria-label="Leave table">✕</button></span>
   </div>
 
   <div id="seats"></div>
@@ -497,9 +491,20 @@ const SFX = {
   miss: () => { voice({ f: 330, to: 262, type: "triangle", dur: .2, vol: .14, lp: 1400 }); voice({ f: 294, to: 196, type: "triangle", dur: .38, vol: .13, when: .2, lp: 1200 }); },   // "wah-wah"
 };
 const buzz = p => { try { soundOn && navigator.vibrate?.(p); } catch {} };
-// on the menu, the coins open your Tama Pass (standalone file: your stats)
-$("tokChip").onclick = () => { if (G.mode === "title") TAMA ? openPass() : $("statsBtn").click(); };
-$("soundBtn").onclick = e => { soundOn = !soundOn; e.currentTarget.textContent = soundOn ? "♪ ON" : "♪ OFF"; };
+// the kit didn't load (offline and opened on its own): plain stand-ins so the game still plays
+const KIT = window.TamaKit || {
+  bar(el) { const s = document.createElement("span"); s.className = "chip"; el.prepend(s); return { tokens(n) { s.textContent = "🪙 " + n; }, sound() {}, clickable() {} }; },
+  passCard(el) { el.innerHTML = "<h2>TAMA PASS</h2><p>Open this game from PlayTama.</p>"; },
+  pool() { return { set() {} }; },
+  fly(a, b, o = {}) { return new Promise(r => setTimeout(() => { o.onLand?.(); r(); }, o.delay || 0)); },
+};
+// top bar from the kit: on the menu, the coins open your Tama Pass (standalone file: your stats)
+const BAR = KIT.bar($("bar"), {
+  sound: soundOn,
+  onSound(on) { soundOn = on; },
+  onTokens() { if (G.mode === "title") TAMA ? openPass() : $("statsBtn").click(); },
+});
+const POOL = KIT.pool($("pool"));
 
 // ---------- art ----------
 // a wide, rounded tip, a slight waist at the knuckle, then a gentle flare into the hand
@@ -771,31 +776,9 @@ function posOf(p) {
   if (p.isHuman) return { x: s.left + s.width / 2, y: s.top + s.height * .97 };
   return centerOf(p.el.querySelector(".avatar"));
 }
-function renderPool() {
-  const pool = $("pool"); pool.querySelectorAll(".coin").forEach(c => c.remove());
-  // stacked rows of 4 from the bottom, slightly jittered
-  let i = 0, row = 0;
-  while (i < G.pool) {
-    const inRow = Math.min(4, G.pool - i);
-    for (let c = 0; c < inRow; c++, i++) {
-      const el = document.createElement("span"); el.className = "coin";
-      const x = 85 - (inRow - 1) * 13 + c * 26 - 15 + ((i * 13) % 5 - 2), y = 40 - row * 20 + ((i * 7) % 4 - 2);
-      el.style.left = x + "px"; el.style.top = y + "px"; el.style.transform = `rotate(${(i * 37) % 40 - 20}deg)`;
-      pool.appendChild(el);
-    }
-    row++;
-  }
-}
-function flyCoin(a, b, delay) {
-  return new Promise(res => setTimeout(() => {
-    const s = stage.getBoundingClientRect(), c = document.createElement("span");
-    c.className = "coin flycoin"; c.style.left = (a.x - s.left) + "px"; c.style.top = (a.y - s.top) + "px"; stage.appendChild(c);
-    const dx = b.x - a.x, dy = b.y - a.y;
-    c.animate([{ transform: "translate(0,0) rotate(0)" }, { transform: `translate(${dx}px,${dy}px) rotate(540deg)` }],
-      { duration: 520, easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" });
-    setTimeout(() => { c.remove(); SFX.coin(); res(); }, 520);   // a timer, not the animation: unpainted tabs never finish animations
-  }, delay));
-}
+// the token prize pool: a pile of G.pool coins (drawn by the kit)
+function renderPool() { POOL.set(G.pool); }
+const flyCoin = (a, b, delay) => KIT.fly(a, b, { delay, onLand: () => SFX.coin() });
 async function ante() {
   G.pool = 0; renderPool(); G.coinsLive = true;
   const target = centerOf($("pool")), jobs = [];
@@ -1064,7 +1047,7 @@ async function endMatch(order = null) {
   const grades = ["A+", "B", "C", "D"];
   $("repTable").innerHTML = [...G.players].sort((a, b) => a.finished - b.finished).map(p =>
     `<tr class="${p.isHuman ? "me" : ""}"><td class="grade">${grades[p.finished - 1]}</td><td>${esc(p.name)}</td>
-     <td><span style="display:inline-flex;gap:3px;vertical-align:middle">${p.retired.map(r => PIP(r)).join("")}</span></td><td class="r">+${pay[p.finished - 1]} <span class="coin sm"></span></td></tr>`).join("");
+     <td><span style="display:inline-flex;gap:3px;vertical-align:middle">${p.retired.map(r => PIP(r)).join("")}</span></td><td class="r">+${pay[p.finished - 1]} <span class="tk-coin sm"></span></td></tr>`).join("");
   const me = human(), ml = me.stats.lift[2], mt = ml.reduce((a, b) => a + b, 0) || 1, fav = ml.indexOf(Math.max(...ml));
   $("repNote").innerHTML = (me.finished === 1 ? "Excellent reading! " : me.finished === pay.length ? "Pay attention in class. " : "Not bad. ") +
     `<br>Habit (two thumbs): lifts ${fav} ${Math.round(ml[fav] / mt * 100)}% of the time.`;
@@ -1097,7 +1080,7 @@ function render() {
   $("holdHint").textContent = inv() ? (one ? "let go: thumb down" : "let go: thumbs down")
     : (one ? "hold your thumb down" : "hold both thumbs down");
   $("roundChip").textContent = G.mode === "tutorial" ? "PRACTICE" : `ROUND ${G.roundNo}`;
-  $("tokN").textContent = G.tokens;
+  BAR.tokens(G.tokens); BAR.clickable(G.mode === "title");
   if (inGame && h) {
     const g = G.players[G.guesser], mine = g === h;
     const card = $("card"), on = cardOn();
@@ -1199,7 +1182,7 @@ $("statsBtn").onclick = () => {
       <tr><td>1st places</td><td class="r">${MY.places[0]}</td></tr>
       <tr><td>Guesses right</td><td class="r">${MY.hits} / ${MY.guessed}${MY.guessed ? ` · ${Math.round(MY.hits / MY.guessed * 100)}%` : ""}</td></tr>
       <tr><td>Favourite call</td><td class="r">${fav}</td></tr>
-      <tr><td>Coins</td><td class="r">${G.tokens} <span class="coin sm"></span></td></tr>
+      <tr><td>Coins</td><td class="r">${G.tokens} <span class="tk-coin sm"></span></td></tr>
     </table>
     <div class="note">This is what opponents will see about you.</div>`;
   $("titleScreen").classList.add("hide"); $("statsScreen").classList.remove("hide");
@@ -1208,31 +1191,7 @@ $("statsBack").onclick = toTitle;
 
 // ---------- Tama Pass (the same save as the PlayTama home page) ----------
 function openPass() {
-  $("passCard").innerHTML = `<h2>TAMA PASS</h2>
-    <table>
-      <tr><td>Name</td><td class="r">${esc(TAMA.name())}</td></tr>
-      <tr><td>Coins</td><td class="r">${TAMA.tokens()} <span class="coin sm"></span></td></tr>
-    </table>
-    <p class="pnote">Your progress is saved in this browser. Write this code down to keep it or to carry it to another device.</p>
-    <div class="prow"><code>${esc(TAMA.passCode())}</code><button class="btn small" id="passCopy">COPY</button></div>
-    <form class="prow" id="passForm"><input id="passIn" autocomplete="off" spellcheck="false" placeholder="have a code?"><button class="btn small">LOAD</button></form>
-    <p class="pnote" id="passMsg" role="status"></p>`;
-  $("passCopy").onclick = async () => {
-    try { await navigator.clipboard.writeText(TAMA.passCode()); $("passMsg").textContent = "Copied!"; }
-    catch { getSelection().selectAllChildren($("passCard").querySelector("code")); $("passMsg").textContent = "Select and copy the code"; }
-  };
-  $("passForm").onsubmit = e => {
-    e.preventDefault();
-    const code = $("passIn").value;
-    // cheat: "MORE TOKEN PLEASE" (letters only, never a real pass code) gives 10 coins
-    if (/^MORETOKENS?(PLE)?PLEASE$/.test(code.toUpperCase().replace(/[^A-Z]/g, ""))) {
-      ac(); G.tokens += 10; saveTokens(); SFX.coin(); render(); openPass(); $("passMsg").textContent = "+10 coins!"; return;
-    }
-    const check = TAMA.checkPass(code);
-    if (!check.ok) { $("passMsg").textContent = check.error; return; }
-    if (!confirm(`Load this pass? Your coins become ${check.save.tokens}.`)) return;
-    TAMA.usePass(code); G.tokens = TAMA.tokens(); render(); openPass(); $("passMsg").textContent = "Pass loaded. Welcome back!";
-  };
+  KIT.passCard($("passCard"), { btnClass: "btn small", onTokens() { ac(); G.tokens = TAMA.tokens(); SFX.coin(); render(); } });
   $("titleScreen").classList.add("hide"); $("passScreen").classList.remove("hide");
 }
 $("passBack").onclick = toTitle;

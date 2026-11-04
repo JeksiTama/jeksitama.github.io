@@ -190,8 +190,10 @@
     });
     $("passForm").addEventListener("submit", e => {
       e.preventDefault();
-      const msg = $("passMsg"), code = $("passInput").value, check = Tama.checkPass(code);
+      const msg = $("passMsg"), code = $("passInput").value;
       msg.className = "msg";
+      if (Tama.cheat(code)) { $("passInput").value = ""; msg.textContent = "+10 Tama Tokens!"; msg.classList.add("good"); return; }
+      const check = Tama.checkPass(code);
       if (!check.ok) { msg.textContent = check.error; msg.classList.add("bad"); return; }
       if (!confirm(`Load this pass? Your tokens become ${check.save.tokens}.`)) return;
       Tama.usePass(code); $("passInput").value = "";

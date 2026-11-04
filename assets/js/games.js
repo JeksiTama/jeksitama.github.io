@@ -24,6 +24,18 @@ window.TAMA_GAMES = [
     color: "var(--yellow)",
   },
   {
+    slug: "sumpit",
+    title: "Sumpit",
+    blurb: "Basically super chopsticks: tap, split and snap to knock out both of your opponent's hands.",
+    where: "here",
+    href: "games/sumpit/",
+    players: "👥 2 players",
+    learns: "🧠 Adding & number bonds",
+    tag: "Prototype",
+    emoji: ["270c_fe0f", "✌️"],
+    color: "var(--purple)",
+  },
+  {
     slug: "free-the-biscuits",
     title: "Free the Biscuits",
     blurb: "Add up just enough coins to break the box without burning the biscuits.",
