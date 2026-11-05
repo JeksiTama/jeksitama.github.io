@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Anak Emas · PlayTama</title>
+<meta name="description" content="Anak Emas (Teacher's Pet): help Bu Guru mark the papers with a tick or a cross, and earn Tama Tokens.">
+<meta name="theme-color" content="#73d049">
+<link rel="icon" href="../../assets/img/egg.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<!-- PlayTama shared save, game kit and question bank -->
+<script src="../../assets/js/tama.js"></script>
+<script src="../../assets/js/tama-kit.js"></script>
+<script src="../../assets/js/tama-questions.js"></script>
+<style>
+@font-face{font-family:"Super Trend";src:url("../../assets/fonts/super-trend.ttf")}
+:root{--ink:#2b2b2b;--cream:#fffaf0;--red:#fe6767;--green:#73d049;--blue:#68c1ff;--pink:#fe94de;--orange:#fea046;--purple:#aa88ff;--yellow:#ffdb33;--grey:#666;
+  --pen:#e23b3b;--wood:#c8874a;--lead:#55524c;
+  --display:"Super Trend","Nunito",system-ui,sans-serif;--hand:Gaegu,"Comic Sans MS",cursive;
+  --tk-font:Nunito,system-ui,sans-serif;--tk-chip:var(--cream)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+/* the teacher's desk: wooden planks. The grain is SVG noise stretched sideways, drawn in the browser (no image file). */
+body{background-color:var(--wood);
+  background-image:radial-gradient(ellipse at 50% 35%,rgba(255,220,170,.18),rgba(50,25,8,.4) 90%),url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'480'%20height%3D'360'%3E%0A%3Cfilter%20id%3D'g'%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'100%25'%3E%0A%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'.0025%20.11'%20numOctaves%3D'5'%20seed%3D'7'%20stitchTiles%3D'stitch'%2F%3E%0A%3CfeColorMatrix%20values%3D'0%200%200%20.95%20.3%20%200%200%200%20.62%20.16%20%200%200%200%20.34%20.06%20%200%200%200%200%201'%2F%3E%0A%3C%2Ffilter%3E%0A%3Cfilter%20id%3D'k'%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'100%25'%3E%0A%3CfeTurbulence%20type%3D'turbulence'%20baseFrequency%3D'.008%20.45'%20numOctaves%3D'2'%20seed%3D'3'%20stitchTiles%3D'stitch'%2F%3E%0A%3CfeColorMatrix%20values%3D'0%200%200%200%20.25%20%200%200%200%200%20.13%20%200%200%200%200%20.05%20%200%200%200%20-.9%20.45'%2F%3E%0A%3C%2Ffilter%3E%0A%3Crect%20width%3D'480'%20height%3D'360'%20filter%3D'url(%23g)'%2F%3E%0A%3Crect%20width%3D'480'%20height%3D'360'%20filter%3D'url(%23k)'%2F%3E%0A%3Cg%20fill%3D'%235a3216'%20opacity%3D'.55'%3E%3Crect%20y%3D'0'%20width%3D'480'%20height%3D'2'%2F%3E%3Crect%20y%3D'90'%20width%3D'480'%20height%3D'2'%2F%3E%3Crect%20y%3D'180'%20width%3D'480'%20height%3D'2'%2F%3E%3Crect%20y%3D'270'%20width%3D'480'%20height%3D'2'%2F%3E%3C%2Fg%3E%0A%3Cg%20fill%3D'%23e8b884'%20opacity%3D'.25'%3E%3Crect%20y%3D'2'%20width%3D'480'%20height%3D'1'%2F%3E%3Crect%20y%3D'92'%20width%3D'480'%20height%3D'1'%2F%3E%3Crect%20y%3D'182'%20width%3D'480'%20height%3D'1'%2F%3E%3Crect%20y%3D'272'%20width%3D'480'%20height%3D'1'%2F%3E%3C%2Fg%3E%0A%3Cg%20fill%3D'%235a3216'%20opacity%3D'.5'%3E%3Crect%20x%3D'300'%20y%3D'0'%20width%3D'2'%20height%3D'90'%2F%3E%3Crect%20x%3D'120'%20y%3D'90'%20width%3D'2'%20height%3D'90'%2F%3E%3Crect%20x%3D'390'%20y%3D'180'%20width%3D'2'%20height%3D'90'%2F%3E%3Crect%20x%3D'200'%20y%3D'270'%20width%3D'2'%20height%3D'90'%2F%3E%3C%2Fg%3E%0A%3C%2Fsvg%3E");
+  background-attachment:fixed;font-family:Nunito,system-ui,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+html.atWork,html.atWork body{overflow:hidden;overscroll-behavior:none}
+#app{position:relative;max-width:560px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.hide{display:none!important}
+
+/* top bar, right: the kit's tokens + sound, then back */
+#top{position:sticky;top:0;z-index:20;display:flex;justify-content:flex-end;align-items:center;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+#exitBtn{font-family:var(--tk-font);font-size:12px;font-weight:800}
+
+.screen{flex:1;display:flex;flex-direction:column;align-items:center;gap:14px;padding:8px 16px 28px;text-align:center}
+#titleScreen{justify-content:center}
+
+/* title */
+.logo{font-family:var(--display);font-size:clamp(46px,14vw,80px);line-height:.95;color:var(--yellow);letter-spacing:2px;
+  text-shadow:3px 0 var(--ink),-3px 0 var(--ink),0 3px var(--ink),0 -3px var(--ink),2px 2px var(--ink),-2px -2px var(--ink),2px -2px var(--ink),-2px 2px var(--ink),0 8px 0 var(--ink)}
+.pill{background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:900;box-shadow:0 4px 0 var(--ink)}
+.hero{width:min(120px,16dvh);aspect-ratio:1;animation:bob 2.6s ease-in-out infinite}
+.hero img{width:100%;height:100%;display:block;filter:drop-shadow(0 5px 0 rgba(43,43,43,.55))}
+@keyframes bob{50%{translate:0 -6px;rotate:-3deg}}
+.menu{display:flex;flex-direction:column;gap:12px;align-items:center}
+.links{display:flex;flex-direction:column;gap:6px;align-items:center}
+.link{font:900 16px Nunito,sans-serif;color:var(--cream);background:none;border:0;cursor:pointer;text-shadow:0 2px 0 var(--ink);
+  text-decoration:underline wavy var(--yellow) 1.5px;text-underline-offset:6px;padding:4px 6px}
+.note{color:var(--cream);font-weight:800;text-shadow:0 2px 0 var(--ink);font-size:15px;max-width:340px;margin:0;min-height:42px}
+.note a{color:var(--yellow)}
+.credit{font-size:12px;color:var(--cream);opacity:.9;text-shadow:0 1px 0 var(--ink);max-width:360px}
+.credit .link{font-size:12px;padding:0 2px;text-underline-offset:4px}
+
+.btn{font-family:var(--display);font-size:24px;letter-spacing:1px;padding:12px 26px;min-width:250px;border:3px solid var(--ink);border-radius:16px;background:var(--yellow);
+  color:var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.btn:active:not(:disabled){translate:0 4px;box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.green{background:var(--green)}.btn.cream{background:var(--cream)}
+.btn.small{font-size:18px;padding:8px 18px;min-width:0}
+
+.card{background:var(--cream);border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:18px;width:min(100%,400px)}
+.card h2{font-family:var(--display);font-weight:400;font-size:30px;margin:0 0 10px;letter-spacing:1px}
+.row{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+
+/* ---------- at work ---------- */
+#workScreen{padding:0 12px 10px;gap:8px;height:calc(100dvh - 52px);min-height:0}
+#teach{display:flex;align-items:center;gap:8px;width:100%}
+#guru{flex:none;width:58px;height:58px;padding:4px;background:var(--cream);border:3px solid var(--ink);border-radius:16px;box-shadow:0 3px 0 var(--ink)}
+#guru img{width:100%;height:100%;display:block}
+#guru.talk{animation:talk .35s ease-out}
+@keyframes talk{30%{translate:0 -4px;rotate:-4deg}70%{translate:0 0;rotate:2deg}}
+/* the speech bubble never changes size: a long line scrolls up inside it */
+#sayWrap{flex:1;min-width:0;position:relative}
+#sayWrap::before{content:"";position:absolute;left:-9px;top:50%;margin-top:-7px;border:7px solid transparent;border-right-color:var(--ink);border-left:0}
+#say{position:relative;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:6px 10px;font-weight:800;font-size:14px;line-height:1.25;text-align:left;
+  height:calc(2.5em + 18px);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none}
+#say::-webkit-scrollbar{display:none}
+#say span{margin:auto 0}
+#say.pop span{animation:sayPop .25s ease-out}
+@keyframes sayPop{from{opacity:0;translate:0 4px}}
+#strikes{flex:none;display:flex;gap:3px;background:var(--cream);border:3px solid var(--ink);border-radius:12px;box-shadow:0 3px 0 var(--ink);padding:5px 6px}
+#strikes i{width:20px;height:20px;border:2px solid var(--ink);border-radius:5px;background:#fff;display:grid;place-items:center;font-style:normal;font-size:15px;line-height:1;color:var(--pen);font-weight:900}
+#strikes i.on::after{content:"✗";animation:strike .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes strike{from{scale:2.2;opacity:0}}
+
+#deskWrap{flex:1;min-height:0;width:100%;display:flex;flex-direction:column}
+/* the paper stays put; only what's written on it scrolls up to the next one */
+.sheet{position:relative;flex:1;min-height:0;width:100%;text-align:left;background:#fffdf6;border:3px solid var(--ink);border-radius:8px;box-shadow:0 6px 0 var(--ink);
+  overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;
+  background-image:linear-gradient(90deg,transparent 34px,#f3a0a0 34px,#f3a0a0 36px,transparent 36px),repeating-linear-gradient(#fffdf6 0 31px,#d5e6f5 31px 32px)}
+.sheet.locked{cursor:default}
+.page{position:absolute;inset:0;padding:12px 14px 14px 46px;transition:translate .38s cubic-bezier(.4,0,.2,1),opacity .38s}
+.page.below{translate:0 100%;opacity:0;transition:none}
+.page.above{translate:0 -100%;opacity:0}
+.page.fromAbove{translate:0 -100%;opacity:0;transition:none}
+.page.down{translate:0 100%;opacity:0}
+/* the question number sits in the margin, left of the red line */
+.qno{position:absolute;left:2px;top:12px;width:30px;text-align:center;font:400 24px/1 var(--display)}
+.qno small{display:block;font:800 11px Nunito,sans-serif;color:var(--grey);margin-top:2px}
+.sq{margin:2px 0 12px;font-weight:900;font-size:17px;line-height:1.35}
+.ch{display:flex;flex-direction:column;gap:8px}
+.op{position:relative;display:flex;align-items:center;gap:10px;min-height:44px;padding:5px 12px 5px 6px;font-weight:800;font-size:16px;background:#fff;border:2.5px solid var(--ink);border-radius:12px}
+.op .let{flex:none;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);display:grid;place-items:center;font:400 16px/1 var(--display);background:var(--cream)}
+/* the student's pick: a bubble shaded with a 2B pencil */
+.op.pick .let{color:#fff;background:radial-gradient(circle at 40% 35%,#7d7a72,#3f3d38 60%,#2e2c28)}
+.op.pick{background:var(--orange)}
+/* the right answer flashes green after every mark, then stays green */
+.op.good{background:var(--green)!important;animation:good .9s steps(1,end)}
+@keyframes good{0%,34%,68%{background:var(--green)}17%,51%{background:#fff}}
+.ch.pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pics .op{flex-direction:column;align-items:stretch;padding:5px;gap:4px}
+.pics .op .let{position:absolute;top:-8px;left:-8px;width:28px;height:28px;z-index:1}
+.pics .op img{width:100%;max-height:26dvh;aspect-ratio:3/4;object-fit:contain;padding:4px;border-radius:8px;border:2px solid var(--ink);display:block;background:#fff;pointer-events:none}
+.pics .op .tx{display:none;font-size:13px;text-align:center;line-height:1.2}
+.pics .op.noimg img{display:none}
+.pics .op.noimg .tx,.page.shown .pics .op .tx{display:block}
+.pics .op.noimg{min-height:100px;justify-content:center}
+/* the exam book's cover: manila card, thick black frame */
+.page.cover{padding:10px;background:#f3dc9a;cursor:pointer}
+.cv{height:100%;overflow:hidden;border:clamp(6px,2.2vmin,10px) solid #1b1b1b;border-radius:16px;padding:clamp(10px,3dvh,18px) 14px clamp(8px,2dvh,12px);display:flex;flex-direction:column;gap:12px}
+.cvTitle{font:900 clamp(30px,10vmin,46px)/1 "Arial Black",Nunito,sans-serif;letter-spacing:1px;color:#1b1b1b;text-align:center;border-bottom:clamp(4px,1.2vmin,6px) solid #1b1b1b;padding-bottom:4px}
+.cvTop{display:flex;gap:10px;align-items:stretch}
+.cvFields{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.cvLine{display:flex;align-items:baseline;gap:8px;font:700 14px Nunito,sans-serif;color:#1b1b1b}
+.cvLine span{flex:none}
+.cvLine b{flex:1;min-width:0;border-bottom:1.5px solid #1b1b1b;font:700 21px/1.1 var(--hand);color:#1d3f8f;padding-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cvScore{position:relative;flex:none;width:clamp(96px,28vw,120px);min-height:84px;border:2px solid #1b1b1b;background:rgba(255,255,255,.35);padding:3px 6px;display:flex;flex-direction:column}
+.cvScore>span{font:800 10px Nunito,sans-serif;color:#1b1b1b;letter-spacing:.3px}
+.cvScore .mine{flex:1;display:flex;align-items:flex-end;justify-content:flex-start;padding:0 0 4px 2px;font:700 34px/1 var(--hand);color:#1d3f8f;position:relative}
+.cvScore .mine small{font-size:.55em;margin-left:1px}
+/* Bu Guru's correction in red, on top of the checker's score */
+.cvScore .mine.struck::after{content:"";position:absolute;left:0;width:64px;bottom:42%;height:3px;background:var(--pen);rotate:-12deg;border-radius:2px}
+.cvScore .real{position:absolute;right:4px;top:16px;font:700 32px/1 var(--hand);color:var(--pen);rotate:-10deg}
+.cvScore .real small{font-size:.5em}
+.cvNotes{flex:1;min-height:calc(3 * 1.15em + 22px);overflow:hidden;border:1.5px solid #1b1b1b;padding:4px 8px;font-size:16px}
+.cvNotes>span{display:block;font:700 13px Nunito,sans-serif;color:#1b1b1b}
+.cvNotes p{margin:0 0 2px;font:700 1em/1.15 var(--hand);color:var(--pen);padding-left:12px;text-indent:-12px}
+.cvNotes p::before{content:"• "}
+.fill{animation:write .5s ease-out both}
+@keyframes write{from{opacity:0;scale:1.4}}
+.cvFoot{font:800 12px Nunito,sans-serif;color:#1b1b1b;letter-spacing:.5px}
+/* red pen */
+.ink{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:3}
+.ink path{fill:none;stroke:var(--pen);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;transition:opacity .45s}
+.ink path.gone{opacity:0}
+.ink .dbg{fill:none;stroke:var(--blue);stroke-width:1.5;stroke-dasharray:4 3}
+.ink text{font:900 12px Nunito,sans-serif;fill:#1d6fb0;stroke:#fff;stroke-width:3px;paint-order:stroke}
+.plus{position:absolute;z-index:4;pointer-events:none;font:400 24px/1 var(--display);color:var(--pen);text-shadow:2px 2px 0 #fff;animation:plus .8s ease-out forwards;translate:-50% -50%}
+.plus.ok{color:#2f8a1c}
+@keyframes plus{to{translate:-50% -170%;opacity:0}}
+#hint{flex:none;height:44px;margin-top:6px;color:var(--cream);font-weight:900;font-size:13px;text-shadow:0 2px 0 var(--ink);display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+#hint .btn{text-shadow:none;min-width:0;font-size:17px;padding:6px 16px}
+#hint b{display:inline-grid;place-items:center;width:24px;height:24px;margin-left:3px;background:var(--cream);border:2px solid var(--ink);border-radius:6px;color:var(--pen);font-size:16px;text-shadow:none;vertical-align:middle}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(40,22,8,.6);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.help{text-align:left;max-height:88dvh;overflow-y:auto}
+.help .step{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.help .pic{flex:none;width:36px;font-size:26px;text-align:center;color:var(--pen);font-weight:900}
+.help p{margin:0;font-weight:700;font-size:15px}
+.help b{font-weight:900}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:2px dashed #cfc6b8;font-weight:900;text-align:left}
+.set:last-of-type{border:0}
+.set small{display:block;font-weight:700;color:#666}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;flex:none}
+.seg button{font:900 14px Nunito,sans-serif;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;min-width:48px;min-height:36px}
+.seg button.on{background:var(--yellow);box-shadow:0 2px 0 var(--ink)}
+
+#credList{text-align:left;font-size:13px;font-weight:700;padding-left:18px;max-height:50dvh;overflow-y:auto}
+
+/* Tama Pass, in this game's card style (content from the kit) */
+#passCard table{font-weight:800;margin-bottom:6px}
+#passCard td{padding:6px 2px;border-bottom:2px dashed #cfc6b8;text-align:left}
+#passCard td.r{text-align:right}
+#passCard .pnote{font-size:13px;font-weight:700;margin:10px 0 4px}
+#passCard code{background:#fff3a8;border-radius:10px;font-size:15px}
+#passCard input{border-width:3px;border-radius:10px}
+#passCard .prow .btn{min-width:0}
+
+@media (max-width:380px){.page{padding-left:40px}.qno{width:26px;font-size:20px}.sheet{background-image:linear-gradient(90deg,transparent 28px,#f3a0a0 28px,#f3a0a0 30px,transparent 30px),repeating-linear-gradient(#fffdf6 0 31px,#d5e6f5 31px 32px)}
+  .sq{font-size:16px}.op{font-size:15px}#say{font-size:13px}#guru{width:52px;height:52px}#hint{font-size:12px;gap:5px}}
+@media (max-height:600px){.hero{display:none}}
+/* phone on its side: Bu Guru on the left, the paper on the right */
+@media (orientation:landscape) and (max-height:560px){
+  #app{max-width:900px}
+  #workScreen{display:grid;grid-template-columns:200px 1fr;align-items:start;column-gap:12px}
+  #teach{flex-wrap:wrap;justify-content:center}
+  #sayWrap{flex-basis:100%;order:3}
+  #sayWrap::before{display:none}
+  #deskWrap{grid-column:2;grid-row:1;height:100%}
+  .sq{margin-bottom:8px;font-size:16px}
+  .ch{gap:6px}.op{min-height:38px}
+  .pics .op img{max-height:34dvh}
+  /* a squat cover */
+  .page.cover{padding:6px}
+  .cv{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:auto auto repeat(3,auto) 1fr;align-content:start;
+    padding:6px 12px;gap:5px 14px;border-width:6px;border-radius:12px}
+  .cvTitle{grid-column:1 / -1;font-size:22px;border-bottom-width:4px;padding-bottom:2px}
+  .cvTop{grid-column:1 / -1}
+  .cv>.cvLine{grid-column:1}
+  .cvNotes{grid-column:2;grid-row:3 / -1}
+  .cvFields{gap:4px}.cvLine{font-size:12px}.cvLine b{font-size:16px}
+  .cvScore{min-height:70px}.cvScore .mine{font-size:26px}.cvScore .real{font-size:26px;top:14px}
+  .cvNotes{font-size:14px;padding:2px 8px;min-height:0}.cvNotes>span{font-size:11px}.cvNotes p{margin:0}
+  .cvFoot{display:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="top">
+    <div id="bar"><button class="tk-chip tk-btn" id="exitBtn" type="button" aria-label="Back">✕</button></div>
+  </div>
+
+  <div class="screen" id="titleScreen">
+    <div class="hero"><img src="bu-guru.svg" alt="Bu Guru, the teacher"></div>
+    <div class="logo">ANAK<br>EMAS</div>
+    <div class="pill">Teacher's Pet: Bu Guru's helper</div>
+    <div class="menu">
+      <button class="btn" id="playBtn" type="button" disabled>WORK</button>
+      <p class="note" id="titleMsg" role="status">Loading papers…</p>
+    </div>
+    <div class="links">
+      <button class="link" id="helpBtn" type="button">/how to play/</button>
+      <button class="link" id="setBtn" type="button">/settings/</button>
+      <a class="link" href="../../">/PlayTama home/</a>
+    </div>
+    <div class="credit">Bu Guru: Fluent Emoji by Microsoft (MIT). Fonts: Super Trend, Nunito, Gaegu (Google Fonts).<span id="credLink" class="hide"> <button class="link" id="credBtn" type="button">/photo credits/</button></span></div>
+  </div>
+
+  <div class="screen hide" id="workScreen">
+    <div id="teach">
+      <div id="guru"><img src="bu-guru.svg" alt="Bu Guru"></div>
+      <div id="sayWrap"><div id="say" role="status" aria-live="polite"><span></span></div></div>
+      <div id="strikes" aria-label="Wrong marks: 0 of 3"><i></i><i></i><i></i></div>
+    </div>
+    <div id="deskWrap">
+      <div class="sheet" id="sheet" role="group" aria-label="Answer sheet"></div>
+      <div id="hint" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hide" id="helpBox"><div class="card help">
+  <h2>HOW TO PLAY</h2>
+  <div class="step"><span class="pic">📝</span><p><b>Help Bu Guru mark one student's test.</b> They shaded one answer in pencil for each question.</p></div>
+  <div class="step"><span class="pic">✓</span><p><b>Right answer?</b> Draw a tick on the paper.</p></div>
+  <div class="step"><span class="pic">✗</span><p><b>Wrong answer?</b> Draw a cross.</p></div>
+  <div class="step"><span class="pic">?</span><p><b>Don't know?</b> Draw a question mark to skip it.</p></div>
+  <div class="step"><span class="pic">💥</span><p><b>3 wrong marks</b> and you're fired.</p></div>
+  <div class="step"><span class="pic">📘</span><p><b>At the end</b> the test gets your score, and Bu Guru checks it.</p></div>
+  <div class="step"><span class="pic" id="helpCoin">🪙</span><p><b>Work once a day:</b> <span id="helpPay"></span> After that you can volunteer, just for fun.</p></div>
+  <div class="step"><span class="pic">⌨️</span><p><b>Keyboard:</b> T for a tick, X for a cross, ? to skip.</p></div>
+  <div class="row" style="margin-top:12px"><button class="btn small green" id="helpOk" type="button">GOT IT</button></div>
+</div></div>
+
+<div class="overlay hide" id="setBox"><div class="card">
+  <h2>SETTINGS</h2>
+  <div class="set"><span>Teacher talk<small>Bu Guru comments on how you mark</small></span><span class="seg" id="segTalk"></span></div>
+  <div class="set"><span>Shape reading<small>Debug: show what Bu Guru reads</small></span><span class="seg" id="segDebug"></span></div>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="setOk" type="button">CLOSE</button></div>
+</div></div>
+
+<div class="overlay hide" id="askBox"><div class="card">
+  <h2>GO HOME?</h2>
+  <p style="font-weight:800" id="askP"></p>
+  <div class="row"><button class="btn small green" id="askNo" type="button">STAY</button><button class="btn small cream" id="askYes" type="button">GO HOME</button></div>
+</div></div>
+
+<div class="overlay hide" id="passBox"><div class="card"><div id="passCard"></div>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="passOk" type="button">CLOSE</button></div></div></div>
+<div class="overlay hide" id="credBox"><div class="card">
+  <h2>PHOTO CREDITS</h2>
+  <ul id="credList"></ul>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="credOk" type="button">CLOSE</button></div>
+</div></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const TAMA = window.Tama, KIT = window.TamaKit, QS = window.TamaQuestions;
+const COIN = KIT.coin("sm");
+const SLUG = "anak-emas";
+const PILE = 10;             // papers in one shift
+const PAY_RIGHT = 1;         // paid work: tokens for each right mark…
+const PAY_WRONG = 1;         // …and taken for each wrong one (never below 0)
+const PAY_PERFECT = 2;       // bonus for marking every page right
+const MAX_STRIKES = 3;       // wrong marks before you're fired
+const ASK_AFTER = 60000;     // no mark on a paper for this long: Bu Guru starts asking
+const ASK_AGAIN = 20000;
+const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const STUDENTS = ["Budi", "Siti", "Ani", "Dewi", "Joko", "Rina", "Agus", "Putri", "Wayan", "Made", "Asep", "Ucok", "Yanti", "Fajar", "Intan", "Bayu", "Lestari", "Rizky", "Nyoman", "Tono"];
+const LETTERS = "ABC";
+const NS = "http://www.w3.org/2000/svg";
+
+// ---------- save ----------
+// worked: the day of the last paid shift (paid work is once a day)
+const SET = Object.assign({ sound: true, help: false, talk: true, debug: false, worked: "" }, TAMA.load(SLUG, {}));
+const saveSet = () => TAMA.save(SLUG, SET);
+const canWork = () => SET.worked !== TAMA.today();
+
+// ---------- top bar (from the kit) ----------
+const G = { screen: "titleScreen", bank: null, coinsLive: false, shown: 0, flying: 0 };
+const BAR = KIT.bar($("bar"), {
+  sound: SET.sound,
+  onSound(on) { SET.sound = on; saveSet(); SFX.ac(); SFX.blip(); },
+  onTokens: openPass,
+});
+// while coins are flying, the chip counts as they land instead
+function renderTok() { if (!G.coinsLive) BAR.tokens(TAMA.tokens()); }
+TAMA.onChange(renderTok);
+
+// ---------- sound ----------
+const SFX = (() => {
+  let ctx = null, noise = null;
+  const ac = () => {
+    if (!ctx) try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+    if (ctx?.state === "suspended") ctx.resume();
+    return ctx;
+  };
+  function tone(f, d = .12, type = "sine", v = .2, f2 = 0, delay = 0) {
+    if (!SET.sound) return; const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
+  }
+  // a pen scratching paper: a short burst of filtered noise
+  function scratch() {
+    if (!SET.sound) return; const c = ac(); if (!c) return;
+    if (!noise) { noise = c.createBuffer(1, c.sampleRate * .2, c.sampleRate); const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime;
+    s.buffer = noise; f.type = "bandpass"; f.frequency.value = 3200; f.Q.value = 1.2;
+    g.gain.setValueAtTime(.12, t); g.gain.exponentialRampToValueAtTime(.001, t + .12);
+    s.connect(f).connect(g).connect(c.destination); s.start(t); s.stop(t + .14);
+  }
+  const buzz = ms => { if (SET.sound) navigator.vibrate?.(ms); };
+  return {
+    ac, scratch,
+    blip() { tone(660, .09, "sine", .15); },
+    right() { tone(880, .1, "triangle", .16); tone(1320, .16, "triangle", .14, 0, .07); },
+    skip() { tone(520, .1, "sine", .12, 420); },
+    page() { scratch(); tone(300, .12, "sine", .05, 500); },
+    wrong() { tone(220, .25, "sawtooth", .08, 140); buzz(60); },
+    coin() { tone(1200, .07, "square", .08); tone(1800, .2, "square", .08, 0, .07); },
+    // the school bell: ring ring!
+    bell() { for (let i = 0; i < 10; i++) tone(i % 2 ? 1250 : 1480, .07, "square", .07, 0, i * .07); buzz(200); },
+    win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .2, "triangle", .2, 0, i * .11)); },
+  };
+})();
+
+// ---------- screens ----------
+function show(id) {
+  ["titleScreen", "workScreen"].forEach(s => $(s).classList.toggle("hide", s !== id)); G.screen = id;
+  document.documentElement.classList.toggle("atWork", id === "workScreen");
+  BAR.clickable(id === "titleScreen"); renderTok(); renderExit(); scrollTo(0, 0);
+  if (id === "titleScreen") renderTitle();
+}
+function renderExit() {
+  const m = !!L && !L.over;
+  $("exitBtn").textContent = m ? "🏳️ Go home" : "✕"; $("exitBtn").setAttribute("aria-label", m ? "Go home" : "Back");
+}
+const PAY_LINE = () => `${COIN}+${PAY_RIGHT} for each right mark, ${COIN}−${PAY_WRONG} for each wrong one, ${COIN}+${PAY_PERFECT} more for a perfect test.`;
+$("helpCoin").innerHTML = KIT.coin();
+$("helpPay").innerHTML = PAY_LINE();
+
+// ---------- title ----------
+const playLabel = () => canWork() ? "WORK" : "VOLUNTEER";
+function renderTitle() {
+  const b = $("playBtn"), msg = $("titleMsg");
+  b.textContent = playLabel(); b.disabled = !G.bank;
+  if (!G.bank) return;
+  msg.innerHTML = canWork() ? `Paid work today: ${PAY_LINE()}` : "You've worked today. Volunteering is just for fun. Paid work again tomorrow.";
+}
+// a new day opens paid work again
+setInterval(() => { if (G.screen === "titleScreen") renderTitle(); }, 30000);
+
+$("playBtn").onclick = () => { SFX.ac(); SFX.blip(); startShift(); };
+$("exitBtn").onclick = () => {
+  if (L && !L.over) return askLeave();
+  if (G.screen === "titleScreen") { location.href = "../../"; return; }
+  closeAll(); show("titleScreen");
+};
+const closeAll = () => ["helpBox", "setBox", "askBox", "passBox", "credBox"].forEach(id => $(id).classList.add("hide"));
+
+// ---------- the shift ----------
+// L: the running shift. One student's exam book: a cover, then PILE questions, then back to the cover.
+// L.state: "cover" (waiting to open), "marking", "end" (closed again, score on the cover)
+let L = null;
+function startShift() {
+  if (!G.bank) return;
+  closeAll();
+  const sat = new Date(); sat.setDate(sat.getDate() - 1 - Math.floor(Math.random() * 3));   // the test was a few days ago
+  const student = { name: pick(STUDENTS), id: String(1000 + Math.floor(Math.random() * 9000)), course: "General Knowledge",
+    date: sat.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) };
+  L = { paid: canWork(), state: "cover", student, papers: makePapers(), n: 0, right: 0, wrong: 0, skipped: 0, earned: 0, over: false,
+    lastSay: 0, lastPrio: 0, S: null, page: null, cover: null,
+    O: { ptype: {}, start: null, startMs: 0, times: [], hes: { ms: 0, q: "", look: "" }, fast: { ratio: 0 }, readFast: 0,
+      ticks: [], crosses: [], back: 0, tabs: 0, scribbles: 0, saidDevice: false, saidLazy: false } };
+  renderStrikes();
+  $("sheet").innerHTML = "";
+  L.cover = coverPage(); L.page = L.cover; $("sheet").appendChild(L.cover);
+  $("sheet").classList.add("locked");
+  $("sheet").setAttribute("aria-label", `${student.name}'s exam book. Tap to open it.`);
+  guide("cover");
+  show("workScreen");
+  say(`This is ${student.name}'s test. ${L.paid ? "Mark it for me!" : "Thanks for volunteering!"} Tap the book to open it.`, 2, true);
+}
+// the whole test is written before you open it: one student, PILE questions, about half answered right
+function makePapers() {
+  const out = [];
+  while (out.length < PILE) {
+    const qs = QS.random(G.bank, G.bank.questions.length);
+    if (out.length && qs.length > 1 && qs[0].id === out[out.length - 1].q.id) qs.push(qs.shift());   // never the same question twice in a row
+    for (const q of qs) {
+      if (out.length >= PILE) break;
+      const wrongs = q.choices.map((c, i) => i).filter(i => i !== q.correct);
+      const pk = Math.random() < .5 ? q.correct : pick(wrongs);
+      out.push({ q, pick: pk, right: pk === q.correct, graded: "", done: false, t0: 0, firstMark: 0, watched: false, hover: null });
+    }
+  }
+  return out;
+}
+function coverPage() {
+  const st = L.student, page = document.createElement("div");
+  page.className = "page cover";
+  page.innerHTML = `<div class="cv">
+    <div class="cvTitle">EXAM BOOK</div>
+    <div class="cvTop">
+      <div class="cvFields">
+        <div class="cvLine"><span>Name</span><b>${esc(st.name)}</b></div>
+        <div class="cvLine"><span>Student ID #</span><b>${st.id}</b></div>
+      </div>
+      <div class="cvScore"><span>FINAL SCORE</span><div class="mine"></div><div class="real"></div></div>
+    </div>
+    <div class="cvLine"><span>Test date</span><b>${esc(st.date)}</b></div>
+    <div class="cvLine"><span>Course</span><b>${esc(st.course)}</b></div>
+    <div class="cvLine"><span>Checker</span><b>${esc(TAMA.name())}</b></div>
+    <div class="cvLine"><span>Check time</span><b class="ctime"></b></div>
+    <div class="cvNotes"><span>NOTES:</span><div class="notes"></div></div>
+    <div class="cvFoot">${PILE} QUESTIONS</div>
+  </div>`;
+  return page;
+}
+// the line under the paper
+function guide(mode) {
+  $("hint").innerHTML = mode === "cover" ? "Tap the book to open it."
+    : mode === "end" ? `<button class="btn small green" id="againBtn" type="button">${playLabel()}</button><button class="btn small cream" id="menuBtn" type="button">MENU</button>`
+    : `Draw: <span>Right<b>✓</b></span><span>Wrong<b>✗</b></span><span>Don't know<b>?</b></span>`;
+  if (mode === "end") {
+    $("againBtn").onclick = () => { SFX.blip(); L = null; startShift(); };
+    $("menuBtn").onclick = () => { SFX.blip(); L = null; show("titleScreen"); };
+  }
+}
+// tap the cover to open the book
+$("sheet").addEventListener("click", () => { if (L && L.state === "cover") openBook(); });
+function openBook() {
+  if (!L || L.state !== "cover") return;
+  SFX.ac(); SFX.page();
+  if (L.paid) { SET.worked = TAMA.today(); saveSet(); }   // today's paid work starts now, even if you go home early
+  L.state = "marking"; L.O.start = new Date(); L.O.startMs = performance.now();
+  guide("marking");
+  say(hello(), 1, true);
+  nextPaper();
+}
+function hello() {
+  const h = new Date().getHours();
+  return h < 6 ? "So early! The school isn't even open yet." : h < 11 ? "Good morning. Red pen ready?" : h < 15 ? "Good afternoon. These papers won't mark themselves."
+    : h < 18 ? "Afternoon shift. Let's go!" : h < 21 ? "Evening marking. My favourite." : "Shouldn't you be in bed? Fine, mark these first.";
+}
+document.addEventListener("visibilitychange", () => {
+  if (!L || L.state !== "marking") return;
+  if (document.hidden) { L.O.tabs++; return; }
+  say(pick(["Where did you go? I saw you leave.", "Welcome back. I saw you switch tabs.", "Don't think I didn't notice you left."]), 2, true);
+});
+function renderStrikes() {
+  $("strikes").querySelectorAll("i").forEach((el, i) => el.classList.toggle("on", i < L.wrong));
+  $("strikes").setAttribute("aria-label", `Wrong marks: ${L.wrong} of ${MAX_STRIKES}`);
+}
+
+// ---------- pages ----------
+// The book stays put; the writing scrolls up to the next page, like scrolling down a phone.
+function turnTo(page, back) {
+  const old = L.page; L.page = page;
+  page.classList.remove("above", "down", "below", "fromAbove");   // the cover is used twice
+  if (CALM || !old) { old?.remove(); $("sheet").appendChild(page); return; }
+  page.classList.add(back ? "fromAbove" : "below"); $("sheet").appendChild(page); void page.offsetWidth;
+  page.classList.remove("fromAbove", "below"); old.classList.add(back ? "down" : "above");
+  setTimeout(() => old.remove(), 420);
+}
+function nextPaper() {
+  if (!L || L.state !== "marking") return;
+  const S = L.S = L.papers[L.n]; L.n++;
+  const q = S.q, pics = q.choices.some(c => c.img);
+  const page = document.createElement("div");
+  page.className = "page";
+  page.innerHTML = `<div class="qno">${L.n}.<small>of ${PILE}</small></div>
+    <p class="sq">${esc(q.q)}</p>
+    <div class="ch${pics ? " pics" : ""}">${q.choices.map((c, k) => `<div class="op${k === S.pick ? " pick" : ""}">
+      <span class="let" aria-hidden="true">${LETTERS[k]}</span>${pics && c.img ? `<img src="${esc(c.img)}" alt="Picture ${LETTERS[k]}">` : ""}<span class="tx">${esc(c.text)}</span></div>`).join("")}</div>
+    <svg class="ink" aria-hidden="true"></svg>`;
+  page.querySelectorAll(".op img").forEach(img => img.addEventListener("error", () => img.closest(".op").classList.add("noimg")));
+  $("sheet").setAttribute("aria-label", `Question ${L.n} of ${PILE}: ${L.student.name} answered ${LETTERS[S.pick]}, ${q.choices[S.pick].text}`);
+  $("sheet").classList.remove("locked");
+  turnTo(page);
+  S.t0 = performance.now();
+  S.hover = { dwell: [0, 0, 0], visits: [0, 0, 0], el: -1, t: 0, start: null, armed: false };
+  waitFor(S);
+}
+const sheetBusy = () => !L || L.state !== "marking" || !L.S || L.S.done;
+
+// Bu Guru watches a page nobody has marked yet
+function waitFor(S) {
+  clearTimeout(L.waitT); clearTimeout(L.askT);
+  L.waitT = setTimeout(() => {
+    if (!L || L.S !== S || S.firstMark) return;
+    const k = lookedAt(S.hover);
+    if (k < 0) return;
+    const t = S.q.choices[k].text;
+    say(k === S.q.correct ? pick([`${t}. Yeah, that's right.`, `${t}? Yes, that one's right.`]) : pick([`${t}? I don't think that's the right answer.`, `${t}? Hmm, I don't think so.`]), 1);
+  }, 6000);
+  const ask = first => {
+    if (!L || L.state !== "marking" || L.S !== S || S.done) return;
+    say(first ? "Don't know? Draw a ? to skip it." : pick(["Still there?", "I'm waiting…", "Hello? Tick, cross or question mark.", "These papers won't mark themselves."]), 2, true);
+    L.askT = setTimeout(() => ask(false), ASK_AGAIN);
+  };
+  L.askT = setTimeout(() => ask(true), ASK_AFTER);
+}
+
+// ---------- the red pen ----------
+// Every stroke is a list of points relative to the paper. Bu Guru reads shapes from it.
+let pen = null;   // the stroke being drawn: { id, pts, path, t0, type }
+let pend = null;  // a straight line waiting for its partner (a cross is two lines)
+const inkEl = () => L.page.querySelector(".ink");
+const rel = e => { const r = inkEl().getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+const dAttr = p => "M" + p.map(q => `${q.x.toFixed(1)} ${q.y.toFixed(1)}`).join(" L");
+
+$("sheet").addEventListener("pointerdown", e => {
+  if (sheetBusy() || pen || (e.pointerType === "mouse" && e.button !== 0)) return;
+  e.preventDefault();
+  $("sheet").setPointerCapture?.(e.pointerId);
+  const p = rel(e), path = document.createElementNS(NS, "path");
+  inkEl().appendChild(path);
+  pen = { id: e.pointerId, pts: [p], path, t0: performance.now(), type: e.pointerType || "mouse" };
+  path.setAttribute("d", dAttr(pen.pts) + ` L${p.x + .1} ${p.y}`);
+  if (pend) clearTimeout(pend.t);   // the second line of a cross may be coming
+  if (!L.S.firstMark) L.S.firstMark = performance.now();
+  SFX.ac();
+});
+$("sheet").addEventListener("pointermove", e => {
+  if (pen && e.pointerId === pen.id) {
+    for (const ev of (e.getCoalescedEvents?.() || [e])) pen.pts.push(rel(ev));
+    pen.path.setAttribute("d", dAttr(pen.pts));
+    return;
+  }
+  // a mouse hovering over the answers (no button pressed): Bu Guru watches where it waits
+  if (e.pointerType === "mouse" && !e.buttons && !sheetBusy()) hoverAt(rel(e));
+});
+const endPen = e => {
+  if (!pen || e.pointerId !== pen.id) return;
+  const s = pen; pen = null;
+  if (sheetBusy()) { s.path.remove(); return; }
+  s.dur = performance.now() - s.t0;
+  stroke(s);
+};
+$("sheet").addEventListener("pointerup", endPen);
+$("sheet").addEventListener("pointercancel", e => { if (pen && e.pointerId === pen.id) { pen.path.remove(); pen = null; } });
+$("sheet").addEventListener("lostpointercapture", endPen);
+$("sheet").addEventListener("pointerleave", e => { if (e.pointerType === "mouse" && !sheetBusy()) hoverAt(null); });
+
+// Where the mouse pointer goes over the answers. It can't see your eyes: it only knows the pointer.
+// It starts counting once the pointer has really moved (it often rests where the last mark ended),
+// and only while the pointer moves, so a pointer sitting still doesn't count as looking.
+function hoverAt(p) {
+  const H = L.S.hover, now = performance.now();
+  if (!p) { H.el = -1; return; }
+  if (!H.armed) { if (!H.start) { H.start = p; return; } if (dist(p, H.start) < 30) return; H.armed = true; }
+  const k = choiceAt(p);
+  if (k >= 0 && k === H.el) H.dwell[k] += Math.min(150, now - H.t);
+  else if (k >= 0) H.visits[k]++;
+  H.el = k; H.t = now;
+}
+// the answer the pointer kept going back to (twice or more), or lingered over while moving; -1 if none
+function lookedAt(H) {
+  let best = -1, top = 0;
+  H.visits.forEach((v, k) => { const sc = v * 600 + H.dwell[k]; if ((v >= 2 || H.dwell[k] >= 1200) && sc > top) { top = sc; best = k; } });
+  return best;
+}
+// which answer is under a point
+function choiceAt(p) {
+  const r0 = inkEl().getBoundingClientRect();
+  let found = -1;
+  L.page.querySelectorAll(".op").forEach((el, k) => {
+    const r = el.getBoundingClientRect(), x = p.x + r0.left, y = p.y + r0.top;
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) found = k;
+  });
+  return found;
+}
+
+// ---------- reading shapes ----------
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const plen = p => { let s = 0; for (let i = 1; i < p.length; i++) s += dist(p[i - 1], p[i]); return s; };
+function box(p) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const q of p) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
+}
+// n points spaced evenly along the stroke (as in the $1 recognizer), so fast and slow strokes look the same
+function resample(src, n = 32) {
+  const pts = src.map(q => ({ x: q.x, y: q.y })), I = plen(pts) / (n - 1), out = [pts[0]];
+  if (!I) return Array.from({ length: n }, () => ({ ...pts[0] }));
+  let D = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const d = dist(pts[i - 1], pts[i]);
+    if (d > 0 && D + d >= I) {
+      const t = (I - D) / d, q = { x: pts[i - 1].x + t * (pts[i].x - pts[i - 1].x), y: pts[i - 1].y + t * (pts[i].y - pts[i - 1].y) };
+      out.push(q); pts.splice(i, 0, q); D = 0;
+    } else D += d;
+  }
+  while (out.length < n) out.push({ ...pts[pts.length - 1] });
+  return out.slice(0, n);
+}
+const straightness = p => { const l = plen(p); return l ? dist(p[0], p[p.length - 1]) / l : 1; };
+// total turning along the stroke, in radians. On screen (y points down) a positive total is clockwise.
+function turning(p) {
+  let s = 0;
+  for (let i = 2; i < p.length; i++) {
+    const ax = p[i - 1].x - p[i - 2].x, ay = p[i - 1].y - p[i - 2].y, bx = p[i].x - p[i - 1].x, by = p[i].y - p[i - 1].y;
+    if ((ax || ay) && (bx || by)) s += Math.atan2(ax * by - ay * bx, ax * bx + ay * by);
+  }
+  return s;
+}
+// how far the stroke goes round the middle of its box (a full loop is 2π, even for a flat oval)
+function sweep(p, c) {
+  let s = 0, prev = Math.atan2(p[0].y - c.y, p[0].x - c.x);
+  for (let i = 1; i < p.length; i++) {
+    const a = Math.atan2(p[i].y - c.y, p[i].x - c.x);
+    let d = a - prev; if (d > Math.PI) d -= 2 * Math.PI; else if (d < -Math.PI) d += 2 * Math.PI;
+    s += d; prev = a;
+  }
+  return s;
+}
+// neatness: 1 inside [lo, hi], falling to 0 over `soft` outside it
+const within = (x, lo, hi, soft) => x < lo ? Math.max(0, 1 - (lo - x) / soft) : x > hi ? Math.max(0, 1 - (x - hi) / soft) : 1;
+// how far the points stray from an ideal shape (a polyline), as a share of the mark's size.
+// The 80th percentile: one wobbly stretch counts, a single shaky point doesn't.
+function wobble(p, poly, size) {
+  const segD = (q, a, b) => { const vx = b.x - a.x, vy = b.y - a.y, l2 = vx * vx + vy * vy;
+    const t = l2 ? Math.max(0, Math.min(1, ((q.x - a.x) * vx + (q.y - a.y) * vy) / l2)) : 0; return Math.hypot(q.x - a.x - t * vx, q.y - a.y - t * vy); };
+  const d = p.map(q => { let m = Infinity; for (let i = 1; i < poly.length; i++) m = Math.min(m, segD(q, poly[i - 1], poly[i])); return m; }).sort((x, y) => x - y);
+  return d[Math.floor(d.length * .8)] / (size || 1);
+}
+const angleAt = (c, a, b) => { const u = { x: a.x - c.x, y: a.y - c.y }, v = { x: b.x - c.x, y: b.y - c.y };
+  return Math.acos(Math.max(-1, Math.min(1, (u.x * v.x + u.y * v.y) / (Math.hypot(u.x, u.y) * Math.hypot(v.x, v.y) || 1)))) * 180 / Math.PI; };
+
+// one stroke → "line", "tick", "qmark", "circle", "dot" or "?"
+function readStroke(raw) {
+  const b = box(raw), size = Math.max(b.w, b.h);
+  if (raw.length < 3 || size < 14 || plen(raw) < 20) return { type: "dot", b };
+  const p = resample(raw, 32), N = p.length - 1;
+  const st = straightness(p), a = p[0], z = p[N], gap = dist(a, z);
+  if (st > .85) return { type: "line", b, a, z, wob: wobble(p, [a, z], dist(a, z)) };
+  // a question mark: starts high, curls clockwise over the top, and ends at the bottom near the middle
+  // (the dot underneath is a separate tap; it's welcome but not needed)
+  const T = turning(p);
+  if (T > 2.1 && a.y < b.y + .55 * b.h && z.y > b.y + .7 * b.h && Math.abs(z.x - b.cx) < .35 * b.w && b.h > .7 * b.w && gap > .45 * size)
+    return { type: "qmark", b };
+  // a circle (no longer a mark, but people try it)
+  const W = sweep(resample(raw, 64), { x: b.cx, y: b.cy });
+  if ((Math.abs(W) > 4.9 && gap < .5 * size || Math.abs(W) > 6) && Math.min(b.w, b.h) > Math.max(14, .08 * size)) return { type: "circle", b };
+  // a tick: a short leg down to the lowest point, then a longer, straight leg up
+  let k = 1; for (let i = 1; i < N; i++) if (p[i].y > p[k].y) k = i;
+  if (k >= 2 && k <= N - 3) {
+    const c = p[k], down = c.y - a.y, up = c.y - z.y, dx1 = c.x - a.x, dx2 = z.x - c.x;
+    const s1 = straightness(p.slice(0, k + 1)), s2 = straightness(p.slice(k));
+    if (down > .08 * b.h && up > .4 * b.h && up >= down * .8 && s1 > .7 && s2 > .75 && Math.abs(dx2) > .15 * b.w
+      && (Math.sign(dx1) === Math.sign(dx2) || Math.abs(dx1) < .1 * b.w) && gap > .35 * size) {
+      // neat ticks: straight legs (close to the ideal ✓ through start, corner and end), the second leg longer, a clear corner
+      const ratio = dist(c, z) / (dist(a, c) || 1), ang = angleAt(c, a, z), wob = wobble(p, [a, c, z], size);
+      const neat = (2 * within(wob, 0, .02, .05) + within(ratio, 1.4, 3.2, 1.2) + within(ang, 45, 100, 30)) / 4;
+      return { type: "tick", b, back: dx2 < 0, neat };
+    }
+  }
+  return { type: "?", b };
+}
+// two straight lines that cross make a cross. Returns its neatness (0–1), or -1 if it isn't one.
+function readCross(s1, s2) {
+  if (s1.type !== "line" || s2.type !== "line") return -1;
+  const v1 = { x: s1.z.x - s1.a.x, y: s1.z.y - s1.a.y }, v2 = { x: s2.z.x - s2.a.x, y: s2.z.y - s2.a.y };
+  const l1 = Math.hypot(v1.x, v1.y), l2 = Math.hypot(v2.x, v2.y);
+  if (Math.min(l1, l2) < 18 || Math.min(l1, l2) < .25 * Math.max(l1, l2)) return -1;
+  const ang = Math.acos(Math.abs((v1.x * v2.x + v1.y * v2.y) / (l1 * l2))) * 180 / Math.PI;   // 0–90
+  if (ang < 40) return -1;
+  // where they cross, as a fraction along each line (each stretched a little, for near misses)
+  const den = v1.x * v2.y - v1.y * v2.x; if (!den) return -1;
+  const wx = s2.a.x - s1.a.x, wy = s2.a.y - s1.a.y;
+  const t = (wx * v2.y - wy * v2.x) / den, u = (wx * v1.y - wy * v1.x) / den;
+  if (t < -.15 || t > 1.15 || u < -.15 || u > 1.15) return -1;
+  // neat crosses: straight lines of a similar length, crossing near their middles, close to square
+  return (2 * within(Math.max(s1.wob, s2.wob), 0, .02, .05) + within(Math.min(l1, l2) / Math.max(l1, l2), .7, 1, .45)
+    + (within(t, .3, .7, .3) + within(u, .3, .7, .3)) / 2 + within(ang, 60, 90, 25)) / 5;
+}
+
+function stroke(s) {
+  s.read = readStroke(s.pts);
+  debugDraw(s, s.read.type === "tick" ? `tick ${Math.round(s.read.neat * 100)}${s.read.back ? " (backwards)" : ""}` : s.read.type === "line" ? "line…" : s.read.type);
+  SFX.scratch();
+  if (pend) {
+    const first = pend.s; clearTimeout(pend.t); pend = null;
+    const neat = readCross(first.read, s.read);
+    if (neat >= 0) { debugDraw(s, `cross ${Math.round(neat * 100)}`); return mark("cross", [first, s], neat); }
+    unread(first, "half");
+  }
+  const T = s.read.type;
+  if (T === "line") {   // wait a moment for the second line of a cross
+    pend = { s, t: setTimeout(() => { if (pend?.s === s) { pend = null; unread(s, "half"); } }, 700) };
+    return;
+  }
+  if (T === "tick") return mark("tick", [s], s.read.neat);
+  if (T === "qmark") return mark("skip", [s]);
+  if (T === "circle") { fade([s]); say("No need to circle. A tick or a cross is enough.", 2); return; }
+  unread(s, T);
+}
+function debugDraw(s, label) {
+  if (!SET.debug) return;
+  const b = s.read.b, svg = inkEl();
+  const r = document.createElementNS(NS, "rect"); r.setAttribute("class", "dbg");
+  r.setAttribute("x", b.x - 4); r.setAttribute("y", b.y - 4); r.setAttribute("width", b.w + 8); r.setAttribute("height", b.h + 8);
+  const t = document.createElementNS(NS, "text"); t.setAttribute("x", b.x); t.setAttribute("y", Math.max(12, b.y - 8)); t.textContent = label;
+  svg.append(r, t);
+}
+// a mark Bu Guru can't read fades away
+function fade(strokes) { for (const s of strokes) { s.path.classList.add("gone"); setTimeout(() => s.path.remove(), 500); } }
+function unread(s, why) {
+  fade([s]);
+  if (why === "dot") return;   // a dot (like the one under a ?) is fine
+  L.O.scribbles++;
+  say(why === "half" ? "Half a cross? Two lines, please." : pick(["Neat handwriting, please.", "Is that a tick or a cross?", "I can't read that.", "Hmm? Try again."]), 1);
+}
+
+// ---------- marking a page ----------
+// kind: "tick", "cross" or "skip". neat: 0–1 for a hand-drawn tick or cross.
+function mark(kind, strokes, neat, kb) {
+  const S = L.S; if (sheetBusy()) { fade(strokes); return; }
+  S.done = true; S.graded = kind; clearTimeout(L.waitT); clearTimeout(L.askT);
+  L.O.ptype[kb ? "keyboard" : strokes[0].type] = (L.O.ptype[kb ? "keyboard" : strokes[0].type] || 0) + 1;
+  if (!kb) watch(kind, strokes, S, neat);
+  const all = strokes.flatMap(s => s.pts), bb = all.length ? box(all) : { cx: 60, cy: 60 }, at = { x: bb.cx, y: bb.cy };
+  $("sheet").classList.add("locked"); L.page.classList.add("shown");
+  const q = S.q, ans = q.choices[q.correct].text;
+  L.page.querySelectorAll(".op")[q.correct].classList.add("good");   // the right answer flashes green, every time
+  const result = kind === "skip" ? "skip" : (kind === "tick") === S.right ? "right" : "wrong";
+  L.O.times.push(performance.now() - S.t0);   // time on this question
+  let wait = CALM ? 500 : 1000;
+  if (result === "right") {
+    L.right++;
+    SFX.right();
+    if (L.paid) { pay(PAY_RIGHT, at); plus(`+${PAY_RIGHT}`, at, true); } else plus("✓", at, true);
+    if (Math.random() < .3) say(pick(["Good.", "Well done.", "Sharp eyes.", "Nice work.", "Correct."]), 0);
+  } else if (result === "skip") {
+    L.skipped++; SFX.skip();
+    say(pick([`Skipped. The answer is "${ans}".`, `Fine, I'll mark that one. It's "${ans}".`]), 2, true);
+    wait = CALM ? 900 : 1300;
+  } else {
+    L.wrong++; SFX.wrong();
+    if (L.paid) { const took = pay(-PAY_WRONG); plus(took ? `−${PAY_WRONG}` : "✗", at); } else plus("✗", at);
+    const picked = q.choices[S.pick].text;
+    if (L.wrong >= MAX_STRIKES) say("You're fired! You're not smart enough to be my assistant!", 3, true);
+    else say(kind === "tick" ? `Look again. ${L.student.name} picked "${picked}". It's "${ans}".` : `${L.student.name} was right! It is "${ans}".`, 3, true);
+    renderStrikes();
+    wait = CALM ? 1200 : 1700;
+  }
+  if (L.wrong >= MAX_STRIKES) { setTimeout(() => endShift("fired"), 1800); return; }
+  if (L.n >= PILE) { setTimeout(() => endShift("done"), wait); return; }
+  setTimeout(() => nextPaper(), wait);
+}
+function plus(txt, at, ok) {
+  const el = document.createElement("div"); el.className = "plus" + (ok ? " ok" : ""); el.textContent = txt;
+  el.style.left = at.x + 3 + "px"; el.style.top = at.y + 3 + "px";
+  L.page.appendChild(el); setTimeout(() => el.remove(), 800);
+}
+// Paid work: tokens are saved first, then the coins fly (the chip counts as they land).
+// Returns what actually changed (a wrong mark can't take a token you don't have).
+function pay(n, at) {
+  if (n < 0 && TAMA.tokens() < -n) return 0;
+  if (!G.flying) G.shown = TAMA.tokens();
+  G.coinsLive = true;
+  TAMA.addTokens(n); L.earned += n;
+  const r = inkEl().getBoundingClientRect(), from = n > 0 ? { x: r.left + at.x, y: r.top + at.y } : BAR.tokenChip, to = n > 0 ? BAR.tokenChip : $("guru");
+  for (let k = 0; k < Math.abs(n); k++) {
+    G.flying++;
+    if (n < 0) BAR.tokens(--G.shown);
+    KIT.fly(from, to, { delay: k * 120, onLand() {
+      if (n > 0) { BAR.tokens(++G.shown); SFX.coin(); }
+      if (--G.flying === 0) { G.coinsLive = false; renderTok(); }
+    } });
+  }
+  return n;
+}
+
+// ---------- Bu Guru watches how you mark ----------
+// say(text, priority): 0 chatter, 1 teasing, 2 hints, 3 mistakes. Teacher talk off keeps hints and mistakes only.
+function say(text, prio = 1, force) {
+  if (!L) return;
+  const now = performance.now();
+  if (!SET.talk && prio < 2) return;
+  if (!force && prio < 2 && now - L.lastSay < 2600) return;
+  if (!force && prio < L.lastPrio && now - L.lastSay < 1600) return;   // don't talk over something important
+  L.lastSay = now; L.lastPrio = prio;
+  const el = $("say"); el.querySelector("span").textContent = text;
+  el.classList.remove("pop"); $("guru").classList.remove("talk"); void el.offsetWidth; el.classList.add("pop"); $("guru").classList.add("talk");
+  scrollSay();
+}
+// The bubble stays the same size. If the words don't fit, they wait a moment, then scroll up slowly to the end.
+let sayRaf = 0;
+function scrollSay() {
+  const el = $("say"); cancelAnimationFrame(sayRaf); el.scrollTop = 0;
+  const over = el.scrollHeight - el.clientHeight; if (over <= 2) return;
+  const t0 = performance.now() + 1300;
+  const step = now => { const y = Math.max(0, Math.min(over, (now - t0) / 1000 * 22)); el.scrollTop = y; if (y < over) sayRaf = requestAnimationFrame(step); };
+  sayRaf = requestAnimationFrame(step);
+}
+function watch(kind, strokes, S, neat) {
+  const O = L.O, s = strokes[0], lines = [];   // record everything first, then say at most one thing
+  // how long before the first mark: very quick means it wasn't read; very slow means unsure
+  const wait = S.firstMark - S.t0, words = S.q.q.split(/\s+/).length;
+  if (wait > O.hes.ms) {
+    const k = lookedAt(S.hover);
+    O.hes = { ms: wait, q: S.q.q, no: L.n, look: k >= 0 ? S.q.choices[k].text : "" };
+  }
+  const readMs = Math.max(450, words * 90);   // about how long reading the question takes
+  if (kind !== "skip" && readMs / Math.max(wait, 1) > O.fast.ratio) O.fast = { ratio: readMs / Math.max(wait, 1), ms: wait, no: L.n };
+  if (kind !== "skip" && wait < readMs) { O.readFast++; if (O.readFast % 2 === 1) lines.push(pick(["You marked that before you read it.", "Fast pen. Did you read it?"])); }
+  if (!O.saidDevice) {
+    O.saidDevice = true;
+    lines.push(s.type === "mouse" ? "A mouse? Brave choice." : s.type === "pen" ? "Ooh, a real pen." : "Finger painting, I see.");
+  }
+  if (kind === "tick") {
+    const R = s.read, size = Math.max(R.b.w, R.b.h) / $("sheet").clientWidth;
+    O.ticks.push({ neat, size });
+    if (R.back && ++O.back === 1) lines.push("A backwards tick? Interesting.");
+    if (size < .07) lines.push("Tiny tick! I need my glasses.");
+    if (size > .7) lines.push("That tick is bigger than the paper!");
+    if (neat < .45) lines.push(pick(["Messy tick! Neater, please.", "Is that a tick? It's a bit wobbly."]));
+    else if (neat > .92 && Math.random() < .4) lines.push("What a beautiful tick.");
+    if (s.dur > 1500) lines.push("Slow and neat. I like it.");
+    if (!O.saidLazy && O.ticks.length >= 6) {
+      const avg = a => a.reduce((x, y) => x + y.size, 0) / a.length;
+      if (avg(O.ticks.slice(-3)) < avg(O.ticks.slice(0, 3)) * .7) { O.saidLazy = true; lines.push("Your ticks are getting lazy."); }
+    }
+  }
+  if (kind === "cross") {
+    O.crosses.push({ neat });
+    if (neat < .45) lines.push(pick(["Wobbly cross!", "That cross is a bit crooked."]));
+    else if (neat > .92 && Math.random() < .4) lines.push("Lovely straight cross.");
+  }
+  if (lines.length) say(lines[0], 1);
+}
+
+// ---------- keyboard ----------
+// T tick, X cross, ? skip (draws a neat mark for you). Enter or space opens the book.
+document.addEventListener("keydown", e => {
+  if (G.screen !== "workScreen" || !L || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!$("askBox").classList.contains("hide")) return;
+  if ((e.key === "Enter" || e.key === " ") && L.state !== "marking") { e.preventDefault(); $("sheet").click(); return; }
+  if (sheetBusy()) return;
+  const k = e.key.toLowerCase(), W = inkEl().getBoundingClientRect().width;
+  const ink = d => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); inkEl().appendChild(p); };
+  let kind = "";
+  if (k === "t" || k === "y") { kind = "tick"; ink(`M${W - 78} 52 L${W - 62} 70 L${W - 30} 26`); }
+  else if (k === "x" || k === "n") { kind = "cross"; ink(`M${W - 74} 26 L${W - 34} 66`); ink(`M${W - 34} 26 L${W - 74} 66`); }
+  else if (k === "?" || k === "/" || k === "s") { kind = "skip"; ink(`M${W - 68} 36 a14 14 0 1 1 18 14 v10 M${W - 50} 76 v.5`); }
+  else return;
+  e.preventDefault(); SFX.scratch();
+  if (!L.S.firstMark) L.S.firstMark = performance.now();
+  mark(kind, [{ path: null, pts: [{ x: W - 54, y: 46 }] }], 1, true);
+});
+
+// ---------- end of the shift: the book scrolls back to its cover ----------
+// The checker's score is what you gave the student: your ticks, plus the pages Bu Guru marked for you (skips).
+// Pages left unmarked when you're fired get nothing from you. Bu Guru writes the real score over it.
+const yourScore = () => L.papers.filter(S => S.graded === "tick" || S.graded === "skip" && S.right).length;
+const realScore = () => L.papers.filter(S => S.right).length;
+function endShift(why) {
+  if (!L || L.state !== "marking") return;
+  L.state = "end"; L.over = true; L.why = why;
+  L.perfect = why === "done" && L.right === PILE;
+  if (L.paid && L.perfect) { const r = inkEl().getBoundingClientRect(); pay(PAY_PERFECT, { x: r.width / 2, y: r.height / 2 }); }
+  clearTimeout(L.waitT); clearTimeout(L.askT); clearTimeout(pend?.t); pend = null; pen = null;
+  L.O.endMs = performance.now();
+  renderExit();
+  TAMA.addScore(SLUG, { plays: 1, wins: why === "done" ? 1 : 0, best: L.right });
+  SFX.bell();
+  if (why === "done") say("Ring ring! All marked. Let's see the score.", 3, true);
+  setTimeout(() => {
+    if (!L) return;
+    SFX.page(); turnTo(L.cover, true);
+    $("sheet").setAttribute("aria-label", `${L.student.name}'s exam book, closed.`);
+  }, why === "fired" ? 1200 : 600);
+  setTimeout(() => fillScore(), (why === "fired" ? 1200 : 600) + (CALM ? 200 : 800));
+}
+function fillScore() {
+  if (!L) return;
+  const mine = yourScore(), real = realScore(), name = L.student.name;
+  const sb = L.cover.querySelector(".cvScore"), m = sb.querySelector(".mine"), r = sb.querySelector(".real");
+  m.innerHTML = `${mine}<small>/${PILE}</small>`; m.classList.add("fill"); SFX.scratch();
+  setTimeout(() => {
+    if (!L) return;
+    if (mine === real) {
+      r.innerHTML = "✓"; SFX.right();
+      // a wrong tick and a wrong cross cancel out, so a matching score doesn't always mean perfect marking
+      say(L.wrong ? `${name} got ${real} out of ${PILE}. Your score matches, but you made ${L.wrong} wrong ${L.wrong === 1 ? "mark" : "marks"}.` : `${name} got ${real} out of ${PILE}. You marked it right!`, 3, true);
+    }
+    else { m.classList.add("struck"); r.innerHTML = `${real}<small>/${PILE}</small>`; say(`You gave ${name} ${mine}. The real score is ${real}.`, 3, true); SFX.wrong(); }
+    r.classList.add("fill");
+    const ct = L.cover.querySelector(".ctime"); ct.textContent = duration(L.O.endMs - L.O.startMs); ct.classList.add("fill");
+    // three notes about how you marked, one at a time
+    const notes = L.cover.querySelector(".notes"), list = coverNotes(), gap = CALM ? 100 : 800;
+    $("sheet").setAttribute("aria-label", `${name}'s exam book. Your score: ${mine} of ${PILE}. Real score: ${real} of ${PILE}. Notes: ${list.join(" ")}`);
+    list.forEach((t, i) => setTimeout(() => {
+      if (!L) return;
+      const p = document.createElement("p"); p.textContent = t; p.className = "fill"; notes.appendChild(p); SFX.scratch();
+    }, gap * (i + 1)));
+    setTimeout(() => {
+      if (!L) return;
+      L.scored = true; guide("end");
+      say(!L.paid ? "Thanks for volunteering!" : L.perfect ? `A perfect test! Here's your pay: +${L.earned} Tama Tokens, with a +${PAY_PERFECT} bonus.` : L.earned > 0 ? `Here's your pay: +${L.earned} Tama Tokens.` : L.earned < 0 ? `Your mistakes cost you ${-L.earned} Tama Tokens.` : "No pay this time.", 3, true);
+      if (L.why === "done" && L.wrong === 0) SFX.win();
+    }, gap * (list.length + 1.5));
+  }, CALM ? 300 : 900);
+}
+const duration = ms => { const t = Math.round(ms / 1000); return t >= 60 ? `${Math.floor(t / 60)} min ${t % 60} s` : `${t} s`; };
+// The cover's notes: Bu Guru's three most telling notes on how you marked.
+// Hesitation (the question that stumped you, or one marked too fast to read), quality (your best-drawn mark), time (per question).
+function coverNotes() {
+  const O = L.O, notes = [];
+  // hesitation: whichever stands out more, the longest stall or the fastest mark compared with reading time
+  const stall = O.hes.ms / 5000, rush = O.fast.ratio;
+  if (stall >= 1 && stall >= rush) notes.push(O.hes.look ? `No. ${O.hes.no} stumped you. You eyed "${O.hes.look}".` : `No. ${O.hes.no} stumped you for ${Math.round(O.hes.ms / 1000)} s.`);
+  else if (rush > 1) notes.push(`No. ${O.fast.no} in ${(O.fast.ms / 1000).toFixed(1)} s. Did you read it?`);
+  else notes.push(L.skipped ? `Skipped ${L.skipped}. Steady on the rest.` : "Steady and sure all the way.");
+  // quality: the better of your ticks and your crosses
+  const avg = a => a.reduce((x, y) => x + y.neat, 0) / a.length;
+  const word = n => n >= .85 ? "very neat" : n >= .65 ? "neat" : n >= .45 ? "a bit messy" : "messy";
+  const kinds = [["ticks", O.ticks], ["crosses", O.crosses]].filter(([, a]) => a.length).map(([k, a]) => [k, avg(a)]).sort((a, b) => b[1] - a[1]);
+  notes.push(kinds.length ? `Best: ${word(kinds[0][1])} ${kinds[0][0]} (${Math.round(kinds[0][1] * 100)}/100).` : "Typed, not drawn. No handwriting!");
+  // time: the average time on each question
+  if (O.times.length) notes.push(`About ${(O.times.reduce((a, b) => a + b, 0) / O.times.length / 1000).toFixed(1)} s a question.${O.tabs ? ` Left the tab ${O.tabs}×.` : ""}`);
+  return notes;
+}
+// ---------- going home early ----------
+function askLeave() {
+  $("askP").innerHTML = L.paid && L.state === "marking" ? "You keep the Tama Tokens you earned, but today's paid work ends here." : "Nothing is lost.";
+  $("askBox").classList.remove("hide");
+}
+$("askNo").onclick = () => $("askBox").classList.add("hide");
+$("askYes").onclick = () => {
+  $("askBox").classList.add("hide");
+  if (!L || L.over) return;
+  clearTimeout(L.waitT); clearTimeout(L.askT); clearTimeout(pend?.t); pend = null; pen = null;
+  L = null; show("titleScreen");
+};
+
+// ---------- Tama Pass: the token chip on the title opens it ----------
+function openPass() {
+  if (G.screen !== "titleScreen") return;
+  KIT.passCard($("passCard"), { btnClass: "btn small", onTokens() { renderTok(); SFX.coin(); } });
+  $("passBox").classList.remove("hide");
+}
+$("passOk").onclick = () => $("passBox").classList.add("hide");
+
+// ---------- settings ----------
+function seg(id, opts, get, set) {
+  const el = $(id);
+  el.innerHTML = opts.map(([label]) => `<button type="button">${label}</button>`).join("");
+  const draw = () => el.querySelectorAll("button").forEach((b, i) => { b.classList.toggle("on", opts[i][1] === get()); b.setAttribute("aria-pressed", opts[i][1] === get()); });
+  el.querySelectorAll("button").forEach((b, i) => b.onclick = () => { set(opts[i][1]); saveSet(); draw(); SFX.blip(); });
+  draw();
+}
+seg("segTalk", [["Off", false], ["On", true]], () => !!SET.talk, v => SET.talk = v);
+seg("segDebug", [["Off", false], ["On", true]], () => !!SET.debug, v => SET.debug = v);
+$("setBtn").onclick = () => { SFX.ac(); $("setBox").classList.remove("hide"); };
+$("setOk").onclick = () => $("setBox").classList.add("hide");
+
+// ---------- how to play, credits ----------
+$("helpBtn").onclick = () => { SFX.ac(); $("helpBox").classList.remove("hide"); };
+$("helpOk").onclick = () => { $("helpBox").classList.add("hide"); if (!SET.help) { SET.help = true; saveSet(); } };
+$("credBtn").onclick = () => $("credBox").classList.remove("hide");
+$("credOk").onclick = () => $("credBox").classList.add("hide");
+["helpBox", "passBox", "credBox", "setBox"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.add("hide"); }));
+
+// ---------- start ----------
+show("titleScreen");
+if (!SET.help) $("helpBox").classList.remove("hide");
+QS.load().then(bank => {
+  G.bank = bank;
+  const cr = QS.credits(bank);
+  if (cr.length) { $("credList").innerHTML = cr.map(c => `<li>${esc(c)}</li>`).join(""); $("credLink").classList.remove("hide"); }
+}).catch(() => { $("titleMsg").innerHTML = `The papers didn't load.<br><a href="../../">Back to PlayTama</a>`; })
+  .finally(() => { if (G.bank && G.screen === "titleScreen") renderTitle(); });
+</script>
+</body>
+</html>

@@ -6,9 +6,9 @@
       "q": "Which picture is the Eiffel Tower?",
       "answer": { "text": "Eiffel Tower", "img": "assets/img/q/Eiffel_tower.svg", "credit": "Eiffel Tower drawing: public domain, Wikimedia Commons" },
       "wrong": [
-        { "text": "Tokyo Tower", "img": "assets/img/q/tokyo-tower.jpg", "credit": "" },
-        { "text": "Monas (Jakarta)", "img": "assets/img/q/monas.jpg", "credit": "" },
-        { "text": "Leaning Tower of Pisa", "img": "assets/img/q/pisa.jpg", "credit": "" }
+        { "text": "Tokyo Tower", "img": "assets/img/q/tokyo-tower.svg", "credit": "" },
+        { "text": "Monas (Jakarta)", "img": "assets/img/q/monas.svg", "credit": "" },
+        { "text": "Leaning Tower of Pisa", "img": "assets/img/q/pisa.svg", "credit": "" }
       ],
       "tags": ["landmarks", "geography"]
     },
@@ -16,7 +16,7 @@
       "id": "bluey-girl",
       "q": "In the cartoon Bluey, is Bluey a boy or a girl?",
       "answer": "Girl",
-      "wrong": ["Boy", "The show never says"],
+      "wrong": ["Boy", "Non-binary", "The show never says"],
       "tags": ["pop-culture", "tv"]
     },
     {
@@ -74,6 +74,371 @@
       "answer": "8",
       "wrong": ["4", "10", "16"],
       "tags": ["computers", "maths"]
+    },
+    {
+      "id": "water-boil",
+      "q": "At sea level, what temperature does water boil at?",
+      "answer": "100 °C",
+      "wrong": ["0 °C", "50 °C", "150 °C"],
+      "tags": ["science"]
+    },
+    {
+      "id": "human-bones",
+      "q": "How many bones does an adult human have?",
+      "answer": "206",
+      "wrong": ["106", "150", "306"],
+      "tags": ["science", "body"]
+    },
+    {
+      "id": "heart-chambers",
+      "q": "How many chambers does the human heart have?",
+      "answer": "4",
+      "wrong": ["2", "3", "6"],
+      "tags": ["science", "body"]
+    },
+    {
+      "id": "skin-organ",
+      "q": "What is the biggest organ of the human body?",
+      "answer": "Skin",
+      "wrong": ["Heart", "Liver", "Brain"],
+      "tags": ["science", "body"]
+    },
+    {
+      "id": "spider-legs",
+      "q": "How many legs does a spider have?",
+      "answer": "8",
+      "wrong": ["6", "10", "12"],
+      "tags": ["animals", "science"]
+    },
+    {
+      "id": "whale-mammal",
+      "q": "What kind of animal is a whale?",
+      "answer": "Mammal",
+      "wrong": ["Fish", "Reptile", "Amphibian"],
+      "tags": ["animals", "science"]
+    },
+    {
+      "id": "octopus-hearts",
+      "q": "How many hearts does an octopus have?",
+      "answer": "3",
+      "wrong": ["1", "2", "8"],
+      "tags": ["animals", "science"]
+    },
+    {
+      "id": "evaporation",
+      "q": "What do we call water turning into vapour?",
+      "answer": "Evaporation",
+      "wrong": ["Condensation", "Freezing", "Melting"],
+      "tags": ["science"]
+    },
+    {
+      "id": "magnet-iron",
+      "q": "Which of these will a magnet pull?",
+      "answer": "Iron nail",
+      "wrong": ["Plastic spoon", "Wooden pencil", "Glass marble", "Aluminium can"],
+      "tags": ["science"]
+    },
+    {
+      "id": "co2-warming",
+      "q": "Burning coal, oil and gas warms the planet. Which gas does it mostly add to the air?",
+      "answer": "Carbon dioxide",
+      "wrong": ["Oxygen", "Helium", "Neon"],
+      "tags": ["science", "climate"]
+    },
+    {
+      "id": "plastic-slow",
+      "q": "Which of these takes the longest to break down in nature?",
+      "answer": "Plastic bottle",
+      "wrong": ["Banana peel", "Paper bag", "Apple core"],
+      "tags": ["science", "climate"]
+    },
+    {
+      "id": "solar-panel",
+      "q": "Solar panels make electricity from…",
+      "answer": "Sunlight",
+      "wrong": ["Wind", "Rain", "Sound"],
+      "tags": ["science", "climate"]
+    },
+    {
+      "id": "binary-digits",
+      "q": "Computers store everything with just two digits. Which two?",
+      "answer": "0 and 1",
+      "wrong": ["1 and 2", "0 and 9", "1 and 10"],
+      "tags": ["computers", "maths"]
+    },
+    {
+      "id": "first-moon-walk",
+      "q": "Who was the first person to walk on the Moon?",
+      "answer": "Neil Armstrong",
+      "wrong": ["Buzz Aldrin", "Yuri Gagarin", "Sally Ride"],
+      "tags": ["space", "history"]
+    },
+    {
+      "id": "curie-nobel",
+      "q": "Who was the first woman to win a Nobel Prize?",
+      "answer": "Marie Curie",
+      "wrong": ["Ada Lovelace", "Rosalind Franklin", "Jane Goodall"],
+      "tags": ["science", "history"]
+    },
+    {
+      "id": "ada-lovelace",
+      "q": "Ada Lovelace is famous for writing one of the first…",
+      "answer": "Computer programs",
+      "wrong": ["Novels", "Maps", "Songs"],
+      "tags": ["computers", "history"]
+    },
+    {
+      "id": "right-angle",
+      "q": "How many degrees are in a right angle?",
+      "answer": "90",
+      "wrong": ["45", "180", "360"],
+      "tags": ["maths"]
+    },
+    {
+      "id": "triangle-angles",
+      "q": "The three angles inside a triangle add up to…",
+      "answer": "180°",
+      "wrong": ["90°", "270°", "360°"],
+      "tags": ["maths"]
+    },
+    {
+      "id": "flag-indonesia",
+      "q": "Which flag is Indonesia's?",
+      "answer": {"text": "Indonesia", "img": "assets/img/q/flag-indonesia.svg", "credit": ""},
+      "wrong": [
+        {"text": "Poland", "img": "assets/img/q/flag-poland.svg", "credit": ""},
+        {"text": "Japan", "img": "assets/img/q/flag-japan.svg", "credit": ""},
+        {"text": "Singapore", "img": "assets/img/q/flag-singapore.svg", "credit": ""}
+      ],
+      "tags": ["geography", "indonesia"]
+    },
+    {
+      "id": "pacific-biggest",
+      "q": "Which is the biggest ocean?",
+      "answer": "Pacific",
+      "wrong": ["Atlantic", "Indian", "Arctic"],
+      "tags": ["geography"]
+    },
+    {
+      "id": "everest-range",
+      "q": "Mount Everest is in which mountains?",
+      "answer": "Himalayas",
+      "wrong": ["Andes", "Alps", "Rockies"],
+      "tags": ["geography"]
+    },
+    {
+      "id": "sahara-hot",
+      "q": "What is the biggest hot desert in the world?",
+      "answer": "Sahara",
+      "wrong": ["Gobi", "Kalahari", "Mojave"],
+      "tags": ["geography"]
+    },
+    {
+      "id": "indonesia-islands",
+      "q": "About how many islands does Indonesia have?",
+      "answer": "More than 17,000",
+      "wrong": ["About 100", "About 1,000", "About 5,000"],
+      "tags": ["indonesia", "geography"]
+    },
+    {
+      "id": "batik-cloth",
+      "q": "Batik is a famous Indonesian way of making…",
+      "answer": "Patterned cloth",
+      "wrong": ["Pottery", "Noodles", "Kites"],
+      "tags": ["indonesia", "arts"]
+    },
+    {
+      "id": "rafflesia-flower",
+      "q": "Rafflesia arnoldii grows in Indonesia. It is the world's biggest single…",
+      "answer": "Flower",
+      "wrong": ["Leaf", "Mushroom", "Fruit"],
+      "tags": ["indonesia", "science"]
+    },
+    {
+      "id": "ring-of-fire",
+      "q": "Indonesia has many volcanoes because it sits on the…",
+      "answer": "Ring of Fire",
+      "wrong": ["Equator Line", "Coral Triangle", "Great Rift"],
+      "tags": ["indonesia", "science"]
+    },
+    {
+      "id": "not-pokemon",
+      "q": "Which one of these is not a Pokémon?",
+      "answer": ["Agumon", "Jibanyan", "Totoro"],
+      "wrong": ["Bulbasaur", "Jigglypuff", "Snorlax", "Psyduck", "Eevee"],
+      "tags": ["pop-culture", "games"]
+    },
+    {
+      "id": "mario-brother",
+      "q": "What is the name of Mario's brother?",
+      "answer": "Luigi",
+      "wrong": ["Wario", "Toad", "Yoshi"],
+      "tags": ["pop-culture", "games"]
+    },
+    {
+      "id": "bluey-breed",
+      "q": "In Bluey, what kind of dog is Bluey?",
+      "answer": "Blue Heeler",
+      "wrong": ["Golden Retriever", "Poodle", "Dalmatian"],
+      "tags": ["pop-culture", "tv"]
+    },
+    {
+      "id": "spongebob-home",
+      "q": "Where does SpongeBob live?",
+      "answer": "A pineapple",
+      "wrong": ["A coconut", "A rock", "A shell"],
+      "tags": ["pop-culture", "tv"]
+    },
+    {
+      "id": "inside-out-blue",
+      "q": "In the film Inside Out, which emotion is blue?",
+      "answer": "Sadness",
+      "wrong": ["Joy", "Anger", "Fear"],
+      "tags": ["pop-culture", "movies"]
+    },
+    {
+      "id": "words-thank-you",
+      "q": "Which of these words does not mean \"thank you\"?",
+      "answer": ["Hola", "Bonjour", "Sayonara"],
+      "wrong": ["Terima kasih", "Gracias", "Merci", "Arigatō", "Danke", "Grazie"],
+      "tags": ["words"]
+    },
+    {
+      "id": "words-cat",
+      "q": "Which of these words does not mean \"cat\"?",
+      "answer": ["Perro", "Chien", "Inu"],
+      "wrong": ["Kucing", "Gato", "Chat", "Katze", "Neko", "Gatto"],
+      "tags": ["words", "animals"]
+    },
+    {
+      "id": "words-water",
+      "q": "Which of these words does not mean \"water\"?",
+      "answer": ["Fuego", "Feu", "Api"],
+      "wrong": ["Air", "Agua", "Eau", "Wasser", "Mizu", "Acqua"],
+      "tags": ["words"]
+    },
+    {
+      "id": "words-one",
+      "q": "Which of these words does not mean \"one\"?",
+      "answer": ["Dos", "Tiga", "Deux"],
+      "wrong": ["Satu", "Uno", "Un", "Eins", "Ichi"],
+      "tags": ["words"]
+    },
+    {
+      "id": "red-planet",
+      "q": "Which planet is called the Red Planet?",
+      "answer": "Mars",
+      "wrong": ["Venus", "Jupiter", "Mercury"],
+      "tags": ["space", "science"]
+    },
+    {
+      "id": "closest-sun",
+      "q": "Which planet is closest to the Sun?",
+      "answer": "Mercury",
+      "wrong": ["Venus", "Earth", "Mars"],
+      "tags": ["space", "science"]
+    },
+    {
+      "id": "planet-saturn",
+      "q": "Which picture is Saturn?",
+      "answer": {"text": "Saturn", "img": "assets/img/q/planet-saturn.svg", "credit": ""},
+      "wrong": [
+        {"text": "Jupiter", "img": "assets/img/q/planet-jupiter.svg", "credit": ""},
+        {"text": "Mars", "img": "assets/img/q/planet-mars.svg", "credit": ""},
+        {"text": "Earth", "img": "assets/img/q/planet-earth.svg", "credit": ""}
+      ],
+      "tags": ["space", "science"]
+    },
+    {
+      "id": "first-in-space",
+      "q": "Who was the first person to travel into space?",
+      "answer": "Yuri Gagarin",
+      "wrong": ["Neil Armstrong", "Valentina Tereshkova", "John Glenn"],
+      "tags": ["space", "history"]
+    },
+    {
+      "id": "not-dinosaur",
+      "q": "Which of these was not a dinosaur?",
+      "answer": ["Pteranodon", "Plesiosaur", "Woolly mammoth"],
+      "wrong": ["T. rex", "Triceratops", "Stegosaurus", "Velociraptor", "Brachiosaurus"],
+      "tags": ["dinosaurs", "science"]
+    },
+    {
+      "id": "fossil-scientist",
+      "q": "What do we call a scientist who studies fossils?",
+      "answer": "Palaeontologist",
+      "wrong": ["Archaeologist", "Geologist", "Astronomer"],
+      "tags": ["dinosaurs", "science"]
+    },
+    {
+      "id": "dino-birds",
+      "q": "Which animals alive today come from dinosaurs?",
+      "answer": "Birds",
+      "wrong": ["Lizards", "Crocodiles", "Frogs"],
+      "tags": ["dinosaurs", "animals", "science"]
+    },
+    {
+      "id": "triceratops-food",
+      "q": "What did Triceratops eat?",
+      "answer": "Plants",
+      "wrong": ["Meat", "Fish", "Insects"],
+      "tags": ["dinosaurs", "science"]
+    },
+    {
+      "id": "not-italian",
+      "q": "Which of these foods is not from Italy?",
+      "answer": ["Sushi", "Tacos", "Rendang"],
+      "wrong": ["Pizza", "Pasta", "Lasagne", "Risotto", "Gelato"],
+      "tags": ["food", "geography"]
+    },
+    {
+      "id": "sushi-japan",
+      "q": "Sushi comes from which country?",
+      "answer": "Japan",
+      "wrong": ["China", "Korea", "Thailand"],
+      "tags": ["food", "geography"]
+    },
+    {
+      "id": "chocolate-cacao",
+      "q": "Chocolate is made from the beans of which plant?",
+      "answer": "Cacao",
+      "wrong": ["Coffee", "Vanilla", "Soybean"],
+      "tags": ["food", "science"]
+    },
+    {
+      "id": "durian-king",
+      "q": "Which fruit is called the \"king of fruits\" in Southeast Asia?",
+      "answer": "Durian",
+      "wrong": ["Mango", "Rambutan", "Jackfruit"],
+      "tags": ["food"]
+    },
+    {
+      "id": "blue-yellow-paint",
+      "q": "Mixing blue and yellow paint makes…",
+      "answer": "Green",
+      "wrong": ["Purple", "Orange", "Brown"],
+      "tags": ["arts"]
+    },
+    {
+      "id": "guitar-strings",
+      "q": "How many strings does a standard guitar have?",
+      "answer": "6",
+      "wrong": ["4", "5", "8"],
+      "tags": ["music", "arts"]
+    },
+    {
+      "id": "mona-lisa",
+      "q": "Who painted the Mona Lisa?",
+      "answer": "Leonardo da Vinci",
+      "wrong": ["Vincent van Gogh", "Pablo Picasso", "Claude Monet"],
+      "tags": ["arts"]
+    },
+    {
+      "id": "piano-keys",
+      "q": "How many keys does a standard piano have?",
+      "answer": "88",
+      "wrong": ["66", "76", "100"],
+      "tags": ["music", "arts"]
     }
   ]
 }

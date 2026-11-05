@@ -48,6 +48,18 @@ window.TAMA_GAMES = [
     color: "var(--green)",
   },
   {
+    slug: "anak-emas",
+    title: "Anak Emas",
+    blurb: "Teacher's Pet: help Bu Guru mark papers with a tick or a cross, and earn Tama Tokens.",
+    where: "here",
+    href: "games/anak-emas/",
+    players: "👤 1 player",
+    learns: "🧠 General knowledge & checking work",
+    tag: "Prototype",
+    emoji: ["1f34e", "🍎"],
+    color: "var(--red)",
+  },
+  {
     slug: "free-the-biscuits",
     title: "Free the Biscuits",
     blurb: "Add up just enough coins to break the box without burning the biscuits.",

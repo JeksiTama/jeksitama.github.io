@@ -69,6 +69,25 @@ a{color:inherit}
 .seg{display:flex;gap:4px;flex:none}
 .seg button{font:900 14px Nunito,sans-serif;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer}
 .seg button.on{background:var(--yellow);box-shadow:0 2px 0 var(--ink)}
+.set.col{flex-direction:column;align-items:stretch}
+/* bot levels: three buttons of the same width */
+#segLevel{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-top:6px}
+/* special rules: a fixed grid of square tiles (OFF, RANDOM, then each rule), and a description line of fixed height */
+.fxDesc{min-height:2.6em;line-height:1.3}
+.ruleGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:8px}
+.tile{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#fff;border:2.5px solid var(--ink);
+  border-radius:12px;box-shadow:0 3px 0 var(--ink);cursor:pointer;padding:2px;color:var(--ink);font:900 9px Nunito,sans-serif;letter-spacing:.3px;min-width:0}
+.tile.on{background:var(--yellow)}
+.tile:active:not(:disabled){translate:0 2px;box-shadow:0 1px 0 var(--ink)}
+.tile .n{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:var(--purple);border:2px solid var(--ink);font:400 12px/16px var(--display);text-align:center}
+.ruleGrid.ro .tile{cursor:default}
+.ruleGrid.ro .tile:not(.on){opacity:.45}
+.roomRules{text-align:left;margin:4px 0 8px}
+.roomRules small{display:block;font-weight:700;color:#666}
+.swatches{display:flex;flex-wrap:wrap;gap:7px;padding:6px 4px 4px}
+.swatches button{width:28px;height:28px;border-radius:50%;border:3px solid var(--ink);cursor:pointer;padding:0;box-shadow:0 1.5px 0 var(--ink)}
+/* the picked colour: a cream gap, an ink ring, and the ring's own drop shadow */
+.swatches button.on{box-shadow:0 0 0 2.5px var(--cream),0 0 0 5.5px var(--ink),0 3.5px 0 5.5px var(--ink)}
 
 /* Tama Pass, in this game's card style (content from the kit) */
 #passCard table{font-weight:800;margin-bottom:6px}
@@ -122,11 +141,26 @@ a{color:inherit}
 .hand.drag{transition:none}
 
 #band{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px;padding:4px 10px;position:relative;z-index:1}
-.clockCol{display:flex;flex-direction:column;align-items:center;gap:4px}
+/* each clock column has three rows and the clock sits in the middle one, so both clocks are level and centred.
+   Yours: counts and arrow below (towards you). Theirs: arrow and counts above (towards them). */
+.clockCol{display:grid;grid-template-rows:1fr auto 1fr;justify-items:center;align-self:stretch}
+.cx{display:flex;flex-direction:column;align-items:center;gap:4px}
+.cx.top{justify-content:flex-end;padding-bottom:4px}
+.cx.bot{justify-content:flex-start;padding-top:4px}
 .clock{font:900 15px Nunito,sans-serif;background:var(--cream);border:3px solid var(--ink);border-radius:12px;padding:2px 6px;box-shadow:0 3px 0 var(--ink);text-align:center;min-width:66px}
 .clock small{display:block;font-size:9px;letter-spacing:.5px;color:#666;line-height:1}
 .clock.run{background:var(--orange)}
 .clock.low{background:var(--red);animation:throb .5s ease-in-out infinite alternate}
+/* special effect: how many limited shares are left */
+.clock.left{background:var(--purple);min-width:66px;padding:1px 6px}
+.cx.bot .clock.left{margin-top:6px}
+.cx.top .clock.left{margin-bottom:6px}
+.lrow{display:flex;justify-content:space-between;align-items:baseline;gap:6px;line-height:1.25}
+.lrow small{display:inline;font-size:9px;color:var(--ink)}
+.lrow.none{opacity:.45}
+#modsLbl{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:100%}
+#modsLbl:empty{display:none}
+#modsLbl span{font:900 13px Nunito,sans-serif;background:var(--cream);border:2.5px solid var(--ink);border-radius:999px;padding:1px 9px 1px 7px;box-shadow:0 2px 0 var(--ink);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
 @keyframes throb{to{scale:1.08}}
 /* whose turn: one arrow, under the clock of the player who is moving, pointing at them */
 .arrow{width:22px;height:15px;visibility:hidden}
@@ -145,7 +179,16 @@ a{color:inherit}
 #ropeRow{position:relative;height:18px;margin:0 18px;visibility:hidden;z-index:1}
 #ropeFill{position:absolute;right:0;top:3px;height:12px;width:100%;border:2px solid var(--ink);border-radius:6px;
   background:repeating-linear-gradient(60deg,#d9a066 0 6px,#a8693a 6px 11px)}
-#spark{position:absolute;top:50%;translate:-50% -55%;font-size:24px;line-height:1;filter:drop-shadow(0 0 6px #ffb340)}
+#spark{position:absolute;top:50%;translate:-50% -78%;width:30px;height:36px;line-height:0;filter:drop-shadow(0 0 5px #ffb340)}
+/* the fuse flame: drawn to match the rope (flat colours, ink outline); it licks and throws sparks */
+.flame{width:100%;height:100%;overflow:visible;display:block}
+.flame .lick{transform-origin:15px 32px;animation:lick .18s ease-in-out infinite alternate}
+.flame .core{transform-origin:15px 32px;animation:lick .13s ease-in-out infinite alternate-reverse}
+.flame .sp{animation:pop .5s linear infinite;opacity:0}
+.flame .sp2{animation-delay:.17s}.flame .sp3{animation-delay:.34s}
+@keyframes lick{from{transform:scale(.92,1.04) rotate(-4deg)}to{transform:scale(1.06,.94) rotate(4deg)}}
+@keyframes pop{0%{opacity:1;translate:0 0}100%{opacity:0;translate:var(--dx) var(--dy)}}
+@media (prefers-reduced-motion:reduce){.flame .lick,.flame .core{animation:none}.flame .sp{animation:none;opacity:1}}
 #hint{min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;color:var(--cream);text-shadow:0 2px 0 var(--ink);
   padding:4px 14px max(8px,env(safe-area-inset-bottom));font-size:15px;position:relative;z-index:3}
 
@@ -154,11 +197,17 @@ a{color:inherit}
 .splits{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px 0 14px}
 .splits button{font:400 24px var(--display);background:var(--green);border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--ink);padding:8px 14px;cursor:pointer}
 .splits button.rev{background:var(--pink)}
+.splits button:disabled{background:#ccc;color:#777;box-shadow:none;cursor:default}
 .splits button small{display:block;font:800 11px Nunito,sans-serif}
 .help{text-align:left;max-height:84dvh;overflow-y:auto}
-.help .step{display:flex;gap:10px;align-items:center;margin-bottom:10px}
-.help .pics{display:flex;align-items:center;gap:2px;flex:none;font-weight:900}
-.help .pics .g{width:30px;aspect-ratio:120/150}
+.help{width:min(100%,460px)}
+.help .step{display:grid;grid-template-columns:42% 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:2px dashed #cfc6b8}
+.help .pics{display:flex;align-items:center;justify-content:center;gap:2px;font-weight:900;min-width:0}
+.help .pics .g{flex:0 1 30px;min-width:0;aspect-ratio:120/150}
+.help .ropePic{position:relative;width:70px;height:32px}
+.help .ropePic i{position:absolute;left:10px;right:0;bottom:6px;height:12px;border:2px solid var(--ink);border-radius:6px;background:repeating-linear-gradient(60deg,#d9a066 0 6px,#a8693a 6px 11px)}
+.help .ropePic>span{position:absolute;left:0;bottom:4px;width:22px;height:27px}
+.help .clock{display:inline-block}
 .help .pics .g svg{width:100%;height:100%;overflow:visible}
 .help .pics .g.L svg{transform:scaleX(-1)}
 .help p{margin:0;font-weight:700;font-size:14px}
@@ -172,8 +221,8 @@ a{color:inherit}
   padding:6px 14px;font-weight:900;max-width:90vw;text-align:center;transition:opacity .3s;opacity:0;pointer-events:none}
 #toast.on{opacity:1}
 .big{font-family:var(--display);font-size:46px;line-height:1;margin:4px 0 8px}
-.coins{font:900 22px Nunito,sans-serif;margin:8px 0 14px}
-.coins .tk-coin{width:26px;height:26px;font-size:11px;vertical-align:-4px;margin:0 2px}
+.coins{font:900 22px Nunito,sans-serif;margin:8px 0 14px;display:flex;align-items:center;gap:6px}
+.coins .tk-coin{width:26px;height:26px;font-size:11px;vertical-align:0;margin:0 -3px 0 0}
 @media (max-height:620px){.hero{display:none}}
 </style>
 </head>
@@ -214,6 +263,7 @@ a{color:inherit}
           <div id="bigCode">----</div>
           <div class="row"><button class="btn small" id="linkBtn">COPY INVITE LINK</button></div>
           <table id="roster"></table>
+          <div class="roomRules"><b>Special rules</b><small class="fxDesc" id="roomDesc"></small><div class="ruleGrid" id="roomGrid" role="group" aria-label="Special rules for this table"></div></div>
           <div id="fInfo" class="msg"></div>
           <div class="row"><button class="btn green" id="goBtn">START</button></div>
         </div>
@@ -234,20 +284,25 @@ a{color:inherit}
       </div>
       <div id="band">
         <div class="clockCol">
+          <div class="cx top"></div>
           <div class="clock" id="clkMe"><small>RESERVE</small><span>0:30</span></div>
-          <svg class="arrow" id="arMe" viewBox="0 0 22 15"><path d="M11 13 20 2H2Z" fill="#ffdb33" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round"/></svg>
+          <div class="cx bot"><div class="clock left hide" id="leftMe"></div>
+            <svg class="arrow" id="arMe" viewBox="0 0 22 15"><path d="M11 13 20 2H2Z" fill="#ffdb33" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round"/></svg></div>
         </div>
         <div id="mid">
           <div id="roundLbl">Round 1</div>
+          <div id="modsLbl"></div>
           <button id="pool" aria-label="Token prize pool"></button>
           <div id="gasLbl"></div>
         </div>
         <div class="clockCol">
+          <div class="cx top"><svg class="arrow" id="arOpp" viewBox="0 0 22 15"><path d="M11 2 20 13H2Z" fill="#ffdb33" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round"/></svg>
+            <div class="clock left hide" id="leftOpp"></div></div>
           <div class="clock" id="clkOpp"><small>RESERVE</small><span>0:30</span></div>
-          <svg class="arrow" id="arOpp" viewBox="0 0 22 15"><path d="M11 2 20 13H2Z" fill="#ffdb33" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round"/></svg>
+          <div class="cx bot"></div>
         </div>
       </div>
-      <div id="ropeRow"><div id="ropeFill"></div><span id="spark">🔥</span></div>
+      <div id="ropeRow"><div id="ropeFill"></div><span id="spark"></span></div>
       <div class="zone" id="meZone">
         <div class="hands" id="meHands">
           <div class="hand L" id="me0"><div class="g"></div><div class="num"></div></div>
@@ -260,14 +315,16 @@ a{color:inherit}
   </div>
 </div>
 
-<div class="overlay hide" id="splitBox"><div class="card"><h2>SPLIT</h2><div>Share your fingers between your hands.</div><div class="splits" id="splitList"></div>
+<div class="overlay hide" id="splitBox"><div class="card"><h2>SPLIT</h2><div>Share your fingers between your hands.</div><div class="msg" id="splitLeft"></div><div class="splits" id="splitList"></div>
   <button class="btn small cream" id="splitCancel">CANCEL</button></div></div>
 <div class="overlay hide" id="helpBox"><div class="card help" id="helpCard"></div></div>
-<div class="overlay hide" id="setBox"><div class="card">
+<div class="overlay hide" id="setBox"><div class="card" style="max-height:92dvh;overflow-y:auto">
   <h2>SETTINGS</h2>
-  <div class="set"><span>Bot<small>How hard the bot plays</small></span><span class="seg" id="segLevel"></span></div>
+  <div class="set col"><span>Bot<small>How hard the bot plays</small></span><span class="seg" id="segLevel"></span></div>
+  <div class="set col"><span>Special rules<small class="fxDesc" id="fxDesc"></small></span><div class="ruleGrid" id="fxGrid" role="group" aria-label="Special rules against bots"></div></div>
+  <div class="set col"><span>Arms<small>The colour of your sleeves</small></span><span class="swatches" id="segArm"></span></div>
   <div class="set"><span>Numbers<small>Show the count on each wrist</small></span><span class="seg" id="segNums"></span></div>
-  <div class="set"><span>Drop areas<small>Debug: draw where hands can be grabbed and dropped</small></span><span class="seg" id="segDebug"></span></div>
+  <div class="set"><span>Drop areas<small>Debug: draw where hands can be dropped</small></span><span class="seg" id="segDebug"></span></div>
   <div class="row" style="margin-top:12px"><button class="btn small green" id="setOk">DONE</button></div>
 </div></div>
 <div class="overlay hide" id="passBox"><div class="card"><div id="passCard"></div>
@@ -287,6 +344,7 @@ const COIN = KIT.coin("sm");
 const SLUG = "sumpit";
 const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const wait = ms => new Promise(r => setTimeout(r, ms));
+const anyOf = a => a[Math.random() * a.length | 0];
 
 // ---------- rules ----------
 // Everything a round modifier may change lives here. Counters for limited actions are kept per player in the state (S.revives, S.splits).
@@ -299,16 +357,64 @@ const RULES = {
   swaps: false,           // whether 3+1 → 1+3 counts as a move
   splitsPerRound: null,   // splits/merges per player per round
 };
+// Special rules (modifiers). A match gets up to MOD_MAX of them, never two from the same family.
+// Shares come in three kinds: a join puts all fingers onto one hand (2+2 → 4+0); a switch swaps the hands (3+1 → 1+3),
+// which is a pass; a split is any other share, bringing an out hand back too (4+0 → 2+2).
+// limit: that kind of share is limited to n per player for the whole match. side: when sharing, the bigger hand
+// must end up on that side (0 left, 1 right; equal is not allowed). Sides are each player's own: their right hand is on
+// your left of the screen, as across a real table. switch: switching is allowed.
+const MODS = {
+  split3: { fam: "split", limit: "split", n: 3, icon: "split", name: "3 splits", line: "3 splits each", desc: "3 splits: each player can split only 3 times." },
+  split5: { fam: "split", limit: "split", n: 5, icon: "split", name: "5 splits", line: "5 splits each", desc: "5 splits: each player can split only 5 times." },
+  join3: { fam: "join", limit: "join", n: 3, icon: "join", name: "3 joins", line: "3 joins each", desc: "3 joins: each player can join only 3 times." },
+  join5: { fam: "join", limit: "join", n: 5, icon: "join", name: "5 joins", line: "5 joins each", desc: "5 joins: each player can join only 5 times." },
+  heavyL: { fam: "heavy", side: 0, icon: "heavyL", name: "Heavy left", line: "Heavy left: when you share, the bigger hand goes left", desc: "Heavy left: when you share, the bigger hand goes left." },
+  heavyR: { fam: "heavy", side: 1, icon: "heavyR", name: "Heavy right", line: "Heavy right: when you share, the bigger hand goes right", desc: "Heavy right: when you share, the bigger hand goes right." },
+  switch: { fam: "switch", icon: "switch", name: "Switch", line: "Switch: swap your hands to pass", desc: "Switch: swap your hands to pass your turn." },
+};
+// the symbols on the rule tiles and chips, drawn in ink on a 28 × 28 box
+const ICONS = {
+  off: `<circle cx="14" cy="14" r="10" stroke="#fe6767" stroke-width="3.5"/><path d="M7 21 21 7" stroke="#fe6767" stroke-width="3.5"/>`,
+  random: `<path d="M3 9h4c5 0 8 10 13 10h4M3 19h4c5 0 8-10 13-10h4M21 6l3 3-3 3M21 16l3 3-3 3"/>`,
+  split: `<path d="M6 14h16"/><circle cx="14" cy="7.5" r="2" fill="currentColor"/><circle cx="14" cy="20.5" r="2" fill="currentColor"/>`,
+  join: `<path d="M14 6v16M6 14h16"/>`,
+  heavyL: `<circle cx="10" cy="15" r="7" fill="currentColor"/><circle cx="22" cy="18" r="3.5" fill="currentColor"/>`,
+  heavyR: `<circle cx="18" cy="15" r="7" fill="currentColor"/><circle cx="6" cy="18" r="3.5" fill="currentColor"/>`,
+  switch: `<path d="M5 10h17M18 6l4 4-4 4M23 18H6M10 14l-4 4 4 4"/>`,
+};
+const icon = (k, px = 26) => `<svg viewBox="0 0 28 28" width="${px}" height="${px}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+const MOD_MAX = 3;
+// keeps known ids, one per family, at most MOD_MAX
+function cleanMods(ids) {
+  const out = [];
+  for (const id of ids || []) if (MODS[id] && !out.some(o => MODS[o].fam === MODS[id].fam) && out.length < MOD_MAX) out.push(id);
+  return out;
+}
 const STAKE = 2, RESERVE = 30, TURN_START = 15, TURN_MIN = 5, ROPE = 5;
 const turnLen = round => Math.max(TURN_MIN, TURN_START - (round - 1));
 const lim = i => RULES.fingers[i];
 
-function newState(first) {
+function newState(first, mods = []) {
+  mods = cleanMods(mods);
+  const left = {};   // limited kind → [left for seat 0, seat 1]
+  for (const id of mods) if (MODS[id].limit) left[MODS[id].limit] = [MODS[id].n, MODS[id].n];
   return { h: [[...RULES.start], [...RULES.start]], turn: first, first, ply: 0, round: 1, reserve: [RESERVE, RESERVE],
-    stake: STAKE, gas: null, asked: [false, false], revives: [0, 0], splits: [0, 0], over: null };
+    stake: STAKE, gas: null, asked: [false, false], revives: [0, 0], splits: [0, 0], over: null, mods, left };
 }
+// the rules a new match gets from a choice { fx: "none" | "random" | "pick", pick: [ids] }:
+// none, the picked ones, or random (0 to 3 of them, one per family)
+function rollMods(cfg) {
+  if (cfg?.fx === "pick") return cleanMods(cfg.pick);
+  if (cfg?.fx !== "random") return [];
+  const ids = Object.keys(MODS), fams = [...new Set(ids.map(id => MODS[id].fam))].sort(() => Math.random() - .5);
+  return fams.slice(0, anyOf([0, 1, 1, 2, 2, 3])).map(f => anyOf(ids.filter(id => MODS[id].fam === f)));
+}
+const hasMod = (S, id) => !!S.mods?.includes(id);
+const heavySide = S => hasMod(S, "heavyL") ? 0 : hasMod(S, "heavyR") ? 1 : -1;
+// a limited kind of share the mover has used up (the split box shows those greyed out)
+const blocked = (S, s, m) => m.k === "split" && !!S.left?.[m.kind] && !(S.left[m.kind][s] > 0);
 const hit = (v, add, L) => { const n = v + add; return RULES.over === "rollover" ? n % L : n >= L ? 0 : n; };
-function legal(S, s) {
+function moves(S, s) {
   const me = S.h[s], op = S.h[1 - s], out = [];
   for (let f = 0; f < 2; f++) if (me[f]) for (let t = 0; t < 2; t++) if (op[t]) out.push({ k: "tap", f, t });
   if (RULES.splitsPerRound == null || S.splits[s] < RULES.splitsPerRound) {
@@ -316,14 +422,20 @@ function legal(S, s) {
     for (let x = 0; x < lim(0); x++) {
       const y = tot - x;
       if (y < 0 || y >= lim(1) || (x === a && y === b)) continue;
-      if (!RULES.swaps && x === b && y === a) continue;
-      const revive = (!a || !b) && x > 0 && y > 0;
+      const swap = x === b && y === a;
+      if (swap && !RULES.swaps && !hasMod(S, "switch")) continue;
+      const side = heavySide(S), to = [x, y];
+      if (side >= 0 && to[side] <= to[1 - side]) continue;   // heavy side: that hand must end up bigger (2+2 is not allowed)
+      const revive = (!a || !b) && x > 0 && y > 0, join = !!a && !!b && (!x || !y);
       if (revive && RULES.revives != null && S.revives[s] >= RULES.revives) continue;
-      out.push({ k: "split", to: [x, y], revive });
+      out.push({ k: "split", to, revive, join, kind: swap ? "switch" : join ? "join" : "split" });
     }
   }
   return out;
 }
+// every share, including used-up limited ones
+const shares = (S, s) => moves(S, s).filter(m => m.k === "split");
+function legal(S, s) { return moves(S, s).filter(m => !blocked(S, s, m)); }
 // hands after a move: [mover's, other's]
 function next(S, s, m) {
   const a = [...S.h[s]], o = [...S.h[1 - s]];
@@ -332,7 +444,7 @@ function next(S, s, m) {
 }
 function applyMove(S, s, m) {
   [S.h[s], S.h[1 - s]] = next(S, s, m);
-  if (m.k === "split") { S.splits[s]++; if (m.revive) S.revives[s]++; }
+  if (m.k === "split") { S.splits[s]++; if (m.revive) S.revives[s]++; if (S.left?.[m.kind]) S.left[m.kind][s]--; }
   S.ply++; S.turn = 1 - s;
   if (S.turn === S.first) { S.round++; S.splits = [0, 0]; }
   if (!S.h[1 - s][0] && !S.h[1 - s][1]) S.over = { w: s, why: "hands" };
@@ -370,22 +482,31 @@ const SOLVE = (() => {
 })();
 
 // difficulty is picked in /settings/
+// Gampang: any legal move at random. Sedang: wins or knocks out a hand whenever it can, otherwise random.
+// Susah: usually the solver's best move; sometimes a slip, but never one that loses within `horizon` plies.
 const BOTS = [
-  { name: "Gampang", emoji: "🐣", skill: .3, horizon: 1, ask: .12, yes: .5, think: [900, 1700] },
-  { name: "Sedang", emoji: "🐻", skill: .65, horizon: 5, ask: .25, yes: .3, think: [700, 1400] },
-  { name: "Susah", emoji: "🦊", skill: .93, horizon: 99, ask: .45, yes: .15, think: [600, 1200] },
+  { name: "Gampang", emoji: "🐣", play: "random", ask: .12, yes: .5, think: [900, 1700] },
+  { name: "Sedang", emoji: "🐻", play: "kills", ask: .25, yes: .3, think: [700, 1400] },
+  { name: "Susah", emoji: "🦊", play: "solver", skill: .75, horizon: 3, ask: .45, yes: .15, think: [600, 1200] },
 ];
 function pickBot(S, s, b) {
-  const ms = legal(S, s).map(m => {
+  const all = legal(S, s);
+  if (b.play === "random") return anyOf(all);
+  if (b.play === "kills") {
+    const after = all.map(m => ({ m, o: next(S, s, m)[1] }));
+    const wins = after.filter(x => !x.o[0] && !x.o[1]);
+    const kills = after.filter(x => x.m.k === "tap" && !x.o[x.m.t]);
+    return (wins.length ? anyOf(wins) : kills.length ? anyOf(kills) : anyOf(after)).m;
+  }
+  const ms = all.map(m => {
     const [mine, theirs] = next(S, s, m), v = SOLVE.v(theirs, mine);   // their view: they move next
     let sc = v < 0 ? 1000 + v : v > 0 ? -1000 + v : 0;
     if (!v) { const k = [s ? theirs : mine, s ? mine : theirs].join("|") + "/" + (1 - s); sc -= 4 * (G.seen[k] || 0); }   // don't go round in circles
     return { m, v, sc: sc + Math.random() * .5 };
   }).sort((x, y) => y.sc - x.sc);
   if (Math.random() < b.skill) return ms[0].m;
-  const safe = ms.filter(x => !(x.v > 0 && x.v <= b.horizon));   // a careless move, but not one that hands over a quick win
-  const pool = safe.length ? safe : ms;
-  return pool[Math.random() * pool.length | 0].m;
+  const safe = ms.filter(x => !(x.v > 0 && x.v <= b.horizon));   // a slip, but not one that hands over a quick win
+  return safe.length ? anyOf(safe).m : ms[0].m;   // already lost: hold on as long as possible
 }
 
 // ---------- hands ----------
@@ -393,39 +514,61 @@ function pickBot(S, s, b) {
 // Outline trick: every piece is drawn thick in ink, then filled grey, then filled white shifted up-left inside the silhouette (toon shading).
 // The arm is not part of the glove: it is a tube drawn from the screen edge to the wrist (WRIST below), so it stretches when the hand moves.
 const SKIN = { glove: "#ffffff", shade: "#d3d9e3", ink: "#2b2b2b", arm: "#2f86c6" };
+const ARM_W = [22, 15];   // the arm tube: outline width, fill width, in the hand's own units (its box is VIEW.w wide)
+// your sleeves, picked in /settings/ (the other player's stay blue)
+const ARM_COLORS = [["Blue", "#2f86c6"], ["Red", "#fe6767"], ["Green", "#73d049"], ["Purple", "#aa88ff"], ["Orange", "#fea046"], ["Pink", "#fe94de"], ["Yellow", "#ffdb33"], ["Grey", "#666666"]];
+const mySkin = () => ({ ...SKIN, arm: (ARM_COLORS[SET.arm] || ARM_COLORS[0])[1] });
+// the flame on the fuse, in the rope's style: flat colours and an ink outline, with three sparks
+const FLAME = `<svg class="flame" viewBox="0 0 30 36" aria-hidden="true">
+<g fill="#ffdb33" stroke="${SKIN.ink}" stroke-width="1.2"><circle class="sp" cx="9" cy="11" r="1.8" style="--dx:-6px;--dy:-7px"/><circle class="sp sp2" cx="21" cy="9" r="1.6" style="--dx:6px;--dy:-8px"/><circle class="sp sp3" cx="15" cy="4" r="1.5" style="--dx:1px;--dy:-9px"/></g>
+<path class="lick" d="M15 2C17 8 24 12 24.5 21C25 28.5 20.5 33.5 15 33.5C9.5 33.5 5 29 5.5 22.5C6 17 9.5 15 10.5 10C12.5 12.5 13.5 14 13.8 16C14.8 11 14 7 15 2Z" fill="#fea046" stroke="${SKIN.ink}" stroke-width="2.5" stroke-linejoin="round"/>
+<path class="core" d="M15.5 15C17.5 19 20.5 22 20 26.5C19.5 30 17.5 31.5 15 31.5C12.5 31.5 10.5 29.8 10.5 27C10.5 23.5 13.5 21 15.5 15Z" fill="#ffdb33"/></svg>`;
 const VIEW = { x: -18, y: -2, w: 120, h: 134 };
 const WRIST = { x: 52, y: 119, bottom: 126 };   // centre of the visible wrist (where the number sits), and where the arm joins
 // fingers fan out from their knuckles at (bx, 70): index, middle, ring, pinky. len = when up.
 // A folded finger is a round knuckle standing straight up, its top at fold (they step down towards the pinky, like a fist).
-const FINGERS = [{ bx: 31, w: 13.5, len: 60, a: -7, fold: 41 }, { bx: 46.5, w: 13.5, len: 66, a: -1.5, fold: 39 },
-  { bx: 61.5, w: 13.5, len: 60, a: 5, fold: 42 }, { bx: 75, w: 12, len: 45, a: 13, fold: 48 }];
+const FINGERS = [{ bx: 31, w: 13.5, len: 60, a: -7, fold: 43 }, { bx: 46.5, w: 13.5, len: 66, a: -1.5, fold: 41 },
+  { bx: 61.5, w: 13.5, len: 60, a: 5, fold: 43 }, { bx: 75, w: 12, len: 45, a: 13, fold: 49 }];
 const PALM = "M30 54H74Q86 54 86 68L83 100Q80 114 66 116H38Q24 114 22 100L20 68Q20 54 30 54Z";
 let clipN = 0;
 // stub: a short piece of arm under the wrist, for pictures without the table (title, how to play)
+// A thumb: a tapered tube, wider where it meets the hand, pointing up from its base at (0, 0).
+// The outer side bulges a little (the ball of the thumb), the inner side runs straight.
+const thumbAt = (x, y, a, len, base = 9.5, tip = 7) =>
+  `<path d="M${-base} 4Q${-base - 2.5} ${-len * .45} ${-tip} ${-len + tip}A${tip} ${tip} 0 0 1 ${tip} ${-len + tip}Q${tip + .5} ${-len * .4} ${base} 4Q0 9 ${-base} 4Z" transform="translate(${x} ${y}) rotate(${a})"/>`;
+// one toon-shaded piece: ink outline, grey, then white shifted up-left inside its own silhouette
+function toon(sil, sk) {
+  const id = "hc" + clipN++;
+  return `<defs><clipPath id="${id}">${sil}</clipPath></defs><g fill="${sk.ink}" stroke="${sk.ink}" stroke-width="7" stroke-linejoin="round">${sil}</g>
+<g fill="${sk.shade}">${sil}</g><g clip-path="url(#${id})"><g fill="${sk.glove}" transform="translate(-3.5 -3)">${sil}</g></g>`;
+}
+// We see the back of the hand. A folded finger is a low, rounded knuckle bump on top of the fist (a little wider
+// than the finger), and a folded thumb is hidden behind the fist, as on a cartoon glove seen from behind.
+const KN = 2.5;   // how much wider a knuckle bump is than its finger, each side
 function handSVG(n, sk = SKIN, stub = false) {
-  const id = "hc" + clipN++, up = Math.min(n, 4), parts = [`<path d="${PALM}"/>`];
+  const up = Math.min(n, 4), parts = [`<path d="${PALM}"/>`];
   let crease = "";
   FINGERS.forEach((f, i) => parts.push(i < up
     ? `<rect x="${-f.w / 2}" y="${-f.len}" width="${f.w}" height="${f.len + 8}" rx="${f.w / 2}" transform="translate(${f.bx} 70) rotate(${f.a})"/>`
-    : `<rect x="${f.bx - f.w / 2}" y="${f.fold}" width="${f.w}" height="${78 - f.fold}" rx="${f.w / 2}"/>`));
-  // thumb: out to the side on a five, otherwise folded behind the palm (a bulge and a crease)
-  if (n >= 5) parts.push(`<rect x="-7.5" y="-38" width="15" height="46" rx="7.5" transform="translate(28 90) rotate(-42)"/>`);
-  else { parts.push(`<ellipse cx="23" cy="90" rx="8" ry="15"/>`); crease = `<path d="M29 79Q34 90 29 101" fill="none" stroke="${sk.ink}" stroke-width="2.6" stroke-linecap="round"/>`; }
-  // between two folded fingers, a short line runs down into the palm so the knuckles read as separate fingers
-  for (let i = Math.max(up, 1); i < 4; i++) {
-    const x = (FINGERS[i - 1].bx + FINGERS[i - 1].w / 2 + FINGERS[i].bx - FINGERS[i].w / 2) / 2;
-    if (i - 1 >= up) crease += `<path d="M${x} ${Math.max(FINGERS[i - 1].fold, FINGERS[i].fold) + 6}V64" stroke="${sk.ink}" stroke-width="2.4" stroke-linecap="round"/>`;
+    : `<rect x="${f.bx - f.w / 2 - KN}" y="${f.fold}" width="${f.w + 2 * KN}" height="${78 - f.fold}" rx="${f.w / 2 + KN}"/>`));
+  // the thumb only shows on a five: it sticks out from behind the palm, so the palm's outline cuts across it like a joint
+  const open = n >= 5, thumb = open ? thumbAt(25, 100, -42, 48, 12, 8.5) : "";
+  // where a folded knuckle meets its neighbour, a short crease runs down into the fist from the dip between them
+  for (let i = 1; i < 4; i++) {
+    const A = FINGERS[i - 1], B = FINGERS[i], aUp = i - 1 < up, bUp = i < up;
+    if (aUp && bUp) continue;
+    const x = (A.bx + A.w / 2 + B.bx - B.w / 2) / 2;
+    const top = Math.max(aUp ? 0 : A.fold + A.w / 2, bUp ? 0 : B.fold + B.w / 2) - 1;
+    crease += `<path d="M${x} ${top}q1.5 4 0 8" fill="none" stroke="${sk.ink}" stroke-width="2.4" stroke-linecap="round"/>`;
   }
   const sil = parts.join("");
   const h = stub ? 152 : VIEW.h;
-  const arm = stub ? `<path d="M52 122V150" stroke="${sk.ink}" stroke-width="17" stroke-linecap="round"/><path d="M52 122V150" stroke="${sk.arm}" stroke-width="11" stroke-linecap="round"/>` : "";
+  const arm = stub ? `<path d="M52 122V150" stroke="${sk.ink}" stroke-width="${ARM_W[0]}" stroke-linecap="round"/><path d="M52 122V150" stroke="${sk.arm}" stroke-width="${ARM_W[1]}" stroke-linecap="round"/>` : "";
   // the wrist band sits behind the palm, so only its lower edge shows
-  return `<svg viewBox="${VIEW.x} ${VIEW.y} ${VIEW.w} ${h}" aria-hidden="true"><defs><clipPath id="${id}">${sil}</clipPath></defs>${arm}
-<path d="M39 106H65L68 123Q68 126 65 126H39Q36 126 36 123Z" fill="${sk.glove}" stroke="${sk.ink}" stroke-width="3.6" stroke-linejoin="round"/>
-<path d="M40 121H64" stroke="${sk.shade}" stroke-width="3" stroke-linecap="round"/>
-<g fill="${sk.ink}" stroke="${sk.ink}" stroke-width="7" stroke-linejoin="round">${sil}</g>
-<g fill="${sk.shade}">${sil}</g>
-<g clip-path="url(#${id})"><g fill="${sk.glove}" transform="translate(-3.5 -3)">${sil}</g></g>${crease}</svg>`;
+  return `<svg viewBox="${VIEW.x} ${VIEW.y} ${VIEW.w} ${h}" aria-hidden="true">${arm}
+<path d="M38 106H66L69 123Q69 126 66 126H38Q35 126 35 123Z" fill="${sk.glove}" stroke="${sk.ink}" stroke-width="3.6" stroke-linejoin="round"/>
+<path d="M39 121H65" stroke="${sk.shade}" stroke-width="3" stroke-linecap="round"/>
+${open ? toon(thumb, sk) : ""}${toon(sil, sk)}${crease}</svg>`;
 }
 // where the wrist and the arm joint sit, as fractions of the hand's box (before mirroring / turning)
 const WX = (WRIST.x - VIEW.x) / VIEW.w, AY = (WRIST.bottom - VIEW.y) / VIEW.h;
@@ -493,7 +636,8 @@ const pay = n => { const p = Math.min(n, tok()); setTok(tok() - p); return p; };
 // the stake needs tokens; on PlayTama more come from opening games on the home page
 const BROKE = () => `You need ${COIN}${STAKE} to sit down.<br><a href="../../">Collect Tama Tokens on PlayTama</a>`;
 const canSit = () => tok() >= STAKE;
-const SET = { sound: true, help: false, level: 0, nums: false, debug: false };
+// fx / pick: special rules against bots. room: special rules for a table you open for friends.
+const SET = { sound: true, help: false, level: 0, nums: false, debug: false, fx: "none", pick: [], room: { fx: "none", pick: [] }, arm: 0 };
 Object.assign(SET, TAMA.load(SLUG, {}));
 const saveSet = () => TAMA.save(SLUG, SET);
 
@@ -526,14 +670,15 @@ const SFX = (() => {
     g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
     o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
   }
-  function noise(d = .08, v = .2, hp = 1500, delay = 0) {
+  function noise(d = .08, v = .2, hp = 1500, delay = 0, type = "highpass") {
     if (!SET.sound) return; const c = ac(); if (!c) return;
     const t = c.currentTime + delay, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
-    s.buffer = noiseOf(c); f.type = "highpass"; f.frequency.value = hp;
+    s.buffer = noiseOf(c); f.type = type; f.frequency.value = hp;
     g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
     s.connect(f).connect(g).connect(c.destination); s.start(t, Math.random()); s.stop(t + d + .02);
   }
-  // a burning fuse: a hiss that flickers in loudness and pitch, with little crackles
+  // a burning fuse: a soft, low hiss that flickers in loudness, with the odd dull crackle.
+  // Everything is kept under ~2 kHz (a lowpass after the band) so nothing sharp cuts through the game.
   function fuse(on, loud = 1) {
     if (!on) {
       if (!fz) return;
@@ -542,14 +687,15 @@ const SFX = (() => {
       return;
     }
     if (fz || !SET.sound) return; const c = ac(); if (!c) return;
-    const s = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain();
-    s.buffer = noiseOf(c); s.loop = true; bp.type = "bandpass"; bp.frequency.value = 3800; bp.Q.value = .6; g.gain.value = 0;
-    s.connect(bp).connect(g).connect(c.destination); s.start();
+    const s = c.createBufferSource(), bp = c.createBiquadFilter(), lp = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = noiseOf(c); s.loop = true; bp.type = "bandpass"; bp.frequency.value = 1300; bp.Q.value = .7;
+    lp.type = "lowpass"; lp.frequency.value = 2000; g.gain.value = 0;
+    s.connect(bp).connect(lp).connect(g).connect(c.destination); s.start();
     const t = setInterval(() => {
-      g.gain.setTargetAtTime((.05 + Math.random() * .08) * loud, c.currentTime, .02);
-      bp.frequency.setTargetAtTime(2800 + Math.random() * 2800, c.currentTime, .03);
-      if (Math.random() < .35) noise(.012 + Math.random() * .015, (.15 + Math.random() * .3) * loud, 1800);
-    }, 60);
+      g.gain.setTargetAtTime((.014 + Math.random() * .016) * loud, c.currentTime, .05);
+      bp.frequency.setTargetAtTime(1100 + Math.random() * 500, c.currentTime, .08);
+      if (Math.random() < .15) noise(.015 + Math.random() * .02, (.025 + Math.random() * .035) * loud, 900, 0, "bandpass");
+    }, 70);
     fz = { s, g, t };
   }
   return {
@@ -582,7 +728,9 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;"
 function banner(txt) { const b = $("banner"); b.textContent = txt; b.classList.remove("go"); void b.offsetWidth; b.classList.add("go"); }
 const closeAll = () => ["resultBox", "askBox", "splitBox", "setBox", "passBox"].forEach(id => $(id).classList.add("hide"));
 
-$("heroL").innerHTML = handSVG(2, SKIN, true); $("heroR").innerHTML = handSVG(3, SKIN, true);
+$("spark").innerHTML = FLAME;
+function drawStubs() { $("heroL").innerHTML = handSVG(2, mySkin(), true); $("heroR").innerHTML = handSVG(3, mySkin(), true); }
+drawStubs();
 
 // ---------- the match ----------
 // Local play and the online host run the match. An online guest only mirrors the host's state and sends its choices.
@@ -594,7 +742,7 @@ const handEl = (seat, i) => $((seat === G.me ? "me" : "op") + i);
 const POOL = KIT.pool($("pool"));
 
 function startMatch(o) {
-  G.S = o.S || newState(Math.random() < .5 ? 0 : 1);
+  G.S = o.S || newState(Math.random() < .5 ? 0 : 1, rollMods(SET));
   Object.assign(G, { me: o.me || 0, opp: o.opp, busy: false, waiting: false, sel: null, seen: {}, done: false, ticked: -1, mode: "match", coinsLive: false });
   G.paid = pay(STAKE); G.stakeLvl = STAKE; NET.seen = performance.now();
   BG.set("swirl");
@@ -606,6 +754,8 @@ function startMatch(o) {
   G.t0 = performance.now();
   if (isGuest()) render(); else startTurn();
   ante(STAKE);
+  const mods = G.S.mods || [];
+  if (mods.length) toast(`<b>SPECIAL RULES</b><br>${mods.map(id => MODS[id].line).join("<br>")}`, 2500 + 1000 * mods.length);
 }
 // both stakes fly into the prize pool: yours from your name, theirs from theirs
 function ante(n) {
@@ -745,9 +895,11 @@ async function animate(s, mv) {
 // ---------- arms (and the debug drawing of grab and drop areas) ----------
 // Each frame: a rubber-hose tube from just past the screen edge, below where the hand rests, to wherever the wrist is now.
 const ARM_IDS = ["op0", "op1", "me0", "me1"];
-$("arms").innerHTML = ARM_IDS.map(id => `<g data-arm="${id}"><path stroke="${SKIN.ink}" stroke-width="17"/><path stroke="${SKIN.arm}" stroke-width="11"/></g>`).join("")
+$("arms").innerHTML = ARM_IDS.map(id => `<g data-arm="${id}"><path stroke="${SKIN.ink}" stroke-width="${ARM_W[0]}"/><path stroke="${SKIN.arm}" stroke-width="${ARM_W[1]}"/></g>`).join("")
   + `<g id="dbg" fill="none" stroke-width="2" stroke-dasharray="6 5"></g>`;
 $("arms").querySelectorAll("path").forEach(p => { p.setAttribute("fill", "none"); p.setAttribute("stroke-linecap", "round"); });
+function paintArms() { for (const id of ["me0", "me1"]) $("arms").querySelector(`[data-arm="${id}"] path:last-child`).setAttribute("stroke", mySkin().arm); }
+paintArms();
 const wristX = el => { const mine = el.id[0] === "m", left = el.classList.contains("L"); return mine === left ? 1 - WX : WX; };
 function drawArms() {
   requestAnimationFrame(drawArms);
@@ -759,21 +911,21 @@ function drawArms() {
     const wx = r.left - gr.left + fx * r.width, wy = r.top - gr.top + (mine ? AY : 1 - AY) * r.height;
     const dir = mine ? -1 : 1, k = Math.max(30, Math.hypot(wx - ax, wy - ay) * .45);
     const d = `M${ax} ${ay}C${ax} ${ay + dir * k} ${wx} ${wy - dir * k} ${wx} ${wy}`;
-    const g = $("arms").querySelector(`[data-arm="${id}"]`);
-    g.querySelectorAll("path").forEach(p => p.setAttribute("d", d));
+    const g = $("arms").querySelector(`[data-arm="${id}"]`), u = el.offsetWidth / VIEW.w;   // the arm is as thick as the hand is big
+    g.querySelectorAll("path").forEach((p, j) => { p.setAttribute("d", d); p.setAttribute("stroke-width", ARM_W[j] * u); });
     g.style.opacity = el.classList.contains("dead") ? .45 : 1;
   }
   const dbg = $("dbg");
   if (!SET.debug) { if (dbg.innerHTML) dbg.innerHTML = ""; return; }
-  // cyan box: where a hand can be grabbed. magenta circle: how close fingertips must get to drop on it. dot: the dragged fingertips.
-  let out = "";
-  for (const id of ARM_IDS) {
-    const r = $(id).getBoundingClientRect(), c = { x: r.left - gr.left + r.width / 2, y: r.top - gr.top + r.height / 2 };
-    out += `<rect x="${r.left - gr.left}" y="${r.top - gr.top}" width="${r.width}" height="${r.height}" stroke="#00e5ff"/>`;
-    out += `<circle cx="${c.x}" cy="${c.y}" r="${reach($(id))}" stroke="#ff3df2"/>`;
-  }
-  if (drag?.moved) { const p = tipOf(drag.el); out += `<circle cx="${p.x - gr.left}" cy="${p.y - gr.top}" r="6" fill="#ff3df2" stroke="none"/>`; }
-  dbg.innerHTML = out;
+  // drop areas only: how close the fingertips must get to drop on a hand. While dragging, just that hand's targets;
+  // otherwise every hand that can be dropped on (both of yours, and their hands that are still in).
+  let els = [];
+  if (G.mode === "match" && G.S && !G.S.over) els = drag ? dropTargets(drag.i).map(t => t.el)
+    : [handEl(G.me, 0), handEl(G.me, 1), ...[0, 1].filter(t => G.S.h[1 - G.me][t]).map(t => handEl(1 - G.me, t))];
+  dbg.innerHTML = els.map(el => {
+    const r = el.getBoundingClientRect();
+    return `<circle cx="${r.left - gr.left + r.width / 2}" cy="${r.top - gr.top + r.height / 2}" r="${reach(el)}" stroke="#ff3df2"/>`;
+  }).join("");
 }
 requestAnimationFrame(drawArms);
 
@@ -795,6 +947,16 @@ function render() {
   $("arOpp").classList.toggle("on", !S.over && S.turn !== G.me);
   $("arMe").classList.toggle("on", !S.over && S.turn === G.me);
   $("roundLbl").textContent = S.over ? "Game over" : `Round ${S.round}`;
+  // limited shares: a box under each clock; the other rules: chips under the round
+  const kinds = Object.keys(S.left || {});
+  for (const [id, seat] of [["leftMe", G.me], ["leftOpp", 1 - G.me]]) {
+    const el = $(id);
+    el.classList.toggle("hide", !kinds.length);
+    el.innerHTML = kinds.map(k => `<div class="lrow${S.left[k][seat] > 0 ? "" : " none"}"><small>${k.toUpperCase()}S</small><b>${S.left[k][seat]}</b></div>`).join("");
+    el.setAttribute("aria-label", `${seat === G.me ? "You have" : "They have"} ` + kinds.map(k => `${S.left[k][seat]} ${k}s`).join(" and ") + " left");
+  }
+  const chips = (S.mods || []).filter(id => !MODS[id].limit);
+  $("modsLbl").innerHTML = S.over ? "" : chips.map(id => `<span>${icon(MODS[id].icon, 17)}${MODS[id].name}</span>`).join("");
   // the prize pool: tap it on your turn to say GAS!
   const g = S.gas, answer = !S.over && g && !g.ok && g.by !== G.me;
   $("pool").classList.toggle("can", !!answer);
@@ -852,12 +1014,22 @@ function act(m) {
 }
 function openSplit() {
   if (!myTurn()) return;
-  const ms = legal(G.S, G.me).filter(m => m.k === "split");
-  if (!ms.length) {
-    toast(RULES.splitsPerRound != null && G.S.splits[G.me] >= RULES.splitsPerRound ? "No splits left this round." : "No way to split those fingers.");
-    G.sel = null; render(); return;
+  const S = G.S, ms = shares(S, G.me), kinds = Object.keys(S.left || {}), side = heavySide(S);
+  if (RULES.splitsPerRound != null && S.splits[G.me] >= RULES.splitsPerRound) { toast("No splits left this round."); G.sel = null; render(); return; }
+  if (!ms.length) { toast("No way to split those fingers."); G.sel = null; render(); return; }
+  const open = ms.filter(m => !blocked(S, G.me, m));
+  if (!open.length) {   // every share is a used-up kind
+    const used = [...new Set(ms.map(m => m.kind + "s"))].join(" or ");
+    toast(`No ${used} left.`); G.sel = null; render(); return;
   }
-  $("splitList").innerHTML = ms.map((m, i) => `<button data-i="${i}" class="${m.revive ? "rev" : ""}">${m.to[0]} + ${m.to[1]}${m.revive ? "<small>brings a hand back</small>" : m.to.includes(0) ? "<small>one hand out</small>" : ""}</button>`).join("");
+  if (open.length === 1) return act(open[0]);   // only one way to share: just play it
+  // a used-up limited kind stays in the list, greyed out, so you can see why
+  $("splitLeft").innerHTML = [...kinds.map(k => `${k[0].toUpperCase() + k.slice(1)}s left: ${S.left[k][G.me]}`),
+    ...(side >= 0 ? [`Bigger hand on the ${side ? "right" : "left"}`] : [])].join(" · ");
+  $("splitList").innerHTML = ms.map((m, i) => {
+    const off = blocked(S, G.me, m), note = off ? `no ${m.kind}s left` : m.kind === "switch" ? "switch: pass" : m.revive ? "brings a hand back" : m.join ? "join: one hand out" : "";
+    return `<button data-i="${i}" class="${m.revive ? "rev" : ""}"${off ? " disabled" : ""}>${m.to[0]} + ${m.to[1]}${note ? `<small>${note}</small>` : ""}</button>`;
+  }).join("");
   $("splitList").querySelectorAll("button").forEach(b => b.onclick = () => act(ms[+b.dataset.i]));
   $("splitBox").classList.remove("hide");
 }
@@ -974,6 +1146,52 @@ function seg(id, opts, get, set) {
   draw();
 }
 seg("segLevel", BOTS.map((b, i) => [b.name, i]), () => SET.level, v => SET.level = v);
+// special rules: a grid of tiles. OFF and RANDOM stand alone; rules can be combined, one per family, up to MOD_MAX.
+// The line above the grid describes what was just tapped. A choice is { fx, pick } (see rollMods).
+const cleanCfg = c => {
+  const fx = ["none", "random", "pick"].includes(c?.fx) ? c.fx : "none", pick = cleanMods(c?.pick);
+  return fx === "pick" && !pick.length ? { fx: "none", pick: [] } : { fx, pick: fx === "pick" ? pick : [] };
+};
+const FX_OFF = `Pick up to ${MOD_MAX} per match.`, FX_RANDOM = `Random: each match rolls up to ${MOD_MAX} rules.`;
+const fxSummary = c => c.fx === "random" ? FX_RANDOM : c.fx === "pick" ? (c.pick.length === 1 ? MODS[c.pick[0]].desc : "On: " + c.pick.map(id => MODS[id].name).join(", ") + ".") : FX_OFF;
+const TILES = [["off", "Off"], ["random", "Random"], ...Object.keys(MODS).map(id => [id, MODS[id].name])];
+function ruleGrid(grid, desc, get, set) {
+  let said = null;   // the description of the tile just tapped, until the choice changes from elsewhere
+  grid.innerHTML = TILES.map(([k, name]) => `<button type="button" class="tile" data-k="${k}" aria-label="${name}">${icon(MODS[k]?.icon || k, 30)}${MODS[k]?.n ? `<span class="n">${MODS[k].n}</span>` : ""}</button>`).join("");
+  const draw = (ro = false) => {
+    const c = get();
+    grid.classList.toggle("ro", ro);
+    grid.querySelectorAll(".tile").forEach(b => {
+      const k = b.dataset.k, on = k === "off" ? c.fx === "none" : k === "random" ? c.fx === "random" : c.fx === "pick" && c.pick.includes(k);
+      b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); b.disabled = ro;
+    });
+    desc.textContent = said ?? fxSummary(c);
+  };
+  grid.querySelectorAll(".tile").forEach(b => b.onclick = () => {
+    const k = b.dataset.k, c = get();
+    let next = c;
+    if (k === "off") { next = { fx: "none", pick: [] }; said = FX_OFF; }
+    else if (k === "random") { next = { fx: "random", pick: [] }; said = FX_RANDOM; }
+    else if (c.fx === "pick" && c.pick.includes(k)) { next = cleanCfg({ fx: "pick", pick: c.pick.filter(x => x !== k) }); said = fxSummary(next); }
+    else {
+      const rest = c.fx === "pick" ? c.pick.filter(x => MODS[x].fam !== MODS[k].fam) : [];   // the same family swaps over
+      if (rest.length >= MOD_MAX) said = `Up to ${MOD_MAX} rules. Turn one off first.`;
+      else { next = { fx: "pick", pick: [...rest, k] }; said = MODS[k].desc; }
+    }
+    set(next); draw(); SFX.blip();
+  });
+  return { draw, reset() { said = null; } };
+}
+Object.assign(SET, cleanCfg(SET)); SET.room = cleanCfg(SET.room);
+const FX_GRID = ruleGrid($("fxGrid"), $("fxDesc"), () => SET, c => { Object.assign(SET, c); saveSet(); });
+FX_GRID.draw();
+{
+  const el = $("segArm");
+  const draw = () => el.querySelectorAll("button").forEach((b, i) => { b.classList.toggle("on", i === (SET.arm || 0)); b.setAttribute("aria-pressed", i === (SET.arm || 0)); });
+  el.innerHTML = ARM_COLORS.map(([name, c]) => `<button type="button" style="background:${c}" aria-label="${name} arms"></button>`).join("");
+  el.querySelectorAll("button").forEach((b, i) => b.onclick = () => { SET.arm = i; saveSet(); draw(); drawStubs(); paintArms(); buildHelp(); SFX.blip(); });
+  draw();
+}
 seg("segNums", [["Off", false], ["On", true]], () => !!SET.nums, v => { SET.nums = v; $("game").classList.toggle("nums", v); });
 seg("segDebug", [["Off", false], ["On", true]], () => !!SET.debug, v => SET.debug = v);
 $("setBtn").onclick = () => { SFX.ac(); $("setBox").classList.remove("hide"); };
@@ -989,17 +1207,23 @@ $("passOk").onclick = () => $("passBox").classList.add("hide");
 $("passBox").onclick = e => { if (e.target.id === "passBox") $("passBox").classList.add("hide"); };
 
 // ---------- how to play ----------
-const mini = (n, left) => `<span class="g${left ? " L" : ""}">${handSVG(n, SKIN, true)}</span>`;
-$("helpCard").innerHTML = `<h2>HOW TO PLAY</h2>
+// two columns: the picture on the left, the words on the right
+const mini = (n, left) => `<span class="g${left ? " L" : ""}">${handSVG(n, mySkin(), true)}</span>`;
+function buildHelp() {
+  $("helpCard").innerHTML = `<h2>HOW TO PLAY</h2>
 <div class="step"><span class="pics">${mini(2)}→${mini(1, 1)}=${mini(3, 1)}</span><p><b>Tap.</b> Touch one of their hands with yours. They add your fingers: 2 taps 1 makes 3.</p></div>
 <div class="step"><span class="pics">${mini(3)}+${mini(2, 1)}</span><p><b>Exactly 5 is out.</b> Go past it and it wraps around: 3 + 4 = 7 → 2.</p></div>
 <div class="step"><span class="pics">${mini(4)}${mini(0, 1)}→${mini(2)}${mini(2, 1)}</span><p><b>Split.</b> Pick your hand, then your other hand, to share fingers. You can bring an out hand back. Just swapping sides doesn't count.</p></div>
-<div class="step"><span class="pics">${COIN.replace('sm"', '" style="width:30px;height:30px;font-size:13px"')}</span><p><b>GAS?</b> On your turn, tap the coins in the middle to ask for double stakes. If they tap the coins too, it's <b>GAS!!</b> and you play for ${COIN}${STAKE * 4}.</p></div>
-<div class="step"><span class="pics" style="font-size:30px">🔥</span><p><b>Clock.</b> Turns get shorter each round. When the rope burns out you use your reserve. If that runs out too, a random move is played.</p></div>
+<div class="step"><span class="pics">${mini(2)}${mini(2, 1)}→${mini(4)}${mini(0, 1)}</span><p><b>Join.</b> Put all your fingers on one hand. The other hand is out until you split again.</p></div>
+<div class="step"><span class="pics"><span class="clock left"><span class="lrow"><small>SPLITS</small><b>3</b></span><span class="lrow"><small>JOINS</small><b>2</b></span></span></span><p><b>Special rules.</b> A match can have up to 3: only 3 or 5 splits or joins (the box under your clock counts them), a heavy side (when you share, the bigger hand goes there), or switch (swap your hands to pass).</p></div>
+<div class="step"><span class="pics">${COIN.replace('sm"', '" style="width:34px;height:34px;font-size:14px"')}</span><p><b>GAS?</b> On your turn, tap the coins in the middle to ask for double stakes. If they tap the coins too, it's <b>GAS!!</b> and you play for ${COIN}${STAKE * 4}.</p></div>
+<div class="step"><span class="pics"><span class="ropePic"><i></i><span>${FLAME}</span></span></span><p><b>Clock.</b> Turns get shorter each round. When the rope burns out you use your reserve. If that runs out too, a random move is played.</p></div>
 <p style="text-align:center;margin-top:6px">Knock out both of their hands to win!</p>
 <div class="row" style="margin-top:12px"><button class="btn small green" id="helpOk">GOT IT</button></div>`;
+  $("helpOk").onclick = () => { $("helpBox").classList.add("hide"); if (!SET.help) { SET.help = true; saveSet(); } };
+}
+buildHelp();
 $("helpBtn").onclick = () => $("helpBox").classList.remove("hide");
-$("helpOk").onclick = () => { $("helpBox").classList.add("hide"); if (!SET.help) { SET.help = true; saveSet(); } };
 
 // ---------- play a friend (online) ----------
 // WebRTC through PeerJS and its free public broker, loaded only when this screen is used.
@@ -1052,6 +1276,8 @@ function renderRoom() {
   $("roster").innerHTML = `<tr><td>${esc(hostName)}${host ? " (you)" : ""}</td><td class="r">host</td></tr>`
     + (g ? `<tr><td>${esc(g.name)}${host ? "" : " (you)"}</td><td class="r">${g.ready ? "ready ✓" : "not ready"}</td></tr>` : `<tr><td>…</td><td class="r">empty seat</td></tr>`);
   $("fInfo").textContent = !host ? "Waiting for the host to start…" : g?.ready ? "Press START when you're both set." : g ? "Waiting for your friend…" : "Share the code. Waiting for a friend…";
+  if (!host) ROOM_GRID.reset();
+  ROOM_GRID.draw(!host);
   $("goBtn").style.display = host ? "" : "none"; $("goBtn").disabled = !g?.ready;
   $("linkBtn").style.display = host ? "" : "none";
 }
@@ -1089,9 +1315,13 @@ function hostTable(tries = 0) {
   }, () => netFail());
 }
 function lobbyOut() {
-  if (NET.conn?.open && NET.guest) NET.conn.send({ t: "lobby", host: myName(), you: NET.guest.name, ready: NET.guest.ready });
+  if (NET.conn?.open && NET.guest) NET.conn.send({ t: "lobby", host: myName(), you: NET.guest.name, ready: NET.guest.ready, rules: SET.room });
   renderRoom();
 }
+// the table's special rules: the host picks them; the guest sees them, greyed where off
+const ROOM_GRID = ruleGrid($("roomGrid"), $("roomDesc"),
+  () => NET.role === "guest" ? cleanCfg(NET.lobby?.rules) : SET.room,
+  c => { SET.room = c; saveSet(); lobbyOut(); });
 function onHostData(c, m) {
   if (NET.role !== "host" || c !== NET.conn || !m) return;
   NET.seen = performance.now();
@@ -1126,7 +1356,7 @@ function onGuestGone(c) {
 function hostStart() {
   if (!canSit()) { $("fMsg").innerHTML = BROKE(); return; }
   if (!NET.conn?.open || !NET.guest?.ready) return;
-  const S = newState(Math.random() < .5 ? 0 : 1);
+  const S = newState(Math.random() < .5 ? 0 : 1, rollMods(SET.room));
   NET.guest.ready = false;
   NET.conn.send({ t: "start", S, host: myName(), you: NET.guest.name });
   startMatch({ S, me: 0, opp: { net: true, name: NET.guest.name } });

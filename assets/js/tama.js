@@ -13,7 +13,7 @@
   const VISIT_BONUS = 2;     // once a day per game, for opening its tile: one match's stake
   const MAX16 = 65535;
   // Numeric ids used inside the Tama Pass. Never reuse or renumber an id.
-  const PASS_IDS = { "main-jempol": 1, "sumpit": 2, "cerdas-cermat": 3 };
+  const PASS_IDS = { "main-jempol": 1, "sumpit": 2, "cerdas-cermat": 3, "anak-emas": 5 };
 
   const listeners = new Set();
   // the player's local date (YYYY-MM-DD), so daily things reset at their own midnight

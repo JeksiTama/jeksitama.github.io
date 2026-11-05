@@ -142,7 +142,7 @@ Each question:
 |---|---|
 | `id` | A short, unique, lowercase name (`"apollo-last"`). Never reuse or change one: saved papers and the daily pick depend on it. |
 | `q` | The question |
-| `answer` | The right answer |
+| `answer` | The right answer, or a list of right answers. With a list, one is picked each time. Use it for "Which one is not a Pokémon?": the non-Pokémon go in `answer`, the Pokémon in `wrong`. |
 | `wrong` | Two or more wrong answers. Each time, two are picked at random, so more wrong answers means more variety. |
 | `tags` | Topics, e.g. `["space", "history"]`, so a game can pick only some |
 
@@ -157,12 +157,42 @@ An answer is plain text, or `{ "text", "img", "credit" }` for a picture answer. 
 
 A picked question is `{ id, q, tags, choices, correct }`: three `choices` (the answer and two wrong ones, shuffled) and the index of the right one. To move the bank to a server later, change `SOURCE` in `tama-questions.js`; the server must answer with the same JSON.
 
+#### Writing questions
+
+The bank leans liberal: secular, inclusive and science-first.
+
+- **Religion:** keep it rare. Festivals and food are fine as culture; no questions on belief.
+- **History:** mostly the history of science, space, inventions and discoveries, rather than wars, rulers or politics. Show the range of people who did the work.
+- **Science:** state settled science plainly, climate change included.
+- **Maths:** geometry only (shapes, angles). No arithmetic.
+- **Pop culture:** what kids know now: cartoons, kids' films and family-friendly games.
+- **Indonesia:** a light touch. Indonesian things mostly show up inside other categories (a Bahasa word among the languages, rendang among the foods, Komodo among the animals) rather than as their own questions. No translate-this-Bahasa-word questions.
+- **Words:** "Which of these words does not mean “thank you”?" with the word in many languages, Bahasa Indonesia among them. The odd ones out go in `answer` as a list.
+- **Facts must hold up.** Skip anything disputed or about to change (the longest river, Indonesia's capital while it moves).
+- **Pictures:** a free CC0, public domain or CC BY picture with its credit. Until one is found, use a placeholder SVG at the final path with an empty `credit`.
+
+Categories go by each question's main topic. Existing questions stay; when the bank grows, add to the categories below their target until it roughly matches these shares.
+
+| Category | Tags | Target share |
+|---|---|---|
+| Science and nature | `science`, `animals`, `body`, `climate`, `computers`, `space` | about 28%, with space no more than about 5% of the whole bank |
+| Pop culture | `pop-culture`, `tv`, `movies`, `games` | about 15% |
+| Dinosaurs and fossils | `dinosaurs` | about 8% |
+| Food around the world | `food` | about 8% |
+| Art and music | `arts`, `music` | about 8% |
+| Geography | `geography`, `landmarks` | about 8% |
+| History of science | `history` | about 8% |
+| Words | `words` | about 7% |
+| Geometry | `maths` | about 5% |
+| Indonesia | `indonesia` | about 5% |
+
 ## 9. Screens and controls
 
 - **Top bar.** Top right: the kit's token chip and sound button. Then an exit button. During a match it says what leaving costs ("🏳️ Back out") and asks before leaving.
 - **Menu.** Big buttons for the ways to play (PLAY, PLAY A FRIEND or WITH FRIENDS), then plain text links with a wavy underline: `/how to play/`, `/settings/`, `/PlayTama home/`. A setup control such as table size may sit with the buttons.
 - **How to play** opens by itself on the first visit only, and not when the player arrives by invite link. It stays reachable from the menu.
 - **Settings** go in a popup or screen, not on the menu, and survive a reload.
+- **Steady layout.** Changing an option doesn't make the screen grow, shrink or shift. Keep every control on screen and mark the picked one instead of adding or removing controls, give a row of option buttons equal widths, and give text that changes (like a description of the picked option) a fixed height.
 - **Bot strength**, if the game has it: a setting named **Gampang / Sedang / Susah**, default Gampang. A game doesn't have to have it (Main Jempol has none).
 - **Tama Pass:** on the menu, tapping the token chip opens `TamaKit.passCard` in the game's own style. During a match the chip only shows the count.
 - **Cheat code:** "MORE TOKEN PLEASE" in any Tama Pass box gives 10 tokens, on the home page and in every game.
@@ -217,6 +247,7 @@ GitHub Pages only serves files, so browsers talk to each other directly over Web
 - [ ] Tile in `games.js`, `PASS_IDS` entry if it records scores, `about.html` updated if it uses tokens
 - [ ] Page head has the title, description, theme-color and favicon; zoom is allowed
 - [ ] Menu, top bar, how to play on first visit, settings and Tama Pass follow section 9
+- [ ] Nothing jumps or resizes when an option is picked (steady layout, section 9)
 - [ ] Works at 375 px wide by touch and by mouse, with no horizontal scroll
 - [ ] Reduced motion honoured; buttons and inputs labelled
 - [ ] Online: ping, 10 s timeout, pagehide goodbye, bot takeover, host-left refund, invite link

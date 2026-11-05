@@ -13,6 +13,7 @@
  *
  * A picked question is { id, q, tags, choices: [{ text, img, credit }], correct } where correct is the index of the
  * right choice. img is a full URL or null. Each question shows the right answer and (choices - 1) wrong ones.
+ * answer may also be a list of right answers ("Which one is not a Pokémon?"); one of them is picked each time.
  */
 (function () {
   "use strict";
@@ -27,10 +28,11 @@
     return { text: String(o.text ?? ""), img: o.img ? new URL(o.img, root).href : null, credit: String(o.credit || "") };
   }
   function tidy(data, root) {
-    const qs = (data && Array.isArray(data.questions) ? data.questions : []).filter(q => q && q.id && q.q && q.answer && Array.isArray(q.wrong) && q.wrong.length);
+    const list = a => Array.isArray(a) ? a : a ? [a] : [];
+    const qs = (data && Array.isArray(data.questions) ? data.questions : []).filter(q => q && q.id && q.q && list(q.answer).length && Array.isArray(q.wrong) && q.wrong.length);
     return {
       root,
-      questions: qs.map(q => ({ id: String(q.id), q: String(q.q), tags: Array.isArray(q.tags) ? q.tags.map(String) : [], answer: choice(q.answer, root), wrong: q.wrong.map(w => choice(w, root)) }))
+      questions: qs.map(q => ({ id: String(q.id), q: String(q.q), tags: Array.isArray(q.tags) ? q.tags.map(String) : [], answers: list(q.answer).map(a => choice(a, root)), wrong: q.wrong.map(w => choice(w, root)) }))
         .sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0),   // file order doesn't change the daily pick
     };
   }
@@ -56,8 +58,10 @@
     return a;
   }
   function ask(q, rnd, n = 3) {
-    const choices = shuffle([q.answer, ...shuffle(q.wrong, rnd).slice(0, n - 1)], rnd);
-    return { id: q.id, q: q.q, tags: q.tags, choices, correct: choices.indexOf(q.answer) };
+    // only a question with several right answers draws an extra number, so single-answer picks stay as they were
+    const answer = q.answers.length > 1 ? q.answers[Math.floor(rnd() * q.answers.length)] : q.answers[0];
+    const choices = shuffle([answer, ...shuffle(q.wrong, rnd).slice(0, n - 1)], rnd);
+    return { id: q.id, q: q.q, tags: q.tags, choices, correct: choices.indexOf(answer) };
   }
   function daily(bank, n = 5, opts = {}) {
     const key = `${opts.salt || ""}|${opts.day || window.Tama.today()}`;
@@ -69,7 +73,7 @@
     return shuffle(pool, Math.random).slice(0, n).map(q => ask(q, Math.random, opts.choices));
   }
   function credits(bank) {
-    const all = bank.questions.flatMap(q => [q.answer, ...q.wrong]).map(c => c.credit).filter(Boolean);
+    const all = bank.questions.flatMap(q => [...q.answers, ...q.wrong]).map(c => c.credit).filter(Boolean);
     return [...new Set(all)];
   }
 

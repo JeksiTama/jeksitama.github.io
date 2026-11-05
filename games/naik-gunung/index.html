@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Naik Naik ke Puncak Gunung · PlayTama</title>
+<meta name="description" content="Naik Naik ke Puncak Gunung (Up, Up to the Mountain Top): roll, answer and fly your paper plane up 64 tiles to the top.">
+<meta name="theme-color" content="#73d049">
+<link rel="icon" href="../../assets/img/egg.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<!-- PlayTama shared save, game kit and question bank -->
+<script src="../../assets/js/tama.js"></script>
+<script src="../../assets/js/tama-kit.js"></script>
+<script src="../../assets/js/tama-questions.js"></script>
+<style>
+@font-face{font-family:"Super Trend";src:url("../../assets/fonts/super-trend.ttf")}
+:root{--ink:#2b2b2b;--cream:#fffaf0;--red:#fe6767;--green:#73d049;--blue:#68c1ff;--pink:#fe94de;--orange:#fea046;--purple:#aa88ff;--yellow:#ffdb33;--grey:#666;
+  --pen:#e23b3b;--display:"Super Trend","Nunito",system-ui,sans-serif;
+  --tk-font:Nunito,system-ui,sans-serif;--tk-chip:var(--cream)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:linear-gradient(#62bbf5,#b9e4ff 55%,#e6f7ff) fixed;font-family:Nunito,system-ui,sans-serif;color:var(--ink);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#clouds{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#app{position:relative;z-index:1;max-width:560px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+#app.playing{height:100dvh;min-height:0}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.hide{display:none!important}
+.pi{width:24px;height:16px;vertical-align:-3px;flex:none}
+
+/* top bar, right: the kit's tokens + sound, then back */
+#top{position:sticky;top:0;z-index:20;display:flex;justify-content:flex-end;align-items:center;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top))}
+#exitBtn{font-family:var(--tk-font);font-size:12px;font-weight:800}
+
+.screen{flex:1;display:flex;flex-direction:column;align-items:center;gap:14px;padding:4px 16px 28px;text-align:center}
+#titleScreen{justify-content:center}
+
+/* title */
+.logo{font-family:var(--display);font-size:clamp(34px,10.5vw,62px);line-height:.95;color:var(--cream);letter-spacing:2px;
+  text-shadow:3px 0 var(--ink),-3px 0 var(--ink),0 3px var(--ink),0 -3px var(--ink),2px 2px var(--ink),-2px -2px var(--ink),2px -2px var(--ink),-2px 2px var(--ink),0 8px 0 var(--ink)}
+.pill{background:var(--cream);border:3px solid var(--ink);border-radius:999px;padding:4px 16px;font-weight:900;box-shadow:0 4px 0 var(--ink)}
+.hero{width:min(210px,52vw);height:auto}
+.hero .hp{animation:heroFly 3.2s ease-in-out infinite}
+@keyframes heroFly{50%{transform:translate(-6px,-7px) rotate(-4deg)}}
+.menu{display:flex;flex-direction:column;gap:12px;align-items:center}
+.links{display:flex;flex-direction:column;gap:6px;align-items:center}
+.link{font:900 16px Nunito,sans-serif;color:var(--ink);background:none;border:0;cursor:pointer;
+  text-decoration:underline wavy var(--orange) 1.5px;text-underline-offset:6px;padding:4px 6px}
+.note{font-weight:800;font-size:14px;max-width:340px;margin:0;min-height:20px}
+.note a{font-weight:900}
+.credit{font-size:12px;font-weight:700;opacity:.85;max-width:360px}
+.credit .link{font-size:12px;padding:0 2px;text-underline-offset:4px}
+
+.btn{font-family:var(--display);font-size:24px;letter-spacing:1px;padding:12px 26px;min-width:250px;border:3px solid var(--ink);border-radius:16px;background:var(--yellow);
+  color:var(--ink);box-shadow:0 5px 0 var(--ink);cursor:pointer}
+.btn:active:not(:disabled){translate:0 4px;box-shadow:0 1px 0 var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.green{background:var(--green)}.btn.cream{background:var(--cream)}.btn.red{background:var(--red)}
+.btn.small{font-size:18px;padding:8px 18px;min-width:0}
+
+/* seats: four buttons of the same size; tap to switch Bot / Friend / Off */
+.seats{display:grid;grid-template-columns:repeat(4,72px);gap:8px}
+.seat{display:flex;flex-direction:column;align-items:center;gap:2px;height:62px;padding:6px 2px 4px;background:var(--cream);border:3px solid var(--ink);border-radius:14px;
+  box-shadow:0 4px 0 var(--ink);cursor:pointer;font:900 13px Nunito,sans-serif}
+.seat .pi{width:34px;height:22px}
+.seat.you{cursor:default;background:#fff3a8}
+.seat.off{background:#e6e1d8;box-shadow:0 2px 0 var(--ink);translate:0 2px}
+.seat.off .pi{opacity:.25;filter:grayscale(1)}
+.seat:active:not(.you){translate:0 3px;box-shadow:0 1px 0 var(--ink)}
+.seatHelp{font-size:12px;font-weight:800;margin:-6px 0 0}
+
+.card{background:var(--cream);border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:18px;width:min(100%,400px)}
+.card h2{font-family:var(--display);font-weight:400;font-size:30px;margin:0 0 10px;letter-spacing:1px}
+.row{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+
+/* ---------- the match ---------- */
+#gameScreen{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;
+  grid-template-areas:"strip" "board" "panel";gap:6px;padding:0 10px max(10px,env(safe-area-inset-bottom))}
+@media (orientation:landscape) and (max-height:600px){
+  #gameScreen{grid-template-columns:minmax(0,1fr) 250px;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"board strip" "board panel"}
+  #app{max-width:none}
+  #strip{grid-template-columns:1fr 1fr!important;align-self:start}
+}
+#strip{grid-area:strip;display:grid;gap:6px}
+.pchip{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:4px;min-width:0;background:var(--cream);border:2.5px solid var(--ink);border-radius:12px;
+  padding:3px 6px;box-shadow:0 3px 0 var(--ink);font-weight:900;font-size:12px;line-height:1.2;transition:background .2s,translate .2s}
+.pchip .pi{flex:none;width:22px;height:14px}
+.pchip .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.pchip .st{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+.pchip .tile{font-family:var(--display);font-weight:400;font-size:15px}
+.pchip .bo{font-size:12px;color:#1d6b33}
+.pchip.cur{background:var(--yellow);translate:0 -3px;box-shadow:0 6px 0 var(--ink)}
+
+#boardArea{grid-area:board;position:relative;min-height:0;display:grid;place-items:center;overflow:hidden}
+#boardWrap{position:relative}
+#board{display:block;width:100%;height:100%;overflow:visible}
+#pool{position:absolute;width:112px;height:50px;transform:translate(-50%,-100%) scale(var(--ps,.5));transform-origin:50% 100%;pointer-events:none}
+.num{font:900 12px Nunito,sans-serif;pointer-events:none;opacity:.5;fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:#fff6d8;stroke-width:3px;stroke-linejoin:round}
+.flow{animation:flow .8s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-10}}
+.flow2{animation:flow2 .7s linear infinite}
+@keyframes flow2{to{stroke-dashoffset:-10.1}}
+.fall{animation:fall .6s linear infinite}
+@keyframes fall{to{stroke-dashoffset:-9}}
+.padn{font:900 13px Nunito,sans-serif;fill:#e23b3b;text-anchor:middle;pointer-events:none}
+.jp.fresh{animation:appear 1.2s ease-out}
+@keyframes appear{0%{opacity:0}30%{opacity:1}45%{opacity:.3}60%{opacity:1}}
+.mk{fill:none;stroke-width:3.5;stroke-dasharray:6 3;stroke-linejoin:round}
+.mk.ok{stroke:#14963a}.mk.no{stroke:var(--pen)}.mk.st{stroke:var(--ink)}
+.mkt{font:900 11px Nunito,sans-serif;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.mkt.ok{fill:#14963a}.mkt.no{fill:var(--pen)}.mkt.st{fill:var(--ink)}
+.pl{transition:transform .22s ease-out}
+.pl.still{transition:none}
+.pl .sh{fill:rgba(0,0,0,.25)}
+.pl .ring{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:4 3;opacity:0}
+.pl.cur .ring{opacity:1;animation:spin 3s linear infinite}
+@keyframes spin{to{stroke-dashoffset:-28}}
+.pl .bob{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-2.5px)}}
+.pl .hopper.hop{animation:hop var(--hop,230ms) ease-out}
+@keyframes hop{45%{transform:translateY(-11px) rotate(-8deg)}}
+
+#panel{grid-area:panel;display:flex;align-items:center;gap:12px;background:var(--cream);border:3px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink);padding:8px 10px 8px 14px}
+#msgWrap{flex:1;min-width:0;text-align:left}
+#msg{font-weight:800;font-size:15px;line-height:1.3;height:2.6em;overflow:hidden;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+#roundTag{font-size:12px;font-weight:800;color:var(--grey)}
+.die{flex:none;width:78px;height:78px;display:grid;place-items:center;position:relative;background:#fff;border:3px solid var(--ink);border-radius:18px;
+  box-shadow:0 5px 0 var(--ink);cursor:pointer;padding:0}
+.die:disabled{cursor:default;background:#f1ece2}
+.die.go{background:var(--yellow);animation:nudge 1.2s ease-in-out infinite}
+@keyframes nudge{50%{rotate:-6deg}}
+.die:active:not(:disabled){translate:0 4px;box-shadow:0 1px 0 var(--ink)}
+.die.rolling{animation:shake .12s linear infinite}
+@keyframes shake{25%{rotate:-10deg}75%{rotate:10deg}}
+.pips{display:grid;grid-template-columns:repeat(3,13px);grid-template-rows:repeat(3,13px);gap:5px}
+.pips i{width:13px;height:13px;border-radius:50%}
+.pips i.on{background:var(--ink)}
+.dnum{font-family:var(--display);font-size:38px;line-height:1}
+.die small{position:absolute;bottom:2px;left:0;right:0;font:900 10px Nunito,sans-serif}
+
+/* the question sheet slides up from the bottom */
+#quiz{position:fixed;left:50%;bottom:0;z-index:40;width:min(100%,560px);translate:-50% 0;max-height:88dvh;overflow-y:auto;background:var(--cream);
+  border:3px solid var(--ink);border-bottom:0;border-radius:22px 22px 0 0;box-shadow:0 -4px 0 rgba(0,0,0,.15);padding:12px 14px max(14px,env(safe-area-inset-bottom));
+  animation:up .25s ease-out}
+@keyframes up{from{transform:translateY(40%);opacity:0}}
+.qhead{display:flex;align-items:center;gap:10px;font-weight:900}
+#qWho{flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#qTimer{flex:none;width:96px;height:12px;border:2.5px solid var(--ink);border-radius:999px;overflow:hidden;background:#fff}
+#qTimer i{display:block;height:100%;width:100%;background:var(--green);transform-origin:left}
+#qOut{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:8px 0 4px;min-height:44px}
+#qOut.line{display:block;font-weight:800;font-size:14px;text-align:left}
+.oc{display:flex;flex-direction:column;justify-content:center;border:2.5px solid var(--ink);border-radius:10px;padding:2px 4px;font-weight:900;font-size:13px;line-height:1.2;background:#fff}
+.oc small{font-size:11px;letter-spacing:.3px}
+.oc.ok{background:#d6f5d0}.oc.no{background:#ffd9d9}.oc.st{background:#efeae0}
+#qText{margin:8px 0 10px;font-weight:900;font-size:18px;line-height:1.35;text-align:left}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:6px 12px 6px 6px;text-align:left;font-weight:800;font-size:16px;
+  background:#fff;border:2.5px solid var(--ink);border-radius:12px;box-shadow:0 3px 0 var(--ink);cursor:pointer;position:relative}
+.opt .let{flex:none;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);display:grid;place-items:center;font:400 16px/1 var(--display);background:var(--cream)}
+.opt:active:not(:disabled){translate:0 2px;box-shadow:0 1px 0 var(--ink)}
+.opt:disabled{cursor:default}
+.opts.pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pics .opt{flex-direction:column;align-items:stretch;padding:5px;gap:4px}
+.pics .opt .let{position:absolute;top:-8px;left:-8px;width:28px;height:28px;z-index:1}
+.pics .opt img{width:100%;aspect-ratio:3/4;object-fit:contain;padding:4px;border-radius:8px;border:2px solid var(--ink);display:block;background:#fff}
+.pics .opt .tx{display:none;font-size:13px;text-align:center;line-height:1.2}
+.pics .opt.noimg img{display:none}
+.pics .opt.noimg .tx,.marked .pics .opt .tx{display:block}
+.pics .opt.noimg{min-height:110px;justify-content:center}
+.opt.picked{background:var(--yellow)}
+.marked .opt{box-shadow:none}
+.marked .opt:not(.right):not(.miss){opacity:.55}
+.opt.right{background:var(--green)!important;opacity:1}
+.opt.miss{background:#ffd3d3!important}
+.opt.miss .tx{text-decoration:line-through 2.5px var(--pen)}
+.qfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;min-height:44px}
+#qSay{font-weight:900;font-size:16px;text-align:left}
+#passBtn.picked{background:var(--yellow)}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(20,50,80,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.help{text-align:left;max-height:88dvh;overflow-y:auto}
+.help .step{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.help .pic{flex:none;width:34px;font-size:26px;text-align:center}
+.help .pic .pi{width:34px;height:22px}
+.help p{margin:0;font-weight:700;font-size:15px}
+.help b{font-weight:900}
+.set{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:2px dashed #cfc6b8;font-weight:900;text-align:left}
+.set:last-of-type{border:0}
+.set small{display:block;font-weight:700;color:#666}
+.set.col{flex-direction:column;align-items:stretch}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;flex:none;min-width:118px}
+.seg button{font:900 14px Nunito,sans-serif;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:5px 9px;cursor:pointer;min-height:36px}
+.seg button.on{background:var(--yellow);box-shadow:0 2px 0 var(--ink)}
+.big{font-family:var(--display);font-size:46px;line-height:1;margin:4px 0 6px}
+.coins{font:900 20px Nunito,sans-serif;margin:8px 0 12px;min-height:30px}
+.coins .tk-coin{width:26px;height:26px;font-size:11px;vertical-align:-6px;margin:0 2px}
+#resultBox .card{text-align:center}
+.ranks{list-style:none;margin:10px 0 0;padding:0;text-align:left}
+.rk{display:flex;align-items:center;gap:8px;padding:5px 2px;border-bottom:2px dashed #cfc6b8;font-weight:800}
+.rk:last-child{border:0}
+.rk .pl0{font-family:var(--display);width:30px}
+.rk .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .tk-coin{width:16px;height:16px;font-size:8px;border-width:1.5px;box-shadow:0 1px 0 var(--ink);vertical-align:-2px}
+#credList{text-align:left;font-size:13px;font-weight:700;padding-left:18px;max-height:50dvh;overflow-y:auto}
+
+/* Tama Pass, in this game's card style (content from the kit) */
+#passCard table{font-weight:800;margin-bottom:6px}
+#passCard td{padding:6px 2px;border-bottom:2px dashed #cfc6b8;text-align:left}
+#passCard td.r{text-align:right}
+#passCard .pnote{font-size:13px;font-weight:700;margin:10px 0 4px}
+#passCard code{background:#fff3a8;border-radius:10px;font-size:15px}
+#passCard input{border-width:3px;border-radius:10px}
+#passCard .prow .btn{min-width:0}
+
+#banner{position:fixed;left:50%;top:40%;translate:-50% -50%;z-index:45;font-family:var(--display);font-size:clamp(40px,12vw,64px);color:var(--yellow);pointer-events:none;
+  letter-spacing:2px;white-space:nowrap;opacity:0;
+  text-shadow:3px 0 var(--ink),-3px 0 var(--ink),0 3px var(--ink),0 -3px var(--ink),2px 2px var(--ink),-2px -2px var(--ink),2px -2px var(--ink),-2px 2px var(--ink),0 7px 0 var(--ink)}
+#banner.on{animation:bannerPop 1.1s ease-out both}
+@keyframes bannerPop{0%{opacity:0;scale:.4}15%{opacity:1;scale:1.12}25%{scale:1}80%{opacity:1}100%{opacity:0;scale:1}}
+#toast{position:fixed;left:50%;top:64px;translate:-50% 0;z-index:70;background:var(--cream);border:3px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--ink);
+  padding:6px 14px;font-weight:900;width:max-content;max-width:min(90vw,420px);text-align:center;transition:opacity .3s;opacity:0;pointer-events:none}
+#toast.on{opacity:1}
+#app.playing ~ #toast{top:auto;bottom:118px}   /* in a match, keep the player strip in view */
+@media (max-height:640px){.hero{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}#banner.on{opacity:1}}
+</style>
+</head>
+<body>
+<!-- the paper plane, drawn once and reused everywhere (its colour comes from the CSS colour) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="plane" viewBox="-14 -9 28 18">
+    <path d="M13 -1 L-13 -8 L-6 0 L-13 7 Z" fill="currentColor" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M13 -1 L-6 0 L-13 7 Z" fill="#000" opacity=".2"/>
+    <path d="M13 -1 L-6 0" stroke="#2b2b2b" stroke-width="1.2" stroke-linecap="round"/>
+  </symbol>
+</defs></svg>
+<svg id="clouds" aria-hidden="true" preserveAspectRatio="xMidYMin slice" viewBox="0 0 400 800">
+  <g fill="#fff" opacity=".85">
+    <ellipse cx="60" cy="90" rx="46" ry="16"/><ellipse cx="84" cy="78" rx="28" ry="18"/>
+    <ellipse cx="330" cy="160" rx="52" ry="15"/><ellipse cx="310" cy="148" rx="26" ry="16"/>
+    <ellipse cx="120" cy="420" rx="40" ry="12"/><ellipse cx="140" cy="410" rx="22" ry="13"/>
+    <ellipse cx="350" cy="560" rx="44" ry="13"/><ellipse cx="330" cy="550" rx="24" ry="14"/>
+  </g>
+</svg>
+<div id="app">
+  <div id="top">
+    <div id="bar"><button class="tk-chip tk-btn" id="exitBtn" type="button" aria-label="Back">✕</button></div>
+  </div>
+
+  <div class="screen" id="titleScreen">
+    <svg class="hero" viewBox="0 0 210 120" aria-hidden="true">
+      <path d="M6 114 L78 34 L104 60 L136 18 L204 114 Z" fill="#7fd35b" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M136 18 L151 39 L143 36 L136 44 L128 36 L121 39 Z M78 34 L90 47 L84 46 L78 52 L72 46 L66 47 Z" fill="#f4f7fb" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M136 18 V2 L152 7 L136 12" fill="#fe6767" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/>
+      <g class="hp"><use href="#plane" x="34" y="36" width="64" height="41" style="color:#ffdb33"/></g>
+    </svg>
+    <div class="logo">NAIK NAIK<br>KE PUNCAK<br>GUNUNG</div>
+    <div class="pill">Fly your paper plane to the top.</div>
+    <div class="menu">
+      <button class="btn" id="playBtn" type="button" disabled>PLAY</button>
+      <div class="seats" id="seats" role="group" aria-label="Players"></div>
+      <p class="seatHelp">Tap a seat: Bot, Friend (same device) or Off.</p>
+      <p class="note" id="titleMsg" role="status">Loading questions…</p>
+    </div>
+    <div class="links">
+      <button class="link" id="helpBtn" type="button">/how to play/</button>
+      <button class="link" id="setBtn" type="button">/settings/</button>
+      <a class="link" href="../../">/PlayTama home/</a>
+    </div>
+    <div class="credit">Mountain, tiles and planes drawn for PlayTama. Fonts: Super Trend, Nunito (Google Fonts).<span id="credLink" class="hide"> <button class="link" id="credBtn" type="button">/photo credits/</button></span></div>
+  </div>
+
+  <div class="hide" id="gameScreen">
+    <div id="strip"></div>
+    <div id="boardArea">
+      <div id="boardWrap">
+        <svg id="board" role="img" aria-label="The mountain board">
+          <defs id="artDefs"></defs><g id="terrainL"></g><g id="jumpsL"></g><g id="numsL"></g><g id="marksL"></g><g id="planesL"></g>
+        </svg>
+        <div id="pool" aria-label="Prize pool"></div>
+      </div>
+    </div>
+    <div id="panel">
+      <div id="msgWrap"><div id="msg" role="status" aria-live="polite"></div><div id="roundTag"></div></div>
+      <button class="die" id="die" type="button" aria-label="Roll the die" disabled><span id="dieFace"></span><small id="dieTag"></small></button>
+    </div>
+  </div>
+</div>
+
+<div class="hide" id="quiz" role="dialog" aria-labelledby="qText">
+  <div class="qhead"><span id="qWho"></span><span id="qTimer" aria-hidden="true"><i id="qBar"></i></span></div>
+  <div id="qOut"></div>
+  <p id="qText"></p>
+  <div class="opts" id="qOpts" role="group" aria-labelledby="qText"></div>
+  <div class="qfoot"><span id="qSay" role="status"></span><button class="btn small cream" id="passBtn" type="button">PASS</button></div>
+</div>
+
+<div class="overlay hide" id="helpBox"><div class="card help">
+  <h2>HOW TO PLAY</h2>
+  <div class="step"><span class="pic">🎲</span><p><b>Roll the die</b> and fly that many tiles up the mountain.</p></div>
+  <div class="step"><span class="pic">📝</span><p><b>Then answer a question.</b> Right: fly on. Wrong or too slow: stay put. Or PASS.</p></div>
+  <div class="step"><span class="pic">🎯</span><p><b>Launch pads</b> fling you up. Land on a spring and fly to the target with its number.</p></div>
+  <div class="step"><span class="pic">🌊</span><p><b>Rivers</b> wash you down from one pond to another. But every river you ride makes your right answers fly 1 tile further, for the rest of the match.</p></div>
+  <div class="step"><span class="pic">🎯</span><p><b>Know the answer?</b> Then you pick where you land: answer, or PASS to dodge a river.</p></div>
+  <div class="step"><span class="pic">⛰️</span><p><b>First plane to tile 64 at the top wins.</b> Everyone puts in <span id="helpStake"></span>. First takes 4, last takes none, the rest get theirs back.</p></div>
+  <div class="step"><span class="pic">⚙️</span><p><b>Special rules</b> like duels and rainy season are in /settings/.</p></div>
+  <div class="row" style="margin-top:12px"><button class="btn small green" id="helpOk" type="button">GOT IT</button></div>
+</div></div>
+<div class="overlay hide" id="setBox"><div class="card" style="max-height:92dvh;overflow-y:auto">
+  <h2>SETTINGS</h2>
+  <div class="set col"><span>Bots<small>How well the bots know their answers</small></span><span class="seg" id="segLevel"></span></div>
+  <div class="set"><span>Die<small>A bigger die climbs faster</small></span><span class="seg" id="segDice"></span></div>
+  <div class="set"><span>Wrong answer<small>Back 1 lets you aim with a wrong answer</small></span><span class="seg" id="segWrong"></span></div>
+  <div class="set"><span>One plane per tile<small>Land on someone and it's a DUEL</small></span><span class="seg" id="segDuel"></span></div>
+  <div class="set"><span>Tile numbers<small>In the corner of each tile</small></span><span class="seg" id="segNums"></span></div>
+  <div class="set"><span>Musim Angin<small>Windy season: a new launch pad every round</small></span><span class="seg" id="segWind"></span></div>
+  <div class="set"><span>Musim Hujan<small>Rainy season: a new river every round</small></span><span class="seg" id="segRain"></span></div>
+  <div class="row" style="margin-top:12px"><button class="btn small green" id="setOk" type="button">DONE</button></div>
+</div></div>
+<div class="overlay hide" id="askBox"><div class="card"><h2>BACK OUT?</h2><p id="askP" style="font-weight:800"></p>
+  <div class="row"><button class="btn small red" id="askYes" type="button">BACK OUT</button><button class="btn small cream" id="askNo" type="button">KEEP PLAYING</button></div></div></div>
+<div class="overlay hide" id="resultBox"><div class="card">
+  <div class="big" id="resT"></div>
+  <div id="resWhy" style="font-weight:800"></div>
+  <ol class="ranks" id="resList"></ol>
+  <div class="coins" id="resCoins"></div>
+  <div class="menu"><button class="btn green" id="againBtn" type="button">AGAIN</button><button class="btn small cream" id="menuBtn" type="button">MENU</button></div>
+</div></div>
+<div class="overlay hide" id="passBox"><div class="card"><div id="passCard"></div>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="passOk" type="button">CLOSE</button></div></div></div>
+<div class="overlay hide" id="credBox"><div class="card">
+  <h2>PHOTO CREDITS</h2>
+  <ul id="credList"></ul>
+  <div class="row" style="margin-top:12px"><button class="btn small cream" id="credOk" type="button">CLOSE</button></div>
+</div></div>
+<div id="banner" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const TAMA = window.Tama, KIT = window.TamaKit, QS = window.TamaQuestions;
+const SLUG = "naik-gunung";
+const COIN = KIT.coin("sm");
+const STAKE = 2;
+const PAY = { 2: [4, 0], 3: [4, 2, 0], 4: [4, 2, 2, 0] };   // prize by finishing place; each row adds up to the pool
+const QUIZ_SECS = 15;      // a question left this long counts as wrong
+const MAX_JUMPS = 16;      // Musim Angin / Musim Hujan stop adding once the board has this many
+const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const HOP = CALM ? 70 : 230;   // ms per tile
+const INK = "#2b2b2b";
+const COLORS = ["#fe6767", "#68c1ff", "#ffdb33", "#aa88ff"];
+const BOT_NAMES = ["Budi", "Wati", "Iwan"];   // the children from Indonesia's classic school reader
+const LETTERS = "ABC";
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const any = a => a[Math.random() * a.length | 0];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const STOP = { stop: true }, WIN = { win: true };   // thrown to unwind a turn: the match was left / someone reached the top
+
+// ---------- bots ----------
+// know: how often they know the answer. aim: what they do when they know it.
+//   "none": always answer right. "river": pass instead of answering into a river. "best": land wherever is highest.
+const LEVELS = [
+  { name: "Gampang", know: .55, aim: "none", think: [2200, 4200] },
+  { name: "Sedang", know: .75, aim: "river", think: [1800, 3400] },
+  { name: "Susah", know: .92, aim: "best", think: [1400, 2800] },
+];
+
+// ---------- the board ----------
+// 8 × 8 = 64 tiles, and every one is on the path. Tile 1 is bottom left, the rows zigzag up, tile 64 (the top) is top left.
+// Four maps, back row (the top of the mountain) first, one character per tile:
+//   GROUND  G grass, F farm field, S sand, B beach (half sand, half water: give it a < or > slope), W water, R rock, N snow
+//   THINGS  what stands on the tile (see THING_ART below), . for nothing. Trees, bushes and rocks come in little groups.
+//   HEIGHT  0-9 (one step is half a tile). Down each column, keep tiles the same height or lower toward the front
+//           (further down the list), or a front tile hides part of the one behind it.
+//   SLOPE   . flat, > slopes down to the right, < down to the left, v down to the front (a ramp up to the tile behind).
+//           A slope drops one step from the tile's HEIGHT; on a beach the low side is the water.
+// Another size works by changing all four maps; the path follows. An odd number of rows puts the top at the top right.
+const GROUND = [
+  "NNNRRRGG",
+  "RNRRGGFF",
+  "GGRGGGFF",
+  "GGGGGGGG",
+  "GGGGGGGG",
+  "GGGGGGGG",
+  "GGGGGSBW",
+  "GGGGSBWW",
+];
+const THINGS = [
+  "F..r.rQP",
+  "r.n.QPcc",
+  "P.rT.mcc",
+  "TB..O.mT",
+  "T..fA.OT",
+  ".f.B.lf.",
+  "H..xM...",
+  "s.f.....",
+];
+const HEIGHT = [
+  "55444433",
+  "54443333",
+  "44433333",
+  "33333222",
+  "33222222",
+  "22221112",
+  "11111110",
+  "11111100",
+];
+const SLOPE = [
+  "........",
+  "........",
+  "........",
+  "........",
+  "........",
+  ".......v",
+  "......>.",
+  ".....>..",
+];
+// launch pads and rivers at the start of a match, as [from, to] tile numbers. Up = launch pad, down = river.
+const JUMPS = [[4, 14], [11, 31], [21, 42], [36, 55], [23, 7], [49, 30], [54, 38], [62, 45]].map(([a, b]) => [a - 1, b - 1]);
+// tiles with stairs down their front cliff to the tile in front
+const STAIRS = [17];
+
+// The things on the board are SVG files in art/, so they can be redrawn in any SVG editor. In each file, (0, 0) is the
+// spot where the thing stands on the ground; a tile is 44 wide and 34 deep. Each letter in THINGS picks from its list.
+const THING_ART = {
+  T: ["tree-round", "tree-round-dark", "tree-tall", "tree-tall-light", "tree-wide", "bush"],
+  A: ["tree-autumn", "tree-autumn-orange"],
+  M: ["tree-pink", "tree-pink", "tree-round"],
+  B: ["tree-blossom", "tree-blossom", "tree-tall-light"],
+  P: ["pine"], Q: ["pine-snow", "pine-snow", "pine"], O: ["bush"],
+  r: ["rock"], m: ["mushrooms"], f: ["flowers"], k: ["pumpkin"], x: ["barrel"], l: ["lantern"], n: ["tent"], s: ["sign"],
+  c: ["crops"], H: ["house"], F: ["flag"],
+};
+// these scatter 1 to n per tile, at random spots and sizes; the rest stand alone
+const GROUP = { T: [1, 3], P: [1, 3], Q: [1, 2], A: [1, 2], M: [1, 2], B: [1, 2], O: [1, 3], r: [1, 2], k: [1, 3] };
+
+// drawing sizes, in board units: tile width, tile depth, one step of height, the cliff under height 0, sky above the top
+const W = 44, D = 34, H = 18, BASE = 20, SKY = 44, PAD = 12;
+const ROWS = GROUND.length, COLS = Math.max(...GROUND.map(r => r.length));
+const CELLS = [], GRID = [];
+for (let r = 0; r < ROWS; r++) {
+  GRID[r] = [];
+  for (let c = 0; c < COLS; c++) {
+    const g = GROUND[r][c];
+    if (!g || g === " ") continue;
+    const t = { c, r, g, d: THINGS[r]?.[c] || ".", h: +HEIGHT[r]?.[c] || 0, s: SLOPE[r]?.[c] || "." };
+    if (t.h === 0) t.s = ".";
+    CELLS.push(t); GRID[r][c] = t;
+  }
+}
+const MAXH = Math.max(...CELLS.map(t => t.h));
+const TOP = SKY + MAXH * H;
+const VBW = COLS * W + PAD * 2, VBH = PAD + TOP + ROWS * D + BASE + PAD;
+const rowY = r => PAD + TOP + r * D;   // the back edge of row r, at height 0
+const bottomY = t => rowY(t.r) + D + BASE;
+const cellAt = (c, r) => GRID[r]?.[c];
+// the height at each corner of a tile's top
+function corners(t) {
+  const h = t.h, l = Math.max(0, h - 1);
+  if (t.s === ">") return { bl: h, fl: h, br: l, fr: l };
+  if (t.s === "<") return { bl: l, fl: l, br: h, fr: h };
+  if (t.s === "v") return { bl: h, br: h, fl: l, fr: l };
+  return { bl: h, br: h, fl: h, fr: h };
+}
+// a tile's top: its back and front edges on screen, left to right. A beach slopes over its sand half, then the water is flat.
+const SHAPES = new Map();
+function shape(t) {
+  if (SHAPES.has(t)) return SHAPES.get(t);
+  const { x } = t, k = corners(t), yb = h => rowY(t.r) - h * H;
+  let sh;
+  if (t.g === "B" && (t.s === ">" || t.s === "<")) {
+    const hi = t.h, lo = Math.max(0, hi - 1), right = t.s === ">", sx = x + W / 2;
+    const back = right ? [[x, yb(hi)], [sx, yb(lo)], [x + W, yb(lo)]] : [[x, yb(lo)], [sx, yb(lo)], [x + W, yb(hi)]];
+    sh = { back, front: back.map(([px, py]) => [px, py + D]), sx, right };
+  } else sh = { back: [[x, yb(k.bl)], [x + W, yb(k.br)]], front: [[x, yb(k.fl) + D], [x + W, yb(k.fr) + D]] };
+  SHAPES.set(t, sh);
+  return sh;
+}
+// the y of a left-to-right edge at x
+function yOn(pts, X) {
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+    if (X <= x1 + .01) return y0 + (y1 - y0) * ((X - x0) / ((x1 - x0) || 1));
+  }
+  return pts[pts.length - 1][1];
+}
+CELLS.forEach(t => {
+  t.x = PAD + t.c * W; t.y = rowY(t.r) - t.h * H; t.cx = t.x + W / 2;
+  const sh = shape(t); t.cy = (yOn(sh.back, t.cx) + yOn(sh.front, t.cx)) / 2;
+});
+// the path: row by row from the bottom, left to right, then right to left
+const PATH = [];
+CELLS.forEach(t => { const fb = ROWS - 1 - t.r; t.i = fb * COLS + (fb % 2 ? COLS - 1 - t.c : t.c); PATH[t.i] = t; });
+if (CELLS.length !== ROWS * COLS) console.warn("Naik Gunung board: every square needs a tile");
+const LAST = PATH.length - 1;   // the top
+// where a new launch pad or river may go (Musim Angin / Musim Hujan): not on the water
+const fitsJump = (a, b) => !"WB".includes(PATH[a].g) && !(b > a ? "WB" : "B").includes(PATH[b].g);
+
+// ---------- tile art ----------
+// One outline, around the whole board. Inside it, colour shows where the ground changes or a cliff drops, and a faint
+// line marks a drop to the side.
+const O = "#3a2030";   // the board's outline: a dark plum
+const EDGE = 1.6;
+const MAT = {
+  G: { top: ["#8cbc4c", "#83b445"], face: "dirt", lip: "#8cbc4c" },
+  F: { top: ["#94603a", "#8c5934"], face: "dirt" },
+  S: { top: ["#f4d17a", "#eec86c"], face: "sand" },
+  W: { top: ["#4a90d9", "#468ad3"], face: "water" },
+  B: { top: ["#f4d17a", "#eec86c"], face: "sand" },
+  R: { top: ["#9e90ae", "#968aa7"], face: "stone" },
+  N: { top: ["#f5f9ff", "#ebf2fd"], face: "stone", lip: "#f5f9ff" },
+};
+const FACE = { dirt: "#7d4b2d", sand: "#e3a95c", stone: "#706181", water: "#3a78c4" };
+// the same "random" number every time for a tile and a key
+function sr(t, k) {
+  let h = Math.imul(t.c + 1, 374761393) ^ Math.imul(t.r + 1, 668265263) ^ Math.imul(k + 1, 2246822519);
+  h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+}
+const f1 = n => n.toFixed(1);
+const poly = (pts, fill) => `<path d="M${pts.map(p => f1(p[0]) + " " + f1(p[1])).join(" L")} Z" fill="${fill}" stroke="${fill}" stroke-width="1.2" stroke-linejoin="round"/>`;
+function topTex(t) {
+  const { x, y, g } = t;
+  if (g === "G") return [0, 1].map(k => { const a = x + 16 + sr(t, k) * 20, b = y + 9 + sr(t, k + 5) * 18;
+    return `<path d="M${f1(a)} ${f1(b)} q1.6 -3.6 3.2 0 q1.6 -3.6 3.2 0" fill="none" stroke="#5f8f33" stroke-width="1.5" stroke-linecap="round"/>`; }).join("");
+  if (g === "F") return [10, 18, 26].map(v => `<path d="M${x + 6} ${y + v} H${x + W - 6}" stroke="#6d4126" stroke-width="2.4" stroke-linecap="round"/>`).join("");
+  if (g === "S") return [0, 1, 2, 3, 4].map(k => `<circle cx="${f1(x + 16 + sr(t, k) * 24)}" cy="${f1(y + 6 + sr(t, k + 9) * 24)}" r="1.1" fill="#d39a49"/>`).join("");
+  if (g === "W") return `<path d="M${f1(x + 10 + sr(t, 2) * 14)} ${f1(y + 9 + sr(t, 4) * 6)} q3 -3 6 0 t6 0 M${f1(x + 6 + sr(t, 3) * 18)} ${f1(y + 21 + sr(t, 5) * 6)} q3 -3 6 0 t6 0" fill="none" stroke="#bfe3ff" stroke-width="1.8" stroke-linecap="round"/>`;
+  if (g === "R") return `<path d="M${f1(x + 20 + sr(t, 1) * 14)} ${y + 7} l-3 6 l4 4 l-2 7" fill="none" stroke="#7a6b8c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+  if (g === "N") return `<path d="M${x + 6} ${y + D - 7} q${W / 4} -4 ${W / 2} 0 t${W / 2 - 10} 0" fill="none" stroke="#cddcf2" stroke-width="2.6" stroke-linecap="round"/>`;
+  return "";
+}
+// marks on a cliff face: a few short streaks and pebbles at random, no outlines
+function faceTex(t, x0, y0, w, vis, kind) {
+  if (vis <= 3) return "";
+  let s = "";
+  if (kind === "dirt" || kind === "stone") {
+    const c = kind === "dirt" ? "#5e361d" : "#54456a", n = Math.floor(sr(t, 1) * 3) + Math.floor(vis / 22);
+    for (let k = 0; k < n; k++) {
+      const len = 4 + sr(t, 10 + k) * 9, px = x0 + 3 + sr(t, 20 + k) * (w - 6 - len), py = y0 + 4 + sr(t, 30 + k) * (vis - 7);
+      s += `<path d="M${f1(px)} ${f1(py)} h${f1(len)}" stroke="${c}" stroke-opacity=".4" stroke-width="1.7" stroke-linecap="round"/>`;
+    }
+    if (kind === "dirt") for (let k = 0, n2 = Math.floor(sr(t, 2) * 3); k < n2; k++)
+      s += `<ellipse cx="${f1(x0 + 5 + sr(t, 40 + k) * (w - 10))}" cy="${f1(y0 + 4 + sr(t, 50 + k) * (vis - 7))}" rx="${f1(1.6 + sr(t, 60 + k) * 1.6)}" ry="1.3" fill="#97613c"/>`;
+    if (kind === "stone" && sr(t, 3) < .5) s += `<path d="M${f1(x0 + 10 + sr(t, 6) * (w - 20))} ${y0 + 2} l3 ${f1(Math.min(6, vis / 2))} l-4 ${f1(Math.min(6, vis / 3))}" fill="none" stroke="${c}" stroke-opacity=".6" stroke-width="1.5" stroke-linecap="round"/>`;
+  } else if (kind === "sand") {
+    for (let k = 0; k < Math.min(4, vis / 4); k++) s += `<circle cx="${f1(x0 + 4 + sr(t, k + 11) * (w - 8))}" cy="${f1(y0 + 3 + sr(t, k + 15) * (vis - 5))}" r="1.1" fill="#c4823a"/>`;
+  } else if (kind === "water") {
+    for (let k = 0; k < 1 + Math.floor(vis / 18); k++) s += `<path d="M${f1(x0 + 4 + sr(t, k + 21) * (w - 18))} ${f1(y0 + 5 + sr(t, k + 25) * (vis - 9))} q3 -2.5 6 0 t6 0" fill="none" stroke="#6fa8e4" stroke-width="1.6" stroke-linecap="round"/>`;
+  }
+  return s;
+}
+// grass and snow hang a little over the edge of their cliff
+function lip(t) {
+  const { x, y } = t, c = MAT[t.g].lip, n = 6, w = W / n;
+  let d = `M${x} ${y + D - 2}`;
+  for (let k = 0; k < n; k++) d += ` q${w / 2} ${t.g === "N" ? 5 + (k % 2) * 3 : 5} ${w} 0`;
+  return `<path d="${d} V${y + D - 4} H${x} Z" fill="${c}"/>`;
+}
+function fillSVG(t) {
+  const sh = shape(t), m = MAT[t.g], bot = bottomY(t), x = t.x, ck = (t.c + t.r) % 2;
+  const front = cellAt(t.c, t.r + 1), y0 = Math.min(...sh.front.map(p => p[1]));
+  const vis = front ? Math.max(0, yOn(shape(front).back, t.cx) - y0) : bot - y0;   // how much cliff shows
+  if (sh.sx) {   // beach: sand on the high side, water on the low side
+    const [b0, b1, b2] = sh.back, [q0, q1, q2] = sh.front, sx = sh.sx;
+    const sand = sh.right ? [[b0, b1, q1, q0], [q0, q1, [sx, bot], [x, bot]]] : [[b1, b2, q2, q1], [q1, q2, [x + W, bot], [sx, bot]]];
+    const sea = sh.right ? [[b1, b2, q2, q1], [q1, q2, [x + W, bot], [sx, bot]]] : [[b0, b1, q1, q0], [q0, q1, [sx, bot], [x, bot]]];
+    const sv = front ? Math.max(0, yOn(shape(front).back, sx) - q1[1]) : bot - q1[1];
+    return poly(sand[1], FACE.sand) + poly(sea[1], FACE.water) +
+      faceTex(t, sh.right ? sx : x, q1[1], W / 2, sv, "water") +
+      poly(sand[0], MAT.S.top[ck]) + poly(sea[0], MAT.W.top[ck]) +
+      `<path d="M${sx + 1} ${f1(b1[1] + 2)} q-3 ${f1(D / 6)} 0 ${f1(D / 3)} t0 ${f1(D / 3)} t0 ${f1(D / 3 - 4)}" fill="none" stroke="#eaf7ff" stroke-width="2.4" stroke-linecap="round"/>` +
+      [0, 1, 2].map(k => `<circle cx="${f1((sh.right ? x + 5 : sx + 5) + sr(t, k) * (W / 2 - 12))}" cy="${f1(yOn(sh.back, x + 6) + 8 + sr(t, k + 9) * (D - 14))}" r="1.1" fill="#d39a49"/>`).join("");
+  }
+  return poly([...sh.front, [x + W, bot], [x, bot]], FACE[m.face]) + faceTex(t, x, y0, W, vis, m.face) +
+    poly([...sh.back, ...sh.front.slice().reverse()], m.top[ck]) + topTex(t) +
+    (vis > 3 && m.lip && t.s === "." ? lip(t) : "") + (t.s === "v" ? trail(t) : "");
+}
+// a worn path up a ramp, a little onto the tile behind
+function trail(t) {
+  const sh = shape(t), y0 = sh.back[0][1] - 6, y1 = sh.front[0][1] - 3, x = t.cx;
+  return `<path d="M${x - 6} ${f1(y0)} L${x + 6} ${f1(y0)} L${x + 8} ${f1(y1)} L${x - 8} ${f1(y1)} Z" fill="#c9a15f" stroke="#c9a15f" stroke-width="3" stroke-linejoin="round"/>` +
+    `<path d="M${x - 4} ${f1(y0 + (y1 - y0) * .35)} h3 M${x + 1} ${f1(y0 + (y1 - y0) * .7)} h3" stroke="#a87f45" stroke-width="1.6" stroke-linecap="round"/>`;
+}
+// stone steps down a tile's front cliff, onto the tile in front
+function stairsSVG(t) {
+  const f = cellAt(t.c, t.r + 1);
+  if (!f) return "";
+  const xa = t.x + 5, w = 15, top = yOn(shape(t).front, xa + w / 2) - 1, bot = yOn(shape(f).back, xa + w / 2) + 4;
+  const n = Math.max(2, Math.round((bot - top) / 6)), h = (bot - top) / n;
+  let s = `<rect x="${xa - 1.5}" y="${f1(top - 1.5)}" width="${w + 3}" height="${f1(bot - top + 3)}" rx="2.5" fill="${O}"/>`;
+  for (let k = 0; k < n; k++) {
+    const y = top + k * h, ww = w + k * 1.2;
+    s += `<rect x="${f1(xa - k * .6)}" y="${f1(y)}" width="${f1(ww)}" height="${f1(h)}" fill="#a48b78"/><rect x="${f1(xa - k * .6)}" y="${f1(y)}" width="${f1(ww)}" height="${f1(Math.min(2.8, h / 2))}" fill="#e3d6c6"/>`;
+  }
+  return s;
+}
+// a faint line where a tile stands higher than the one to its right, curling out at the foot so the corner looks soft
+function sideSVG(t) {
+  const n = cellAt(t.c + 1, t.r);
+  if (!n) return "";
+  const a = shape(t), b = shape(n), X = t.x + W;
+  const a0 = a.back[a.back.length - 1][1], a1 = a.front[a.front.length - 1][1], b0 = b.back[0][1], b1 = b.front[0][1];
+  if (Math.abs(a0 - b0) < .5 && Math.abs(a1 - b1) < .5) return "";
+  const top = Math.min(a0, b0), foot = Math.max(a1, b1), dir = a0 <= b0 ? 1 : -1, r = 5;   // dir: the curl goes onto the lower tile
+  return `<path d="M${X} ${f1(top)} V${f1(foot - r)} q0 ${r} ${dir * r} ${r}" fill="none" stroke="${O}" stroke-opacity=".28" stroke-width="1.5" stroke-linecap="round"/>`;
+}
+
+// ---------- art files ----------
+const ART = {};   // name → its viewBox, once loaded
+async function loadArt() {
+  const names = [...new Set([...Object.values(THING_ART).flat(), "spring", "target"])], NS = "http://www.w3.org/2000/svg";
+  await Promise.all(names.map(async name => {
+    try {
+      const res = await fetch(`art/${name}.svg`, { cache: "no-cache" });
+      if (!res.ok) throw 0;
+      // ids get the file's name in front, so two files can't clash
+      const text = (await res.text()).replace(/\bid="([^"]+)"/g, `id="${name}-$1"`).replace(/url\(#([^)]+)\)/g, `url(#${name}-$1)`).replace(/href="#([^"]+)"/g, `href="#${name}-$1"`);
+      const svg = new DOMParser().parseFromString(text, "image/svg+xml").documentElement;
+      const vb = (svg.getAttribute("viewBox") || "").split(/[\s,]+/).map(Number);
+      if (svg.nodeName !== "svg" || vb.length !== 4 || vb.some(isNaN)) throw 0;
+      const sym = document.createElementNS(NS, "symbol");
+      sym.id = "art-" + name; sym.setAttribute("viewBox", vb.join(" ")); sym.setAttribute("overflow", "visible");
+      [...svg.childNodes].forEach(n => sym.appendChild(document.importNode(n, true)));
+      $("artDefs").appendChild(sym);
+      ART[name] = vb;
+    } catch { console.warn(`Naik Gunung: art/${name}.svg didn't load`); }
+  }));
+}
+function art(name, x, y, s = 1, flip = false) {
+  const a = ART[name];
+  if (!a) return "";
+  return `<use href="#art-${name}" x="${a[0]}" y="${a[1]}" width="${a[2]}" height="${a[3]}" transform="translate(${f1(x)} ${f1(y)}) scale(${flip ? -s : s} ${s})"/>`;
+}
+function decorSVG(t) {
+  const list = THING_ART[t.d];
+  if (!list) return "";
+  const pick = k => list[Math.floor(sr(t, 80 + k) * list.length)];
+  if (t.d === "H") return art(pick(0), t.x + W + 6, t.y + D * .84);   // the house stands across this tile and the next
+  if (t.d === "F") return art(pick(0), t.x + W - 12, t.y + 10);
+  if (t.d === "c") return art(pick(0), t.cx, t.cy);
+  const g = GROUP[t.d];
+  if (!g) {
+    for (const dx of [0, -14, 10]) { const x = t.x + W * .64 + dx, y = t.y + D * .72; if (!nearRiver(x, y, 7)) return art(pick(0), x, y); }
+    return "";
+  }
+  const n = g[0] + Math.floor(sr(t, 21) * (g[1] - g[0] + 1)), out = [];
+  for (let k = 0; k < n; k++) for (let tr = 0; tr < 5; tr++) {   // a few tries at a spot off the water
+    const j = k + tr * 7, s = (n > 1 ? .6 : .78) + sr(t, 50 + k) * .4;
+    const x = tr ? t.x + 6 + sr(t, 30 + j) * (W - 12) : t.x + (k + .15 + sr(t, 30 + k) * .7) * W / n + (sr(t, 70 + k) - .5) * 8;
+    const y = t.y + 10 + sr(t, 40 + j) * (D - 12);
+    if (!nearRiver(x, y, 7 * s + 2)) { out.push({ x, y, s, k }); break; }
+  }
+  return out.sort((a, b) => a.y - b.y).map(o => art(pick(o.k), o.x, o.y, o.s, sr(t, 90 + o.k) < .5)).join("");
+}
+
+// ---------- rivers ----------
+// A river runs from a pond down to another pond (or the lake): only down a row, or left or right along one. It never
+// climbs, and it only drops down the front of a cliff, where it pours as a waterfall.
+// blocked: tiles it must keep off (other rivers, pads, targets, the house)
+function riverRoute(a, b, loose = false, blocked = new Set()) {
+  const A = PATH[a], B = PATH[b], key = (t, d) => t.i * 4 + d;   // d: 0 down, 1 left, 2 right, 3 start
+  const dist = new Map([[key(A, 3), 0]]), prev = new Map(), open = [[0, A, 3]];
+  while (open.length) {
+    open.sort((p, q) => p[0] - q[0]);
+    const [cost, t, d] = open.shift();
+    if (cost > dist.get(key(t, d))) continue;
+    if (t === B) {
+      const out = [];
+      for (let k = key(t, d); k !== undefined; k = prev.get(k)) out.push(PATH[Math.floor(k / 4)]);
+      return out.reverse();
+    }
+    if (t.g === "W") continue;
+    for (const [nd, dc, dr] of [[0, 0, 1], [1, -1, 0], [2, 1, 0]]) {
+      const n = cellAt(t.c + dc, t.r + dr);
+      if (!n || (n.g === "W" && n !== B) || (d === 1 && nd === 2) || (d === 2 && nd === 1) || (blocked.has(n.i) && n !== B)) continue;
+      if (dr ? n.h > t.h : loose ? n.h > t.h : n.h !== t.h) continue;
+      const nc = cost + 1 + (d !== 3 && d !== nd ? .8 : 0), k = key(n, nd);
+      if (nc < (dist.get(k) ?? Infinity)) { dist.set(k, nc); prev.set(k, key(t, d)); open.push([nc, n, nd]); }
+    }
+  }
+  return null;
+}
+// the tiles a new river must keep off, given the launch pads and rivers already on the board
+function blockedFor(J, a, b) {
+  const out = new Set();
+  for (const [x, y] of Object.entries(J)) {
+    out.add(+x); out.add(y);
+    if (y < +x && RIVERS[x + ">" + y]) RIVERS[x + ">" + y].route.forEach(t => out.add(t.i));
+  }
+  CELLS.forEach(t => { if (t.d === "H") { out.add(t.i); const n = cellAt(t.c + 1, t.r); if (n) out.add(n.i); } });
+  out.delete(a); out.delete(b);
+  return out;
+}
+const RIVERS = {};
+function riverGeom(a, b, J = {}) {
+  const id = a + ">" + b;
+  if (RIVERS[id]) return RIVERS[id];
+  const route = riverRoute(a, b, false, blockedFor(J, a, b)) || riverRoute(a, b) || riverRoute(a, b, true) || [PATH[a], PATH[b]];
+  // where the river crosses each tile: off the middle, a little differently for each river
+  const at = t => [t.cx + (sr(t, 300 + a) - .5) * 22, t.cy + (sr(t, 400 + a) - .5) * 12];
+  let P = at(route[0]);
+  const pts = [P], falls = [];
+  for (let i = 1; i < route.length; i++) {
+    const p = route[i - 1], q = route[i], Q = at(q), lake = q.g === "W";
+    if (q.r > p.r) {   // down a row: across p to its lane, over p's front edge (a waterfall if it drops), onto q
+      const X = Q[0];
+      if (Math.abs(P[0] - X) > .5) pts.push([X, P[1]]);
+      const y1 = yOn(shape(p).front, X), y2 = yOn(shape(q).back, X);
+      pts.push([X, y1]);
+      if (y2 > y1 + .5) { pts.push([X, y2]); falls.push([X, y1, y2]); }
+      if (lake) break;
+      P = [X, Q[1]];
+    } else {           // along the row
+      const edge = q.c > p.c ? p.x + W : p.x, drop = q.cy - p.cy;
+      if (Math.abs(drop) > .5) {   // onto a lower tile (only when there is no other way)
+        pts.push([edge, P[1]], [edge, P[1] + drop]);
+        if (drop > 0) falls.push([edge, P[1], P[1] + drop]);
+        if (lake) break;
+        P = [Q[0], P[1] + drop];
+      } else {
+        if (Math.abs(P[1] - Q[1]) > .5) pts.push([P[0], Q[1]]);
+        if (lake) { pts.push([edge, Q[1]]); break; }
+        P = Q;
+      }
+    }
+    pts.push(P);
+  }
+  return RIVERS[id] = { pts, falls, route, lake: route[route.length - 1].g === "W" };
+}
+// is (x, y) within gap of a river?
+function nearRiver(x, y, gap) {
+  for (const pts of RIVER_LINES) for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], dx = x1 - x0, dy = y1 - y0;
+    const k = Math.max(0, Math.min(1, ((x - x0) * dx + (y - y0) * dy) / ((dx * dx + dy * dy) || 1)));
+    if (Math.hypot(x - x0 - k * dx, y - y0 - k * dy) < gap) return true;
+  }
+  return false;
+}
+// a line through points with rounded corners
+function roundPath(pts, rad = 6) {
+  let d = `M${f1(pts[0][0])} ${f1(pts[0][1])}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+    const l1 = Math.hypot(x1 - x0, y1 - y0), l2 = Math.hypot(x2 - x1, y2 - y1);
+    if (l1 < .01 || l2 < .01) continue;
+    if (Math.abs((x1 - x0) * (y2 - y1) - (y1 - y0) * (x2 - x1)) < .01) { d += ` L${f1(x1)} ${f1(y1)}`; continue; }
+    const r = Math.min(rad, l1 / 2, l2 / 2);
+    d += ` L${f1(x1 - (x1 - x0) / l1 * r)} ${f1(y1 - (y1 - y0) / l1 * r)} Q${f1(x1)} ${f1(y1)} ${f1(x1 + (x2 - x1) / l2 * r)} ${f1(y1 + (y2 - y1) / l2 * r)}`;
+  }
+  const z = pts[pts.length - 1];
+  return d + ` L${f1(z[0])} ${f1(z[1])}`;
+}
+const RW = 3.6;   // river width
+function riverSVG(a, b) {
+  const g = riverGeom(a, b), d = roundPath(g.pts), s0 = g.pts[0], end = g.pts[g.pts.length - 1], water = "#4a90d9";
+  const ponds = [[s0[0], s0[1] + 1, 11, 7.5]];
+  if (!g.lake) ponds.push([end[0], end[1] + 1, 13, 8.5]);
+  return `<path d="${d}" fill="none" stroke="${water}" stroke-width="${RW}" stroke-linecap="round" stroke-linejoin="round"/>` +
+    ponds.map(([x, y, rx, ry]) => `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="${rx}" ry="${ry}" fill="${water}"/><ellipse cx="${f1(x + 1)}" cy="${f1(y + 1)}" rx="${rx - 3.5}" ry="${ry - 2.5}" fill="#3a78c4"/>` +
+      `<path d="M${f1(x - rx + 3.5)} ${f1(y - 1.5)} q2.5 -2.5 5 0" fill="none" stroke="#cfeaff" stroke-width="1.5" stroke-linecap="round"/>`).join("") +
+    g.falls.map(([x, y1, y2]) => `<rect x="${f1(x - RW / 2 - .8)}" y="${f1(y1)}" width="${RW + 1.6}" height="${f1(y2 - y1)}" rx="1" fill="#8ccbff"/>` +
+      `<path class="fall" d="M${f1(x)} ${f1(y1 + 1)} V${f1(y2 - 1)}" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="4 4"/>` +
+      `<ellipse cx="${f1(x)}" cy="${f1(y2 + 1)}" rx="5" ry="1.8" fill="#fff" opacity=".9"/>`).join("");
+}
+
+// the whole ground: tiles, then rivers and ponds, then the things standing on it. J: the launch pads and rivers.
+let RIVER_LINES = [];   // where the rivers run, so trees and rocks keep off the water
+function terrainSVG(J, freshAt = -1) {
+  const list = Object.entries(J).map(([a, b]) => [+a, b]), rivers = list.filter(([a, b]) => b < a);
+  const clear = new Set(list.flat());   // tiles with a pond, pad or target keep clear
+  clear.delete(LAST);
+  RIVER_LINES = rivers.map(([a, b]) => riverGeom(a, b, J).pts);
+  const cols = CELLS.map(t => { const sh = shape(t), bot = bottomY(t); return `<path d="M${[...sh.back, [t.x + W, bot], [t.x, bot]].map(p => f1(p[0]) + " " + f1(p[1])).join(" L")} Z"/>`; }).join("");
+  let s = `<g fill="#fffaf0" stroke="#fffaf0" stroke-width="18" stroke-linejoin="round">${cols}</g><g fill="${O}" stroke="${O}" stroke-width="9" stroke-linejoin="round">${cols}</g>`;
+  for (let r = 0; r < ROWS; r++) { const row = CELLS.filter(t => t.r === r); s += row.map(fillSVG).join("") + row.map(sideSVG).join(""); }
+  s += rivers.map(([a, b]) => `<g class="jp${a === freshAt ? " fresh" : ""}">${riverSVG(a, b)}</g>`).join("");
+  s += CELLS.map(t => (STAIRS.includes(t.i + 1) ? stairsSVG(t) : "") + (!clear.has(t.i) || t.d === "H" ? decorSVG(t) : "")).join("");
+  return s;
+}
+const showNums = () => { $("numsL").style.display = SET.nums === false ? "none" : ""; };
+function drawTerrain() {
+  $("board").setAttribute("viewBox", `0 0 ${VBW} ${VBH}`);
+  $("terrainL").innerHTML = terrainSVG(Object.fromEntries(JUMPS));
+  $("numsL").innerHTML = PATH.map(t => `<text class="num" x="${t.x + 11}" y="${f1(yOn(shape(t).back, t.x + 11) + 13)}">${t.i + 1}</text>`).join("");
+  showNums();
+  // the prize: a pile of coins on the top tile
+  const top = PATH[LAST], pool = $("pool");
+  pool.style.left = (top.cx - 4) / VBW * 100 + "%";
+  pool.style.top = (top.cy + 11) / VBH * 100 + "%";
+}
+
+// ---------- launch pads ----------
+// A spring flings you up onto a target, which shows the number of the spring's tile. The flight is a parabola,
+// drawn only while a plane flies it or a question could send you onto the spring.
+function along(pts) {
+  const L = [0];
+  for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const tot = L[L.length - 1] || 1;
+  return t => {
+    const s = t * tot;
+    let i = 1;
+    while (i < L.length - 1 && L[i] < s) i++;
+    const k = (s - L[i - 1]) / ((L[i] - L[i - 1]) || 1);
+    return { x: pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * k, y: pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * k };
+  };
+}
+function curveFor(a, b) {
+  if (b < a) return along(riverGeom(a, b).pts);
+  const A = PATH[a], B = PATH[b], ax = A.cx, ay = A.cy - 8, bx = B.cx, by = B.cy, dx = bx - ax;
+  const side = (a * 7 + b) % 3 ? 1 : -1;   // not every flight leans the same way
+  const mx = (ax + bx) / 2 + side * Math.max(Math.abs(dx) < 30 ? 34 : 0, Math.abs(dx) * .18), my = Math.min(ay, by) - 34 - Math.abs(dx) * .22;
+  return t => ({ x: (1 - t) ** 2 * ax + 2 * (1 - t) * t * mx + t * t * bx, y: (1 - t) ** 2 * ay + 2 * (1 - t) * t * my + t * t * by });
+}
+function arcSVG(a, b) {
+  const f = curveFor(a, b), pts = [];
+  for (let i = 0; i <= 40; i++) pts.push(f(i / 40));
+  const d = "M" + pts.map(p => `${f1(p.x)} ${f1(p.y)}`).join(" L"), e = pts[35], e0 = pts[33];
+  const ang = Math.atan2(e.y - e0.y, e.x - e0.x) * 180 / Math.PI;
+  return `<path class="flow2" d="${d}" fill="none" stroke="${O}" stroke-width="7" stroke-dasharray="0.1 10" stroke-linecap="round"/>` +
+    `<path class="flow2" d="${d}" fill="none" stroke="#ffdb33" stroke-width="4" stroke-dasharray="0.1 10" stroke-linecap="round"/>` +
+    `<path transform="translate(${f1(e.x)} ${f1(e.y)}) rotate(${ang.toFixed(0)})" d="M-4 -6.5 L8 0 L-4 6.5 Z" fill="#ffdb33" stroke="${O}" stroke-width="1.8" stroke-linejoin="round"/>`;
+}
+function drawJumps(S, freshAt = -1) {
+  const pads = Object.entries(S.J).map(([a, b]) => [+a, b]).filter(([a, b]) => b > a);
+  $("terrainL").innerHTML = terrainSVG(S.J, freshAt);
+  $("jumpsL").innerHTML = pads.map(([a, b], k) => { const A = PATH[a], B = PATH[b];
+    return `<g class="jp${a === freshAt ? " fresh" : ""}">${art("target", B.cx, B.cy + 2)}<text class="padn" x="${B.cx}" y="${f1(B.cy + 6.4)}">${a + 1}</text>${art("spring", A.cx, A.cy + 5, 1, k % 2 === 1)}</g>`; }).join("");
+}
+// rings on the tiles a question can send you to, and the flight from any launch pad among them
+function drawMarks(list, J = {}) {
+  $("marksL").innerHTML = list.map(({ i, cls, label }) => {
+    const t = PATH[Math.min(i, LAST)];
+    return `<rect class="mk ${cls}" x="${t.x + 2}" y="${t.y + 2}" width="${W - 4}" height="${D - 4}" rx="7"/>` +
+      (label ? `<text class="mkt ${cls}" x="${t.cx}" y="${t.y - 2}">${label}</text>` : "");
+  }).join("") + list.filter(({ i }) => i < LAST && J[i] > i).map(({ i }) => arcSVG(i, J[i])).join("");
+}
+
+// ---------- planes ----------
+const SLOTS = { 1: [[0, 0]], 2: [[-8, -2], [8, 2]], 3: [[-9, -3], [9, -3], [0, 4]], 4: [[-9, -4], [9, -4], [-9, 4], [9, 4]] };
+const icon = color => `<svg class="pi" viewBox="0 0 28 18" aria-hidden="true"><use href="#plane" width="28" height="18" style="color:${color}"/></svg>`;
+const tag = p => `${icon(p.color)}<b>${esc(p.name)}</b>`;
+const tileName = i => i >= LAST ? "the top" : "tile " + (i + 1);
+function buildPlanes(S) {
+  $("planesL").innerHTML = S.players.map(p => `<g class="pl still" style="color:${p.color}">
+    <ellipse class="ring" rx="16" ry="6.5" cy="3"/><ellipse class="sh" rx="9" ry="3" cy="4"/>
+    <g class="bob"><g class="hopper"><use href="#plane" x="-14" y="-22" width="28" height="18"/></g></g></g>`).join("");
+  S.players.forEach((p, i) => p.el = $("planesL").children[i]);
+  $("board").style.setProperty("--hop", HOP + "ms");
+  placeAll(S);
+  requestAnimationFrame(() => requestAnimationFrame(() => S.players.forEach(p => p.el.classList.remove("still"))));
+}
+const setXY = (p, x, y) => { p.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`; };
+function placeAll(S) {
+  const by = {};
+  S.players.forEach(p => (by[p.pos] ||= []).push(p));
+  for (const [pos, list] of Object.entries(by)) list.forEach((p, k) => {
+    const t = PATH[+pos], [ox, oy] = SLOTS[list.length][k];
+    setXY(p, t.cx + ox, t.cy + oy);
+  });
+}
+function bounce(p) {
+  const h = p.el.querySelector(".hopper");
+  h.classList.remove("hop"); void h.getBoundingClientRect(); h.classList.add("hop");
+}
+
+// ---------- save, tokens, settings ----------
+// held: a stake taken for a match that hasn't ended (given back if the page closes mid-match)
+const SET = Object.assign({ sound: true, help: false, nums: true, level: 0, dice: 6, wrong: "stay", duel: false, wind: false, rain: false, seats: ["bot", "bot", "bot"], held: 0 },
+  TAMA.load(SLUG, {}));
+if (!Array.isArray(SET.seats) || SET.seats.length !== 3) SET.seats = ["bot", "bot", "bot"];
+if (SET.seats[0] === "off") SET.seats[0] = "bot";
+const saveSet = () => TAMA.save(SLUG, SET);
+
+const G = { screen: "titleScreen", S: null, bank: null, roll: null, answer: null, coinsLive: false };
+const BAR = KIT.bar($("bar"), {
+  sound: SET.sound,
+  onSound(on) { SET.sound = on; saveSet(); SFX.ac(); SFX.blip(); },
+  onTokens: openPass,
+});
+function renderTok() { if (!G.coinsLive) BAR.tokens(TAMA.tokens()); }
+TAMA.onChange(renderTok);
+const POOL = KIT.pool($("pool"));
+
+// ---------- sound ----------
+const SFX = (() => {
+  let ctx = null, noise = null;
+  const ac = () => {
+    if (!ctx) try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+    if (ctx?.state === "suspended") ctx.resume();
+    return ctx;
+  };
+  function tone(f, d = .12, type = "sine", v = .2, f2 = 0, delay = 0) {
+    if (!SET.sound) return; const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
+  }
+  function hiss(d, f1, f2, v = .15, type = "bandpass") {
+    if (!SET.sound) return; const c = ac(); if (!c) return;
+    if (!noise) { noise = c.createBuffer(1, c.sampleRate, c.sampleRate); const ch = noise.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1; }
+    const t = c.currentTime, s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = noise; s.loop = true; f.type = type; f.Q.value = 1.4;
+    f.frequency.setValueAtTime(f1, t); f.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + d * .3); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(f).connect(g).connect(c.destination); s.start(t); s.stop(t + d + .05);
+  }
+  const buzz = ms => { if (SET.sound) navigator.vibrate?.(ms); };
+  return {
+    ac,
+    blip() { tone(660, .09, "sine", .15); },
+    roll() { for (let i = 0; i < 6; i++) tone(260 + Math.random() * 320, .04, "square", .05, 0, i * .07); },
+    hop(k) { tone(520 + k * 55, .07, "triangle", .12); },
+    whoosh() { hiss(.9, 300, 2600, .2); },
+    splash() { hiss(.8, 2200, 220, .22, "lowpass"); tone(520, .3, "sine", .08, 130); buzz(40); },
+    pick() { tone(520, .06, "triangle", .18); tone(780, .08, "triangle", .12, 0, .05); buzz(20); },
+    right() { tone(880, .12, "triangle", .16); tone(1320, .18, "triangle", .14, 0, .08); },
+    wrong() { tone(220, .22, "sawtooth", .08, 150); buzz(60); },
+    duel() { tone(165, .14, "square", .1); tone(165, .14, "square", .1, 0, .17); tone(247, .32, "square", .1, 0, .34); buzz(80); },
+    coin() { tone(1200, .07, "square", .08); tone(1800, .2, "square", .08, 0, .07); },
+    win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, .2, "triangle", .2, 0, i * .11)); },
+    lose() { [392, 330, 262].forEach((f, i) => tone(f, .25, "triangle", .15, 0, i * .16)); },
+  };
+})();
+
+// ---------- screens ----------
+function show(id) {
+  ["titleScreen", "gameScreen"].forEach(s => $(s).classList.toggle("hide", s !== id));
+  G.screen = id;
+  $("app").classList.toggle("playing", id === "gameScreen");
+  BAR.clickable(id === "titleScreen"); renderTok(); renderExit(); scrollTo(0, 0);
+  if (id === "titleScreen") renderTitle();
+  else fit();
+}
+function renderExit() {
+  const m = G.screen === "gameScreen" && G.S && !G.S.over;
+  $("exitBtn").textContent = m ? "🏳️ Back out" : "✕";
+  $("exitBtn").setAttribute("aria-label", m ? "Back out" : "Back");
+}
+let toastT = 0;
+function toast(html, ms = 2400) { const t = $("toast"); t.innerHTML = html; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), ms); }
+function banner(text) { const b = $("banner"); b.textContent = text; b.classList.remove("on"); void b.offsetWidth; b.classList.add("on"); }
+const OVERLAYS = ["helpBox", "setBox", "askBox", "resultBox", "passBox", "credBox"];
+const closeAll = () => OVERLAYS.forEach(id => $(id).classList.add("hide"));
+const say = html => { $("msg").innerHTML = html; };
+
+// the board fills the space between the player strip and the panel
+function fit() {
+  if (G.screen !== "gameScreen") return;
+  const a = $("boardArea"), s = Math.min(a.clientWidth / VBW, a.clientHeight / VBH);
+  if (!(s > 0)) return;
+  $("boardWrap").style.width = VBW * s + "px"; $("boardWrap").style.height = VBH * s + "px";
+  $("pool").style.setProperty("--ps", (s * .38).toFixed(3));   // the coin pile keeps its size on the board
+}
+addEventListener("resize", fit);
+
+// ---------- title ----------
+const SEAT_LABEL = { you: "You", bot: "Bot", friend: "Friend", off: "Off" };
+function renderSeats() {
+  $("seats").innerHTML = [0, 1, 2, 3].map(i => {
+    const k = i ? SET.seats[i - 1] : "you";
+    return `<button class="seat ${k}" type="button" data-i="${i}" aria-label="Seat ${i + 1}: ${SEAT_LABEL[k]}"${i ? "" : ' aria-disabled="true"'}>${icon(COLORS[i])}<span>${SEAT_LABEL[k]}</span></button>`;
+  }).join("");
+}
+$("seats").addEventListener("click", e => {
+  const b = e.target.closest(".seat"); if (!b) return;
+  const i = +b.dataset.i; if (!i) return;
+  const order = i === 1 ? ["bot", "friend"] : ["bot", "friend", "off"];   // there is always someone to play
+  SET.seats[i - 1] = order[(order.indexOf(SET.seats[i - 1]) + 1) % order.length];
+  saveSet(); renderSeats(); SFX.ac(); SFX.blip();
+});
+function rulesLine() {
+  const r = [];
+  if (SET.dice === 10) r.push("D10");
+  if (SET.wrong === "back") r.push("wrong = back 1");
+  if (SET.duel) r.push("duels");
+  if (SET.wind) r.push("Musim Angin");
+  if (SET.rain) r.push("Musim Hujan");
+  return r.length ? `Special rules: ${r.join(" · ")}` : "Classic rules. Special rules are in /settings/.";
+}
+function renderTitle() {
+  renderSeats();
+  const b = $("playBtn"), msg = $("titleMsg");
+  b.disabled = !G.bank;
+  if (G.bankErr) msg.innerHTML = `The questions didn't load.<br><a href="../../">Back to PlayTama</a>`;
+  else if (!G.bank) msg.textContent = "Loading questions…";
+  else if (TAMA.tokens() < STAKE) msg.innerHTML = `You need ${COIN}${STAKE} to play.<br><a href="../../">Collect Tama Tokens on PlayTama</a>`;
+  else msg.textContent = rulesLine();
+}
+
+// ---------- a match ----------
+function newMatch() {
+  const kinds = ["you", ...SET.seats];
+  const players = [];
+  let bots = 0, friends = 0;
+  kinds.forEach((kind, seat) => {
+    if (kind === "off") return;
+    const name = kind === "you" ? TAMA.name() : kind === "bot" ? BOT_NAMES[bots++] : `Player ${seat + 1}`;
+    if (kind === "friend") friends++;
+    players.push({ i: players.length, seat, kind, name, color: COLORS[seat], pos: 0, boost: 0, tick: 0, el: null, chip: null });
+  });
+  return {
+    players, turn: 0, round: 1, tick: 0, over: false, winner: null, deck: [], lastQ: "",
+    J: Object.fromEntries(JUMPS.map(([a, b]) => [a, b])),
+    rules: { dice: SET.dice === 10 ? 10 : 6, wrong: SET.wrong === "back" ? "back" : "stay", duel: !!SET.duel, wind: !!SET.wind, rain: !!SET.rain },
+  };
+}
+function startMatch() {
+  SFX.ac();
+  closeAll();
+  if (!G.bank) return false;
+  if (TAMA.tokens() < STAKE || !TAMA.addTokens(-STAKE)) { G.S = null; show("titleScreen"); return false; }
+  SET.held = STAKE; saveSet();
+  const S = G.S = newMatch();
+  G.roll = null; G.answer = null; G.coinsLive = false;
+  $("strip").style.gridTemplateColumns = `repeat(${S.players.length},minmax(0,1fr))`;
+  $("strip").innerHTML = S.players.map(p => `<div class="pchip">${icon(p.color)}<span class="nm">${esc(p.name)}</span>
+    <span class="st"><span class="tile"></span><span class="bo"></span></span></div>`).join("");
+  S.players.forEach((p, i) => p.chip = $("strip").children[i]);
+  drawJumps(S); drawMarks([]);
+  show("gameScreen");
+  buildPlanes(S); renderStrip(S); renderRound(S);
+  face(0, S.rules.dice); dieState("wait"); say("Stakes in…");
+  POOL.set(0);
+  // everyone's stake flies into the prize pool on the summit
+  S.players.forEach((p, j) => { for (let k = 0; k < STAKE; k++) KIT.fly(p.chip, $("pool"), { delay: (k * S.players.length + j) * 110, onLand() { POOL.add(); SFX.coin(); } }); });
+  setTimeout(() => { if (G.S === S) play(S); }, STAKE * S.players.length * 110 + 600);
+  return true;
+}
+function renderStrip(S) {
+  const cur = S.over ? null : S.players[S.turn];
+  S.players.forEach(p => {
+    p.chip.classList.toggle("cur", p === cur);
+    p.chip.querySelector(".tile").textContent = p.pos >= LAST ? "TOP" : p.pos + 1;
+    p.chip.querySelector(".bo").textContent = `✔+${1 + p.boost}`;
+    p.chip.setAttribute("aria-label", `${p.name}: ${tileName(p.pos)}, right answers fly ${1 + p.boost}`);
+    p.el?.classList.toggle("cur", p === cur);
+  });
+}
+function renderRound(S) {
+  const extra = [S.rules.wind && "Musim Angin", S.rules.rain && "Musim Hujan"].filter(Boolean);
+  $("roundTag").textContent = `Round ${S.round}` + (extra.length ? ` · ${extra.join(" · ")}` : "");
+}
+
+// waits that stop the turn if the match was left
+async function pause(S, ms) { await wait(ms); if (G.S !== S) throw STOP; }
+
+async function play(S) {
+  try {
+    for (;;) {
+      await takeTurn(S);
+      S.turn = (S.turn + 1) % S.players.length;
+      if (S.turn === 0) { S.round++; renderRound(S); await newRound(S); }
+    }
+  } catch (e) {
+    if (e === WIN) return finish(S);
+    if (e !== STOP) console.error(e);
+  }
+}
+
+async function takeTurn(S) {
+  const p = S.players[S.turn];
+  renderStrip(S);
+  if (p.kind === "bot") { say(`${tag(p)} is rolling…`); dieState("wait"); await pause(S, rnd(500, 900)); }
+  else {
+    say(S.players.filter(o => o.kind !== "bot").length > 1 ? `${tag(p)}'s turn. Tap the die!` : `Your turn. Tap the die!`);
+    dieState("go");
+    await new Promise(r => { G.roll = r; });
+    if (G.S !== S) throw STOP;
+  }
+  dieState("busy");
+  const r = await rollDie(S);
+  say(`${tag(p)} rolled <b>${r}</b>.`);
+  await hop(S, p, r, 1);
+  await settle(S, p);
+  if (blocked(S, p)) return duel(S, p);
+  const a = await quiz(S, p);
+  const step = a.ok ? 1 + p.boost : (a.pass || S.rules.wrong !== "back") ? 0 : -1;
+  if (!step) return;
+  await hop(S, p, Math.abs(step), Math.sign(step));
+  await settle(S, p);
+  if (blocked(S, p)) await duel(S, p);
+}
+
+// fly n tiles forward (dir 1) or back (dir -1), one hop at a time
+async function hop(S, p, n, dir) {
+  for (let k = 0; k < n; k++) {
+    if (dir < 0 && p.pos <= 0) break;
+    p.pos += dir; p.tick = ++S.tick;
+    placeAll(S); bounce(p); SFX.hop(dir > 0 ? k : 0); renderStrip(S);
+    await pause(S, HOP);
+    if (p.pos >= LAST) { p.pos = LAST; S.winner = p; throw WIN; }
+  }
+}
+// ride a launch pad or a river from where the plane is
+async function ride(S, p, to) {
+  const from = p.pos, up = to > from, f = curveFor(from, to), N = CALM ? 2 : 16, ms = CALM ? 40 : 65;
+  banner(up ? "BOING!" : "SPLASH!");
+  if (up) $("marksL").innerHTML = arcSVG(from, to);
+  up ? SFX.whoosh() : SFX.splash();
+  await pause(S, 250);
+  p.el.style.transitionDuration = ms + "ms";
+  for (let i = 1; i <= N; i++) { const q = f(i / N); setXY(p, q.x, q.y); await pause(S, ms); }
+  p.el.style.transitionDuration = "";
+  drawMarks([]);
+  p.pos = to; p.tick = ++S.tick;
+  placeAll(S);
+  if (!up) { p.boost++; toast(`${tag(p)} got washed down. Their right answers now fly <b>+${1 + p.boost}</b>.`); }
+  renderStrip(S);
+  await pause(S, 450);
+}
+// after a move: ride anything here. bumpDir (after a duel): if the tile is taken, keep going that way.
+async function settle(S, p, bumpDir = 0) {
+  for (let n = 0; n < 10; n++) {
+    const to = S.J[p.pos];
+    if (to !== undefined) { const from = p.pos; await ride(S, p, to); if (bumpDir) bumpDir = to > from ? 1 : -1; continue; }
+    if (bumpDir && blocked(S, p)) { await hop(S, p, 1, bumpDir); continue; }
+    break;
+  }
+}
+const blocked = (S, p) => S.rules.duel && p.pos > 0 && S.players.some(o => o !== p && o.pos === p.pos);
+
+// one plane per tile: the one already there answers first. Right wins; wrong passes the question over.
+// If both miss, the one who was there first wins. The winner flies on 1, the loser drops back 1.
+async function duel(S, ch) {
+  const df = S.players.find(o => o !== ch && o.pos === ch.pos);
+  if (!df) return;
+  banner("DUEL!"); SFX.duel();
+  say(`${tag(ch)} landed on ${tag(df)}. Duel!`);
+  await pause(S, 1100);
+  const q = nextQ(S);
+  const a = await quiz(S, df, { q, duel: { vs: ch, first: true } });
+  let win = df;
+  if (!a.ok) { const b = await quiz(S, ch, { q, duel: { vs: df }, banned: a.pick }); if (b.ok) win = ch; }
+  const lose = win === df ? ch : df;
+  say(`${tag(win)} wins the duel!`);
+  toast(`${tag(win)} wins the duel!`);
+  await hop(S, lose, 1, -1); await settle(S, lose, -1);
+  await hop(S, win, 1, 1); await settle(S, win, 1);
+}
+
+// Musim Angin / Musim Hujan: a new launch pad or river at the start of every round
+async function newRound(S) {
+  const adds = [];
+  if (S.rules.wind) adds.push(true);
+  if (S.rules.rain) adds.push(false);
+  for (const up of adds) {
+    const j = addJump(S, up);
+    if (!j) continue;
+    drawJumps(S, j[0]);
+    up ? SFX.whoosh() : SFX.splash();
+    toast(up ? `<b>Musim Angin:</b> a new launch pad on tile ${j[0] + 1}.` : `<b>Musim Hujan:</b> a new river from tile ${j[0] + 1}.`);
+    await pause(S, 1500);
+  }
+}
+function addJump(S, up) {
+  if (Object.keys(S.J).length >= MAX_JUMPS) return null;
+  const used = new Set();
+  for (const [a, b] of Object.entries(S.J)) { used.add(+a); used.add(b); }
+  S.players.forEach(p => used.add(p.pos));
+  blockedFor(S.J, -1, -1).forEach(i => used.add(i));   // and off rivers and the house
+  const ok = [];
+  for (let a = 2; a <= LAST - 2; a++) for (let L = 5; L <= Math.max(8, Math.round(LAST / 4)); L++) {
+    const b = up ? a + L : a - L;
+    if (b >= 1 && b <= LAST - 1 && !used.has(a) && !used.has(b) && fitsJump(a, b)) ok.push([a, b]);
+  }
+  ok.sort(() => Math.random() - .5);
+  for (const j of ok) if (up || riverRoute(j[0], j[1], false, blockedFor(S.J, j[0], j[1]))) { S.J[j[0]] = j[1]; riverGeom(j[0], j[1], S.J); return j; }   // a river needs its own way down
+  return null;
+}
+
+// ---------- the die ----------
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+function face(v, sides) {
+  if (!v) $("dieFace").innerHTML = `<span class="dnum">?</span>`;
+  else if (sides === 6) $("dieFace").innerHTML = `<span class="pips">${[...Array(9)].map((_, i) => `<i class="${PIPS[v].includes(i) ? "on" : ""}"></i>`).join("")}</span>`;
+  else $("dieFace").innerHTML = `<span class="dnum">${v}</span>`;
+  $("dieTag").textContent = sides === 10 ? "D10" : "";
+  $("die").setAttribute("aria-label", v ? `The die shows ${v}` : "Roll the die");
+}
+function dieState(m) {
+  const d = $("die");
+  d.disabled = m !== "go"; d.classList.toggle("go", m === "go");
+  if (m === "go") face(0, G.S.rules.dice);
+}
+async function rollDie(S) {
+  const n = S.rules.dice, r = 1 + Math.floor(Math.random() * n);
+  $("die").classList.add("rolling"); SFX.roll();
+  for (let i = 0; i < (CALM ? 2 : 9); i++) { face(1 + Math.floor(Math.random() * n), n); await pause(S, 65); }
+  face(r, n); $("die").classList.remove("rolling");
+  await pause(S, 420);
+  return r;
+}
+$("die").onclick = () => { if (G.roll) { const r = G.roll; G.roll = null; SFX.ac(); r(); } };
+
+// ---------- questions ----------
+function nextQ(S) {
+  if (!S.deck.length) {
+    const d = QS.random(G.bank, G.bank.questions.length);
+    if (d.length > 1 && d[0].id === S.lastQ) d.push(d.shift());   // no question twice in a row
+    S.deck = d;
+  }
+  const q = S.deck.shift(); S.lastQ = q.id; return q;
+}
+const landAt = (S, i) => i >= LAST ? LAST + 1 : (S.J[i] ?? i);
+function outcomeChip(S, cls, label, i) {
+  const j = i < LAST ? S.J[i] : undefined;
+  const extra = j === undefined ? "" : j > i ? ` 🎯${j + 1}` : ` 🌊${j + 1}`;
+  const where = i >= LAST ? "TOP!" : `tile ${i + 1}`;
+  return `<span class="oc ${cls}"><small>${label}</small>${where}${extra}</span>`;
+}
+
+// ask p a question. o: { q, duel: { vs, first }, banned (a choice already ruled out) }. Resolves to { pick, ok, pass, late }.
+async function quiz(S, p, o = {}) {
+  const q = o.q || nextQ(S), bot = p.kind === "bot", banned = o.banned ?? -1;
+  const pics = q.choices.some(c => c.img);
+  $("qWho").innerHTML = o.duel ? `⚔️ ${tag(p)} answers` : `${tag(p)} answers`;
+  const out = $("qOut");
+  if (o.duel) {
+    out.className = "line";
+    out.innerHTML = o.duel.first
+      ? `Duel with ${tag(o.duel.vs)}. ${tag(p)} was here first, so answers first. Right wins the duel.`
+      : `${tag(o.duel.vs)} missed! Right wins the duel, wrong loses it.`;
+    drawMarks([]);
+  } else {
+    const r = p.pos + 1 + p.boost, w = S.rules.wrong === "back" ? Math.max(0, p.pos - 1) : p.pos;
+    out.className = "";
+    out.innerHTML = outcomeChip(S, "ok", `RIGHT +${1 + p.boost}`, r) + outcomeChip(S, "st", "PASS", p.pos) +
+      outcomeChip(S, "no", S.rules.wrong === "back" ? "WRONG −1" : "WRONG", w);
+    drawMarks([{ i: r, cls: "ok", label: "✔" }, ...(w !== p.pos ? [{ i: w, cls: "no", label: "✘" }] : [])], S.J);
+  }
+  $("qText").textContent = q.q;
+  const box = $("qOpts");
+  box.className = "opts" + (pics ? " pics" : "");
+  box.innerHTML = q.choices.map((c, k) => `<button class="opt${k === banned ? " miss" : ""}" type="button" data-k="${k}"${bot || k === banned ? " disabled" : ""}>
+    <span class="let">${LETTERS[k]}</span>${pics && c.img ? `<img src="${esc(c.img)}" alt="Picture ${LETTERS[k]}">` : ""}<span class="tx">${esc(c.text)}</span></button>`).join("");
+  box.querySelectorAll(".opt img").forEach(img => img.addEventListener("error", () => img.closest(".opt").classList.add("noimg")));
+  $("quiz").classList.remove("marked");
+  $("passBtn").classList.remove("picked");
+  $("passBtn").style.visibility = o.duel ? "hidden" : "visible";
+  $("passBtn").disabled = bot;
+  $("qSay").textContent = bot ? "Thinking…" : "";
+  $("quiz").classList.remove("hide");
+  startTimer();
+  say(o.duel ? `Duel: ${tag(p)} answers.` : `${tag(p)}'s question.`);
+
+  let a;
+  if (bot) {
+    const L = LEVELS[SET.level] || LEVELS[0];
+    await pause(S, Math.min(rnd(...L.think), QUIZ_SECS * 1000 - 600));
+    a = botAnswer(S, p, q, o);
+  } else {
+    a = await new Promise(res => {
+      let done = false;
+      const t = setTimeout(() => end({ pick: -1, late: true }), QUIZ_SECS * 1000);
+      function end(x) { if (done) return; done = true; clearTimeout(t); G.answer = null; res(x); }
+      G.answer = end;
+    });
+    if (G.S !== S) throw STOP;
+  }
+  stopTimer();
+  a.ok = a.pick === q.correct;
+  // mark it: the right answer in green, a wrong pick crossed out
+  $("quiz").classList.add("marked");
+  box.querySelectorAll(".opt").forEach((b, k) => {
+    b.disabled = true;
+    b.classList.toggle("right", k === q.correct);
+    b.classList.toggle("miss", k === banned || (k === a.pick && !a.ok));
+  });
+  if (a.pass) $("passBtn").classList.add("picked");
+  $("passBtn").disabled = true;
+  $("qSay").textContent = a.ok ? (o.duel ? "Right!" : `Right! +${1 + p.boost}`) : a.pass ? "Pass." : a.late ? "Too slow!" : "Wrong.";
+  a.ok ? SFX.right() : a.pass ? SFX.blip() : SFX.wrong();
+  await pause(S, a.ok || bot ? 1300 : 1700);
+  $("quiz").classList.add("hide");
+  drawMarks([]);
+  return a;
+}
+// what a bot answers. When it knows the answer it can also aim: pass, or answer wrong on purpose (with "wrong = back 1").
+function botAnswer(S, p, q, o) {
+  const L = LEVELS[SET.level] || LEVELS[0];
+  const allowed = [0, 1, 2].filter(k => k !== (o.banned ?? -1) && k < q.choices.length), wrongs = allowed.filter(k => k !== q.correct);
+  const knows = Math.random() < L.know;
+  if (!knows) return { pick: any(allowed) };   // a guess
+  if (o.duel || L.aim === "none") return { pick: q.correct };
+  const right = { pick: q.correct, at: landAt(S, p.pos + 1 + p.boost) };
+  const stay = { pick: -1, pass: true, at: landAt(S, p.pos) };
+  if (L.aim === "river") return right.at < p.pos + 1 ? stay : right;
+  const back = S.rules.wrong === "back" && wrongs.length && p.pos > 0 ? { pick: any(wrongs), at: landAt(S, p.pos - 1) } : null;
+  return [right, stay, back].filter(Boolean).reduce((b, x) => x.at > b.at ? x : b);
+}
+let timerT = 0;
+function startTimer() {
+  const bar = $("qBar");
+  bar.style.transition = "none"; bar.style.transform = "scaleX(1)"; bar.style.background = "var(--green)";
+  void bar.offsetWidth;
+  bar.style.transition = `transform ${QUIZ_SECS}s linear`; bar.style.transform = "scaleX(0)";
+  clearTimeout(timerT); timerT = setTimeout(() => { bar.style.background = "var(--red)"; }, (QUIZ_SECS - 4) * 1000);
+}
+function stopTimer() {
+  const bar = $("qBar"), w = bar.getBoundingClientRect().width / (bar.parentElement.getBoundingClientRect().width || 1);
+  clearTimeout(timerT); bar.style.transition = "none"; bar.style.transform = `scaleX(${Math.max(0, Math.min(1, w))})`;
+}
+$("qOpts").addEventListener("click", e => {
+  const b = e.target.closest(".opt"); if (!b || b.disabled || !G.answer) return;
+  b.classList.add("picked"); SFX.pick();
+  G.answer({ pick: +b.dataset.k });
+});
+$("passBtn").onclick = () => { if (G.answer) { SFX.pick(); G.answer({ pick: -1, pass: true }); } };
+// keyboard: space rolls, 1/2/3 or A/B/C answers, P passes
+addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || OVERLAYS.some(id => !$(id).classList.contains("hide"))) return;
+  const k = e.key.toLowerCase();
+  if (G.roll && (k === " " || k === "r")) { e.preventDefault(); $("die").click(); return; }
+  if (!G.answer) return;
+  const i = "123".indexOf(k) >= 0 ? "123".indexOf(k) : "abc".indexOf(k);
+  if (i >= 0) $("qOpts").querySelectorAll(".opt")[i]?.click();
+  else if (k === "p") $("passBtn").click();
+});
+
+// ---------- the end ----------
+const PLACE = ["1ST", "2ND", "3RD", "4TH"];
+async function finish(S) {
+  if (S.over) return;
+  S.over = true; G.roll = null; G.answer = null;
+  $("quiz").classList.add("hide"); drawMarks([]); dieState("wait"); renderStrip(S); renderExit();
+  const order = [S.winner, ...S.players.filter(p => p !== S.winner).sort((a, b) => b.pos - a.pos || a.tick - b.tick)];
+  const pays = PAY[S.players.length];
+  order.forEach((p, i) => { p.rank = i; p.prize = pays[i]; });
+  const me = S.players[0], gain = me.prize;
+  // the prize: saved now, shown as the coins land
+  const shown = TAMA.tokens();
+  G.coinsLive = gain > 0;
+  SET.held = 0; saveSet();
+  if (gain) { TAMA.addTokens(gain); BAR.tokens(shown); }
+  TAMA.addScore(SLUG, { plays: 1, wins: me.rank === 0 ? 1 : 0, best: gain });
+  banner(me === S.winner ? "YOU WIN!" : "TOP!");
+  say(`${tag(S.winner)} reached the top!`);
+  me.rank === 0 ? SFX.win() : me.rank === order.length - 1 ? SFX.lose() : SFX.blip();
+  await wait(1200);
+  const jobs = [];
+  let landed = 0;
+  for (const p of order) for (let k = 0; k < p.prize; k++) {
+    POOL.take();
+    jobs.push(KIT.fly($("pool"), p.chip, { onLand() { SFX.coin(); if (p === me) BAR.tokens(shown + ++landed); } }));
+    await wait(110);
+  }
+  await Promise.all(jobs);
+  G.coinsLive = false; renderTok();
+  if (G.S !== S) return;
+  const last = me.rank === order.length - 1;
+  $("resT").textContent = me.rank === 0 ? "YOU WIN!" : last ? "LAST PLACE" : `${PLACE[me.rank]} PLACE`;
+  $("resWhy").innerHTML = me.rank === 0 ? `You reached the top in round ${S.round}.` : `${tag(S.winner)} reached the top in round ${S.round}.`;
+  $("resList").innerHTML = order.map(p => `<li class="rk"><span class="pl0">${p.rank + 1}</span>${icon(p.color)}<span class="nm">${esc(p.name)}</span>
+    <span>${p.pos >= LAST ? "TOP" : "tile " + (p.pos + 1)}</span><span>${p.prize ? `+${p.prize} ${COIN}` : ""}</span></li>`).join("");
+  $("resCoins").innerHTML = gain > STAKE ? `You take ${KIT.coin()} ${gain}` : gain ? `You get your ${KIT.coin()} ${gain} back.` : "No Tama Tokens this time.";
+  $("resultBox").classList.remove("hide");
+}
+
+// ---------- leaving ----------
+function toTitle() {
+  G.S = null; G.roll = null; G.answer = null;
+  $("quiz").classList.add("hide"); closeAll(); show("titleScreen");
+}
+function refund() {
+  if (SET.held > 0) { TAMA.addTokens(SET.held); const n = SET.held; SET.held = 0; saveSet(); return n; }
+  return 0;
+}
+$("exitBtn").onclick = () => {
+  if (G.screen === "gameScreen" && G.S && !G.S.over) {
+    $("askP").innerHTML = `Leave this match? Your ${COIN}${SET.held || STAKE} comes back.`;
+    $("askBox").classList.remove("hide"); return;
+  }
+  if (G.screen === "titleScreen") { location.href = "../../"; return; }
+  toTitle();
+};
+$("askNo").onclick = () => $("askBox").classList.add("hide");
+$("askYes").onclick = () => {
+  $("askBox").classList.add("hide");
+  if (!G.S || G.S.over) return;
+  const n = refund(); toTitle();
+  if (n) toast(`Your ${COIN}${n} came back.`);
+};
+$("againBtn").onclick = () => { $("resultBox").classList.add("hide"); if (!startMatch()) toTitle(); };
+$("menuBtn").onclick = toTitle;
+$("playBtn").onclick = () => { if (!startMatch()) renderTitle(); };
+
+// ---------- settings ----------
+function seg(id, opts, get, set) {
+  const el = $(id);
+  const draw = () => el.querySelectorAll("button").forEach((b, i) => { const on = opts[i][1] === get(); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+  el.innerHTML = opts.map(([label]) => `<button type="button">${label}</button>`).join("");
+  el.querySelectorAll("button").forEach((b, i) => b.onclick = () => { set(opts[i][1]); saveSet(); draw(); SFX.blip(); renderTitle(); });
+  draw();
+}
+seg("segLevel", LEVELS.map((l, i) => [l.name, i]), () => SET.level, v => SET.level = v);
+seg("segDice", [["D6", 6], ["D10", 10]], () => SET.dice, v => SET.dice = v);
+seg("segWrong", [["Stay", "stay"], ["Back 1", "back"]], () => SET.wrong, v => SET.wrong = v);
+seg("segDuel", [["Off", false], ["Duel", true]], () => !!SET.duel, v => SET.duel = v);
+seg("segNums", [["On", true], ["Off", false]], () => SET.nums !== false, v => { SET.nums = v; showNums(); });
+seg("segWind", [["Off", false], ["On", true]], () => !!SET.wind, v => SET.wind = v);
+seg("segRain", [["Off", false], ["On", true]], () => !!SET.rain, v => SET.rain = v);
+$("setBtn").onclick = () => { SFX.ac(); $("setBox").classList.remove("hide"); };
+$("setOk").onclick = () => $("setBox").classList.add("hide");
+
+// ---------- Tama Pass: the token chip on the title opens it ----------
+function openPass() {
+  if (G.screen !== "titleScreen") return;
+  KIT.passCard($("passCard"), { btnClass: "btn small", onTokens() { renderTok(); renderTitle(); SFX.coin(); } });
+  $("passBox").classList.remove("hide");
+}
+$("passOk").onclick = () => $("passBox").classList.add("hide");
+
+// ---------- how to play, credits ----------
+$("helpStake").innerHTML = `${COIN}${STAKE}`;
+$("helpBtn").onclick = () => { SFX.ac(); $("helpBox").classList.remove("hide"); };
+$("helpOk").onclick = () => { $("helpBox").classList.add("hide"); if (!SET.help) { SET.help = true; saveSet(); } };
+$("credBtn").onclick = () => $("credBox").classList.remove("hide");
+$("credOk").onclick = () => $("credBox").classList.add("hide");
+["helpBox", "setBox", "passBox", "credBox"].forEach(id => $(id).addEventListener("click", e => { if (e.target.id === id) $(id).classList.add("hide"); }));
+
+// ---------- start ----------
+drawTerrain();
+loadArt().then(() => G.S ? drawJumps(G.S) : drawTerrain());
+{ const n = refund(); if (n) setTimeout(() => toast(`Your unfinished match's ${COIN}${n} came back.`), 400); }
+show("titleScreen");
+if (!SET.help) $("helpBox").classList.remove("hide");
+QS.load().then(bank => {
+  G.bank = bank;
+  const cr = QS.credits(bank);
+  if (cr.length) { $("credList").innerHTML = cr.map(c => `<li>${esc(c)}</li>`).join(""); $("credLink").classList.remove("hide"); }
+}).catch(() => { G.bankErr = true; })
+  .finally(() => { if (G.screen === "titleScreen") renderTitle(); });
+</script>
+</body>
+</html>
